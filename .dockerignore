@@ -1,0 +1,6 @@
+config.yml
+.gitignore
+.github
+.git
+.devcontainer
+Dockerfile
