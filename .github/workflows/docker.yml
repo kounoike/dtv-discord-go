@@ -19,8 +19,6 @@ permissions:
 
 jobs:
   build:
-    permissions:
-      packages: write
     runs-on: ubuntu-latest
     steps:
       # Get the repository's code
@@ -46,7 +44,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            dtv-discord-go
+            kounoike/dtv-discord-go
           # Docker tags based on the following events/attributes
           tags: |
             type=schedule
@@ -60,7 +58,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm/v7,linux/arm64
+          # platforms: linux/amd64,linux/arm/v7,linux/arm64
+          platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
