@@ -2,8 +2,8 @@
 
 FROM golang:1.20-bullseye AS build
 
-WORKDIR /go/src/github.com/kounoike/dtv-discord-go
-COPY * ./
+WORKDIR /app
+COPY ./ ./
 RUN go mod download
 
 RUN go build -o /dtv-discord-go
