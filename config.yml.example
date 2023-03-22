@@ -1,0 +1,10 @@
+db:
+  host: db
+  name: dtv
+  user: dtv-discord
+  password: dtv-discord
+discord:
+  token: YOUR_DISCORD_TOKEN
+mirakc:
+  host: tuner
+  port: 40772

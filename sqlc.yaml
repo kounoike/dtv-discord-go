@@ -1,0 +1,28 @@
+version: "2"
+sql:
+- schema: "./db/migrations/"
+  queries: "./db/queries/"
+  engine: "mysql"
+  gen:
+    go:
+      package: "db"
+      out: "db"
+      emit_json_tags: true
+      json_tags_case_style: camel
+      overrides:
+      - column: program.json
+        go_struct_tag: json:"-"
+      - column: program.event_id
+        go_struct_tag: json:"eventId"
+      - column: program.service_id
+        go_struct_tag: json:"serviceId"
+      - column: program.network_id
+        go_struct_tag: json:"networkId"
+      - column: program.genre_json
+        go_struct_tag: json:"-"
+      - column: program.extends_json
+        go_struct_tag: json:"-"
+      - column: program.created_at
+        go_struct_tag: json:"-"
+      - column: program.updated_at
+        go_struct_tag: json:"-"
