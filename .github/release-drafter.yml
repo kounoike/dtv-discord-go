@@ -58,7 +58,7 @@ autolabeler:
       - '/(refactor|refactoring)[/-].+/'
   - label: documentation
     branch:
-      - '/doc(umentation)[/-].+/'
+      - '/doc(umentation|)[/-].+/'
     files:
       - '*.md'
   - label: enhancement
