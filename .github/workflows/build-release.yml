@@ -49,11 +49,11 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: goreleaser/goreleaser-action@v3
         with:
-          args: build --rm-dist --snapshot --single-target
+          args: build --clean --snapshot --single-target
       - name: Run goreleaser release
         if: github.event_name != 'pull_request'
         uses: goreleaser/goreleaser-action@v3
         with:
-          args: release --rm-dist
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
