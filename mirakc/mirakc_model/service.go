@@ -1,4 +1,4 @@
-package tv
+package mirakc_model
 
 type Channel struct {
 	Type    string `json:"type"`

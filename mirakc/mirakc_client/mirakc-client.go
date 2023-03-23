@@ -1,4 +1,4 @@
-package tv
+package mirakc_client
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -19,7 +20,7 @@ func NewMirakcClient(host string, port uint) *MirakcClient {
 	return &MirakcClient{host: host, port: port}
 }
 
-func (m *MirakcClient) GetService(serviceId uint) (*Service, error) {
+func (m *MirakcClient) GetService(serviceId uint) (*mirakc_model.Service, error) {
 	url := fmt.Sprintf("http://%s:%d/api/services/%d", m.host, m.port, serviceId)
 	client := resty.New()
 	resp, err := client.R().
@@ -31,7 +32,7 @@ func (m *MirakcClient) GetService(serviceId uint) (*Service, error) {
 		return nil, fmt.Errorf("HTTP Error status code: %d", resp.StatusCode())
 	}
 
-	var service Service
+	var service mirakc_model.Service
 
 	if err = json.Unmarshal(resp.Body(), &service); err != nil {
 		return nil, err
@@ -96,4 +97,22 @@ func (m *MirakcClient) ListPrograms(serviceId uint) ([]db.Program, error) {
 	// fmt.Println("End:", programs[0].GetEndTime().Local().Format(time.RFC1123))
 
 	return programs, nil
+}
+
+func (m *MirakcClient) AddRecordingSchedule(programID int64) error {
+	url := fmt.Sprintf("http://%s:%d/api/recording/schedules", m.host, m.port)
+	postOption := fmt.Sprintf(`{"programId": %d, "options": {"contentPath": "%d.m2ts"}, "tags": ["manual"]}`, programID, programID)
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(postOption).
+		Post(url)
+	if err != nil {
+		return err
+	}
+	fmt.Println("録画予約: StatusCode:", resp.StatusCode())
+	if resp.StatusCode() == 201 {
+		return nil
+	}
+	return fmt.Errorf("post request:%s status code:%d", url, resp.StatusCode())
 }

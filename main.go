@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 
@@ -9,10 +8,11 @@ import (
 	"github.com/jinzhu/configor"
 	"github.com/kounoike/dtv-discord-go/config"
 	sqlcdb "github.com/kounoike/dtv-discord-go/db"
-	"github.com/kounoike/dtv-discord-go/discord"
-	"github.com/kounoike/dtv-discord-go/sse_handler"
-	"github.com/kounoike/dtv-discord-go/tv"
-	"github.com/r3labs/sse/v2"
+	"github.com/kounoike/dtv-discord-go/discord/discord_client"
+	"github.com/kounoike/dtv-discord-go/discord/discord_handler"
+	"github.com/kounoike/dtv-discord-go/dtv"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	migrate "github.com/rubenv/sql-migrate"
 )
 
@@ -21,9 +21,6 @@ func main() {
 	var config config.Config
 	configor.Load(&config, "config.yml")
 
-	ctx := context.Background()
-	sseClient := sse.NewClient(fmt.Sprintf("http://%s:%d/events", config.Mirakc.Host, config.Mirakc.Port))
-	mirakcClient := tv.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port)
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
 		fmt.Println(err)
@@ -38,20 +35,27 @@ func main() {
 	}
 	fmt.Printf("Applied %d migrations\n", n)
 
-	discordClient, err := discord.NewDiscordClient(ctx, config, queries)
+	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port)
+	discordClient, err := discord_client.NewDiscordClient(config, queries)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+
+	usecase := dtv.NewDTVUsecase(discordClient, mirakcClient, queries)
+
 	err = discordClient.Open()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-
 	fmt.Println("Connected!")
+	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
-	sseHandler := sse_handler.NewSSEHandler(ctx, *mirakcClient, *discordClient, *sseClient, *queries)
+	discordHandler.AddReactionAddHandler()
+	discordHandler.AddReactionRemoveHandler()
+
+	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port)
 	sseHandler.Subscribe()
 	fmt.Println("Subscribed!")
 }
