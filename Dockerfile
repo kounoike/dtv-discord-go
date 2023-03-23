@@ -1,15 +1,6 @@
 # syntax=docker/dockerfile:1
+FROM gcr.io/distroless/static-debian11
 
-FROM golang:1.20-bullseye AS build
-
-WORKDIR /app
-COPY ./ ./
-RUN go mod download
-
-RUN go build -o /dtv-discord-go
-
-FROM debian:bullseye
-COPY --from=build /dtv-discord-go /
-COPY --from=build /app/db/migrations/* /db/migrations/
+COPY dtv-discord-go /
 
 CMD ["/dtv-discord-go"]
