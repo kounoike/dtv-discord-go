@@ -1,36 +1,27 @@
-package discord
+package discord_client
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/go-resty/resty/v2"
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
 )
 
-var (
-	recordingReactionEmoji = "📼"
-	okReactionEmoji        = "🆗"
-)
-
 type DiscordClient struct {
-	ctx            context.Context
 	cfg            config.Config
 	queries        *db.Queries
 	session        *discordgo.Session
 	channelIDCache map[string]string
 }
 
-func NewDiscordClient(ctx context.Context, cfg config.Config, queries *db.Queries) (*DiscordClient, error) {
+func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, error) {
 	session, err := discordgo.New("Bot " + cfg.Discord.Token)
 	if err != nil {
 		return nil, err
 	}
 	return &DiscordClient{
-		ctx:            ctx,
 		cfg:            cfg,
 		queries:        queries,
 		session:        session,
@@ -38,63 +29,20 @@ func NewDiscordClient(ctx context.Context, cfg config.Config, queries *db.Querie
 	}, nil
 }
 
-func (d *DiscordClient) reactionAdd(discord *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
-	fmt.Println("add", reaction.Emoji.Name, reaction.UserID, reaction.ChannelID)
-
-	if reaction.Emoji.Name != recordingReactionEmoji {
-		return
-	}
-
-	msg, err := discord.ChannelMessage(reaction.ChannelID, reaction.MessageID)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	for _, r := range msg.Reactions {
-		if r.Emoji.Name == recordingReactionEmoji {
-			if r.Count == 1 {
-				// 録画しよう！
-				programMessage, err := d.queries.GetProgramMessageByMessageID(d.ctx, reaction.MessageID)
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-				url := fmt.Sprintf("http://%s:%d/api/recording/schedules", d.cfg.Mirakc.Host, d.cfg.Mirakc.Port)
-				postOption := fmt.Sprintf(`{"programId": %d, "options": {"contentPath": "%d.m2ts"}, "tags": ["manual"]}`, programMessage.ProgramID, programMessage.ProgramID)
-				client := resty.New()
-				resp, err := client.R().
-					SetHeader("Content-Type", "application/json").
-					SetBody(postOption).
-					Post(url)
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-				fmt.Println("録画予約: StatusCode:", resp.StatusCode())
-				if resp.StatusCode() == 201 {
-					// 録画予約成功？
-					err := d.session.MessageReactionAdd(reaction.ChannelID, reaction.MessageID, okReactionEmoji)
-					fmt.Println(`録画予約成功絵文字付加`, err)
-				}
-			}
-			break
-		}
-	}
+func (d *DiscordClient) Session() *discordgo.Session {
+	return d.session
 }
 
-func (d *DiscordClient) reactionRemove(discord *discordgo.Session, reaction *discordgo.MessageReactionRemove) {
-	fmt.Println("remove", reaction.Emoji.Name, reaction.UserID, reaction.ChannelID)
-	msg, err := discord.ChannelMessage(reaction.ChannelID, reaction.MessageID)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	for _, r := range msg.Reactions {
-		fmt.Println(r.Emoji.Name, r.Count)
-		// if r.Emoji.Name == recordingReactionEmoji {
-		// 	break
-		// }
-	}
+func (d *DiscordClient) GetChannelMessage(channelID string, messageID string) (*discordgo.Message, error) {
+	return d.session.ChannelMessage(channelID, messageID)
+}
+
+func (d *DiscordClient) MessageReactionAdd(channelID string, messageID string, emoji string) error {
+	return d.session.MessageReactionAdd(channelID, messageID, emoji)
+}
+
+func (d *DiscordClient) AddHandler(handler interface{}) {
+	d.session.AddHandler(handler)
 }
 
 func (d *DiscordClient) Open() error {
@@ -102,8 +50,6 @@ func (d *DiscordClient) Open() error {
 	if err != nil {
 		return err
 	}
-	d.session.AddHandler(d.reactionAdd)
-	d.session.AddHandler(d.reactionRemove)
 	return nil
 }
 

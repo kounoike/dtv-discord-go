@@ -15,6 +15,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pingcap/errors v0.11.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/r3labs/sse/v2 v2.10.0 // indirect
 	github.com/rubenv/sql-migrate v1.4.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect

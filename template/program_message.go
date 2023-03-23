@@ -5,12 +5,12 @@ import (
 	"text/template"
 
 	"github.com/kounoike/dtv-discord-go/db"
-	"github.com/kounoike/dtv-discord-go/tv"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 )
 
 type ProgramMessageTemplateArgs struct {
 	Program db.Program
-	Service tv.Service
+	Service mirakc_model.Service
 }
 
 var programMessageTemplateString = `==============================================================================================
@@ -19,7 +19,7 @@ var programMessageTemplateString = `============================================
 {{ .Service.Name }}
 `
 
-func GetProgramMessage(program db.Program, service tv.Service) (string, error) {
+func GetProgramMessage(program db.Program, service mirakc_model.Service) (string, error) {
 	tmpl, err := template.New("program-message").Parse(programMessageTemplateString)
 	if err != nil {
 		return "", err
