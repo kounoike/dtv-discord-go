@@ -45,7 +45,12 @@ jobs:
         with:
           go-version: "1.20"
           cache: true
-      - name: Run goreleaser
+      - name: Run goreleaser build
+        if: github.event_name == 'pull_request'
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          args: build --rm-dist --snapshot
+      - name: Run goreleaser release
         if: github.event_name != 'pull_request'
         uses: goreleaser/goreleaser-action@v3
         with:
