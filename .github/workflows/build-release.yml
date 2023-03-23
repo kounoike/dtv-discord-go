@@ -54,6 +54,6 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: goreleaser/goreleaser-action@v3
         with:
-          args: release
+          args: release --auto-snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
