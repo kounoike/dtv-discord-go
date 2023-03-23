@@ -20,6 +20,8 @@ dockers:
     goarch: amd64
     build_flag_templates:
       - --platform=linux/amd64
+    extra_files:
+      - db/migrations
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:latest-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-arm64
@@ -30,6 +32,8 @@ dockers:
     goarch: arm64
     build_flag_templates:
       - --platform=linux/arm64
+    extra_files:
+      - db/migrations
 
 docker_manifests:
   - name_template: ghcr.io/kounoike/dtv-discord-go:latest
