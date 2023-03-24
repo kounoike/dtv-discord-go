@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/configor"
@@ -21,6 +22,26 @@ func main() {
 	// programs, err := getPrograms()
 	var config config.Config
 	configor.Load(&config, "config.yml")
+
+	var logLevel slog.Level
+	switch config.Log.Level {
+	case "DEBUG":
+		logLevel = slog.LevelDebug
+	case "INFO":
+		logLevel = slog.LevelInfo
+	case "WARN":
+		logLevel = slog.LevelWarn
+	case "ERROR":
+		logLevel = slog.LevelError
+	default:
+		logLevel = slog.LevelInfo
+		slog.Error("unknown log level", "log.level", config.Log.Level)
+	}
+
+	slog.SetDefault(slog.New(slog.HandlerOptions{
+		Level:     logLevel,
+		AddSource: true,
+	}.NewTextHandler(os.Stderr)))
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
@@ -51,6 +72,7 @@ func main() {
 		return
 	}
 	slog.Info("Connected!")
+	slog.Debug("Debug!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
 	err = usecase.CreateChannels()
@@ -58,6 +80,7 @@ func main() {
 		slog.Error("can't create program infomation channel", err)
 		return
 	}
+	slog.Info("CreateChannels OK")
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
