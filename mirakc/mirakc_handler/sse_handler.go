@@ -7,6 +7,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/dtv"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 	"github.com/r3labs/sse/v2"
+	"golang.org/x/exp/slog"
 )
 
 type SSEHandler struct {
@@ -36,7 +37,7 @@ func (h *SSEHandler) Subscribe() {
 			var data mirakc_model.ProgramsUpdatedEventData
 			err := json.Unmarshal(msg.Data, &data)
 			if err != nil {
-				fmt.Println(err)
+				slog.Error("json Unmarshal error", err)
 				return
 			}
 			h.onProgramsUpdated(data.ServiceId)

@@ -2,11 +2,11 @@ package discord_handler
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/dtv"
+	"golang.org/x/exp/slog"
 )
 
 type DiscordHandler struct {
@@ -22,25 +22,25 @@ func NewDiscordHandler(dtv *dtv.DTVUsecase, session *discordgo.Session) *Discord
 }
 
 func (h *DiscordHandler) reactionAdd(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
-	fmt.Println("add", reaction.Emoji.Name, reaction.UserID, reaction.ChannelID)
+	slog.Debug("add reaction emoji", "emoji", reaction.Emoji.Name, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
 
 	if reaction.Emoji.Name == discord.RecordingReactionEmoji {
 		ctx := context.Background()
 		err := h.dtv.OnRecordingEmojiAdd(ctx, reaction)
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("onrecording emoji add error", err, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
 		}
 	}
 }
 
 func (h *DiscordHandler) reactionRemove(session *discordgo.Session, reaction *discordgo.MessageReactionRemove) {
-	fmt.Println("remove", reaction.Emoji.Name, reaction.UserID, reaction.ChannelID)
+	slog.Debug("remove reaction emoji", "emoji", reaction.Emoji.Name, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
 
 	if reaction.Emoji.Name == discord.RecordingReactionEmoji {
 		ctx := context.Background()
 		err := h.dtv.OnRecordingEmojiRemove(ctx, reaction)
 		if err != nil {
-			fmt.Println(err)
+			slog.Error("onrecoding emoji remove error", err, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
 		}
 	}
 }

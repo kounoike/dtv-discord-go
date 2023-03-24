@@ -8,7 +8,6 @@ import (
 )
 
 func (dtv *DTVUsecase) OnRecordingEmojiRemove(ctx context.Context, reaction *discordgo.MessageReactionRemove) error {
-	fmt.Println("remove", reaction.Emoji.Name, reaction.UserID, reaction.ChannelID)
 	msg, err := dtv.discord.GetChannelMessage(reaction.ChannelID, reaction.MessageID)
 	if err != nil {
 		return err

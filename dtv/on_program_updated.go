@@ -9,28 +9,27 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/template"
 	"github.com/pkg/errors"
+	"golang.org/x/exp/slog"
 )
 
 func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 	service, err := dtv.mirakc.GetService(serviceId)
 	_ = service
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("mirakc GetService Error", err)
 		return
 	}
 	_, err = dtv.discord.SendMessage("録画-情報", "動作ログ", fmt.Sprintf("programs updated: %s", service.Name))
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("discord SendMessage error", err)
 		return
 	}
 	programs, err := dtv.mirakc.ListPrograms(serviceId)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("mirakc ListPrograms Error", err)
 		return
 	}
-	// if len(programs) > 0 {
-	// 	fmt.Println(channel, len(programs), programs[0])
-	// }
+
 	ctx := context.Background()
 	for _, p := range programs {
 		if p.Name == "" {
@@ -40,12 +39,12 @@ func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 		if errors.Cause(err) == sql.ErrNoRows {
 			msg, err := template.GetProgramMessage(p, *service)
 			if err != nil {
-				fmt.Println(err)
+				slog.Error("template GetProgramMessage error", err)
 				return
 			}
 			msgID, err := dtv.discord.SendMessage("録画-番組情報", service.Name, msg)
 			if err != nil {
-				fmt.Println(err)
+				slog.Error("discord SendMessage error", err)
 				return
 			}
 			p.InsertDb(ctx, *dtv.queries)

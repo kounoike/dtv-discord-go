@@ -14,6 +14,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	migrate "github.com/rubenv/sql-migrate"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -23,22 +24,22 @@ func main() {
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("can't connect to db server", err)
 		return
 	}
 	queries := sqlcdb.New(db)
 	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
 	n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("db migration error", err)
 		return
 	}
-	fmt.Printf("Applied %d migrations\n", n)
+	slog.Info("Applied migrations", "count", n)
 
 	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port)
 	discordClient, err := discord_client.NewDiscordClient(config, queries)
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("can't connect to discord", err)
 		return
 	}
 
@@ -46,15 +47,15 @@ func main() {
 
 	err = discordClient.Open()
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("can't open discord session", err)
 		return
 	}
-	fmt.Println("Connected!")
+	slog.Info("Connected!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
 	err = usecase.CreateChannels()
 	if err != nil {
-		fmt.Println(err)
+		slog.Error("can't create program infomation channel", err)
 		return
 	}
 
@@ -63,5 +64,5 @@ func main() {
 
 	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port)
 	sseHandler.Subscribe()
-	fmt.Println("Subscribed!")
+	slog.Info("Subscribed!")
 }

@@ -122,7 +122,6 @@ func (d *DiscordClient) SendMessage(category string, channel string, message str
 	if err != nil {
 		return "", err
 	} else {
-		// fmt.Println(category, channel, chID, msg)
 		return msg.ID, nil
 	}
 }
