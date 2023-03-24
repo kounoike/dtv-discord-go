@@ -7,13 +7,15 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
+	"golang.org/x/exp/slog"
 )
 
 type DiscordClient struct {
 	cfg            config.Config
 	queries        *db.Queries
 	session        *discordgo.Session
-	channelIDCache map[string]string
+	channelIDCache map[string]*discordgo.Channel
+	channelsCache  []*discordgo.Channel
 }
 
 func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, error) {
@@ -25,7 +27,8 @@ func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, e
 		cfg:            cfg,
 		queries:        queries,
 		session:        session,
-		channelIDCache: map[string]string{},
+		channelIDCache: map[string]*discordgo.Channel{},
+		channelsCache:  []*discordgo.Channel{},
 	}, nil
 }
 
@@ -53,22 +56,29 @@ func (d *DiscordClient) Open() error {
 	return nil
 }
 
-func (d *DiscordClient) GetChannelID(category string, channel string) (string, error) {
-	category = strings.ToLower(category)
-	channel = strings.ToLower(channel)
-	cacheKey := category + "/" + channel
-	id, ok := d.channelIDCache[cacheKey]
-	if ok {
-		return id, nil
-	}
-
+func (d *DiscordClient) UpdateChannelsCache() error {
 	guildID := d.session.State.Guilds[0].ID
 	channels, err := d.session.GuildChannels(guildID)
 	if err != nil {
-		return "", err
+		return err
 	}
+	d.channelsCache = channels
+	return nil
+}
+
+func (d *DiscordClient) GetCachedChannel(category string, origChannelName string) (*discordgo.Channel, error) {
+	category = strings.ToLower(category)
+	channel := strings.ToLower(origChannelName)
+	channel = strings.ReplaceAll(channel, "\u3000", "-")
+	cacheKey := category + "/" + channel
+	cachedChannel, ok := d.channelIDCache[cacheKey]
+	if ok {
+		return cachedChannel, nil
+	}
+
+	guildID := d.session.State.Guilds[0].ID
 	categoryID := ""
-	for _, ch := range channels {
+	for _, ch := range d.channelsCache {
 		if ch.Type == discordgo.ChannelTypeGuildCategory && ch.Name == category {
 			categoryID = ch.ID
 			break
@@ -77,7 +87,7 @@ func (d *DiscordClient) GetChannelID(category string, channel string) (string, e
 	if categoryID == "" {
 		categoryChannel, err := d.session.GuildChannelCreate(guildID, category, discordgo.ChannelTypeGuildCategory)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 		data := discordgo.GuildChannelCreateData{
 			Name:     channel,
@@ -86,15 +96,16 @@ func (d *DiscordClient) GetChannelID(category string, channel string) (string, e
 		}
 		createdChannel, err := d.session.GuildChannelCreateComplex(guildID, data)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
-		d.channelIDCache[cacheKey] = createdChannel.ID
-		return createdChannel.ID, nil
+		slog.Debug("GuildChannelCreateComplex OK", "name", channel, "cacheKey", cacheKey, "created ch.Name", createdChannel.Name)
+		d.channelIDCache[cacheKey] = createdChannel
+		return createdChannel, nil
 	}
-	for _, ch := range channels {
+	for _, ch := range d.channelsCache {
 		if ch.Type == discordgo.ChannelTypeGuildText && ch.ParentID == categoryID && ch.Name == channel {
-			d.channelIDCache[cacheKey] = ch.ID
-			return ch.ID, nil
+			d.channelIDCache[cacheKey] = ch
+			return ch, nil
 		}
 	}
 	data := discordgo.GuildChannelCreateData{
@@ -104,21 +115,22 @@ func (d *DiscordClient) GetChannelID(category string, channel string) (string, e
 	}
 	ch, err := d.session.GuildChannelCreateComplex(guildID, data)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	d.channelIDCache[cacheKey] = ch.ID
-	return ch.ID, nil
+	slog.Debug("GuildChannelCreateComplex OK", "origChannelName", origChannelName, "cacheKey", cacheKey, "created ch.Name", ch.Name)
+	d.channelIDCache[cacheKey] = ch
+	return ch, nil
 }
 
 func (d *DiscordClient) SendMessage(category string, channel string, message string) (string, error) {
 	if len(d.session.State.Guilds) != 1 {
 		return "", fmt.Errorf("discord app must join one server")
 	}
-	chID, err := d.GetChannelID(category, channel)
+	ch, err := d.GetCachedChannel(category, channel)
 	if err != nil {
 		return "", err
 	}
-	msg, err := d.session.ChannelMessageSend(chID, message)
+	msg, err := d.session.ChannelMessageSend(ch.ID, message)
 	if err != nil {
 		return "", err
 	} else {
