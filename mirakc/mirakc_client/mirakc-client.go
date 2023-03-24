@@ -20,6 +20,24 @@ func NewMirakcClient(host string, port uint) *MirakcClient {
 	return &MirakcClient{host: host, port: port}
 }
 
+func (m *MirakcClient) ListServices() ([]mirakc_model.Service, error) {
+	url := fmt.Sprintf("http://%s:%d/api/services", m.host, m.port)
+	client := resty.New()
+	resp, err := client.R().
+		Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() != 200 {
+		return nil, fmt.Errorf("HTTP Error status code: %d", resp.StatusCode())
+	}
+	var services []mirakc_model.Service
+	if err = json.Unmarshal(resp.Body(), &services); err != nil {
+		return nil, err
+	}
+	return services, nil
+}
+
 func (m *MirakcClient) GetService(serviceId uint) (*mirakc_model.Service, error) {
 	url := fmt.Sprintf("http://%s:%d/api/services/%d", m.host, m.port, serviceId)
 	client := resty.New()

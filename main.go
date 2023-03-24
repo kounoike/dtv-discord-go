@@ -52,6 +52,12 @@ func main() {
 	fmt.Println("Connected!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
+	err = usecase.CreateChannels()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
 

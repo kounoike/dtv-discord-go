@@ -53,7 +53,7 @@ func (d *DiscordClient) Open() error {
 	return nil
 }
 
-func (d *DiscordClient) getChannelID(category string, channel string) (string, error) {
+func (d *DiscordClient) GetChannelID(category string, channel string) (string, error) {
 	category = strings.ToLower(category)
 	channel = strings.ToLower(channel)
 	cacheKey := category + "/" + channel
@@ -114,7 +114,7 @@ func (d *DiscordClient) SendMessage(category string, channel string, message str
 	if len(d.session.State.Guilds) != 1 {
 		return "", fmt.Errorf("discord app must join one server")
 	}
-	chID, err := d.getChannelID(category, channel)
+	chID, err := d.GetChannelID(category, channel)
 	if err != nil {
 		return "", err
 	}
