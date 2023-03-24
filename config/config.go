@@ -14,4 +14,7 @@ type Config struct {
 		Host string `default:"tuner" env:"MIRAKC_HOST"`
 		Port uint   `default:"40772" env:"MIRAKC_PORT"`
 	}
+	Log struct {
+		Level string `default:"INFO" env:"LOG_LEVEL"`
+	}
 }

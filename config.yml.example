@@ -8,3 +8,5 @@ discord:
 mirakc:
   host: tuner
   port: 40772
+log:
+  level: INFO
