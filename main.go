@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/configor"
@@ -17,7 +16,8 @@ import (
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	migrate "github.com/rubenv/sql-migrate"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -29,79 +29,84 @@ func main() {
 	var config config.Config
 	configor.Load(&config, "config.yml")
 
-	var logLevel slog.Level
+	logCfg := zap.NewDevelopmentConfig()
+	logCfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	logCfg.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+
+	level := zap.NewAtomicLevel()
 	switch config.Log.Level {
 	case "DEBUG":
-		logLevel = slog.LevelDebug
+		level.SetLevel(zapcore.DebugLevel)
 	case "INFO":
-		logLevel = slog.LevelInfo
+		level.SetLevel(zapcore.InfoLevel)
 	case "WARN":
-		logLevel = slog.LevelWarn
+		level.SetLevel(zapcore.WarnLevel)
 	case "ERROR":
-		logLevel = slog.LevelError
+		level.SetLevel(zapcore.ErrorLevel)
 	default:
-		logLevel = slog.LevelInfo
-		slog.Error("unknown log level", "log.level", config.Log.Level)
+		fmt.Println("unknown log level:", config.Log.Level)
+		level.SetLevel(zapcore.WarnLevel)
 	}
+	logCfg.Level = level
+	logger, err := logCfg.Build()
+	if err != nil {
+		fmt.Println("can't build logger")
+	}
+	defer logger.Sync()
 
-	slog.SetDefault(slog.New(slog.HandlerOptions{
-		Level:     logLevel,
-		AddSource: true,
-	}.NewTextHandler(os.Stderr)))
-
-	slog.Info("Starting dtv-discord-go", "version", version)
+	logger.Info("Starting dtv-discord-go", zap.String("version", version))
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
-		slog.Error("can't connect to db server", err)
+		logger.Error("can't connect to db server", zap.Error(err))
 		return
 	}
 	queries := sqlcdb.New(db)
 	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
 	n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
 	if err != nil {
-		slog.Error("db migration error", err)
+		logger.Error("db migration error", zap.Error(err))
 		return
 	}
-	slog.Info("Applied migrations", "count", n)
+	logger.Info("Applied migrations", zap.Int("count", n))
 
-	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port)
-	discordClient, err := discord_client.NewDiscordClient(config, queries)
+	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port, logger)
+	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
 	if err != nil {
-		slog.Error("can't connect to discord", err)
+		logger.Error("can't connect to discord", zap.Error(err))
 		return
 	}
 
-	usecase, err := dtv.NewDTVUsecase(config, discordClient, mirakcClient, queries)
+	usecase, err := dtv.NewDTVUsecase(config, discordClient, mirakcClient, queries, logger)
 	if err != nil {
-		slog.Error("can't create DTVUsecase", err)
+		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
 
 	err = discordClient.Open()
 	if err != nil {
-		slog.Error("can't open discord session", err)
+		logger.Error("can't open discord session", zap.Error(err))
 		return
 	}
-	slog.Info("Connected!")
+	logger.Info("Connected!")
 
 	discordClient.UpdateChannelsCache()
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("起動しました。version:%s", version))
 
-	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
+	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session(), logger)
 
 	ctx := context.Background()
 	err = usecase.InitializeServiceChannels(ctx)
 	if err != nil {
-		slog.Error("can't create program infomation channel", err)
+		logger.Error("can't create program infomation channel", zap.Error(err))
 		return
 	}
-	slog.Info("CreateChannels OK")
+	logger.Info("CreateChannels OK")
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
 	// TODO: 自動検索フォーラムに新規スレッドがあったときのハンドラ
 
-	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port)
+	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port, logger)
 	sseHandler.Subscribe()
-	slog.Info("Subscribed!")
+	logger.Info("Subscribed!")
 }

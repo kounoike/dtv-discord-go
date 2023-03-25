@@ -6,41 +6,43 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/dtv"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 )
 
 type DiscordHandler struct {
 	dtv     *dtv.DTVUsecase
 	session *discordgo.Session
+	logger  *zap.Logger
 }
 
-func NewDiscordHandler(dtv *dtv.DTVUsecase, session *discordgo.Session) *DiscordHandler {
+func NewDiscordHandler(dtv *dtv.DTVUsecase, session *discordgo.Session, logger *zap.Logger) *DiscordHandler {
 	return &DiscordHandler{
 		dtv:     dtv,
 		session: session,
+		logger:  logger,
 	}
 }
 
 func (h *DiscordHandler) reactionAdd(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
-	slog.Debug("add reaction emoji", "emoji", reaction.Emoji.Name, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
+	h.logger.Debug("add reaction emoji", zap.String("emoji", reaction.Emoji.Name), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 
 	if reaction.Emoji.Name == discord.RecordingReactionEmoji {
 		ctx := context.Background()
 		err := h.dtv.OnRecordingEmojiAdd(ctx, reaction)
 		if err != nil {
-			slog.Error("onrecording emoji add error", err, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
+			h.logger.Error("onrecording emoji add error", zap.Error(err), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 		}
 	}
 }
 
 func (h *DiscordHandler) reactionRemove(session *discordgo.Session, reaction *discordgo.MessageReactionRemove) {
-	slog.Debug("remove reaction emoji", "emoji", reaction.Emoji.Name, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
+	h.logger.Debug("remove reaction emoji", zap.String("emoji", reaction.Emoji.Name), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 
 	if reaction.Emoji.Name == discord.RecordingReactionEmoji {
 		ctx := context.Background()
 		err := h.dtv.OnRecordingEmojiRemove(ctx, reaction)
 		if err != nil {
-			slog.Error("onrecoding emoji remove error", err, "UserID", reaction.UserID, "ChannelID", reaction.ChannelID, "MessageID", reaction.MessageID)
+			h.logger.Error("onrecoding emoji remove error", zap.Error(err), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 		}
 	}
 }

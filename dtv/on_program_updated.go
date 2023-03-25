@@ -10,7 +10,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/template"
 	"github.com/pkg/errors"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 	"golang.org/x/text/width"
 )
 
@@ -67,9 +67,9 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 			}
 			asp := NewAutoSearchProgram(p)
 			for _, as := range autoSearchList {
-				slog.Debug("matching", "p.Name", p.Name, "asp.Title", asp.Title, "as.Title", as.Title, "isMatch", as.IsMatchProgram(asp))
+				dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp)))
 				if as.IsMatchProgram(asp) {
-					slog.Debug("program matched", "program.Name", p.Name, "as.Title", as.Title)
+					dtv.logger.Debug("program matched", zap.String("program.Name", p.Name), zap.String("as.Title", as.Title))
 					url := discord.BuildMessageLinkURL(dtv.discord.Session().State.Guilds[0].ID, msg.ChannelID, msg.ID)
 					content, err := template.GetAutoSearchMessage(p, *service, url)
 					if err != nil {

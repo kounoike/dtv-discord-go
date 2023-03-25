@@ -8,6 +8,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
+	"go.uber.org/zap"
 	"golang.org/x/text/width"
 )
 
@@ -15,6 +16,7 @@ type DTVUsecase struct {
 	discord         *discord_client.DiscordClient
 	mirakc          *mirakc_client.MirakcClient
 	queries         *db.Queries
+	logger          *zap.Logger
 	contentPathTmpl *template.Template
 	autoSearchForum *discordgo.Channel
 }
@@ -23,7 +25,7 @@ func fold(str string) string {
 	return width.Fold.String(str)
 }
 
-func NewDTVUsecase(cfg config.Config, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, queries *db.Queries) (*DTVUsecase, error) {
+func NewDTVUsecase(cfg config.Config, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, queries *db.Queries, logger *zap.Logger) (*DTVUsecase, error) {
 	funcMap := map[string]interface{}{
 		"fold": fold,
 	}
@@ -35,6 +37,7 @@ func NewDTVUsecase(cfg config.Config, discordClient *discord_client.DiscordClien
 		discord:         discordClient,
 		mirakc:          mirakcClient,
 		queries:         queries,
+		logger:          logger,
 		contentPathTmpl: tmpl,
 	}, nil
 }
