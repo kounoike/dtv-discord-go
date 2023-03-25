@@ -87,6 +87,11 @@ func main() {
 	discordClient.UpdateChannelsCache()
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("起動しました。version:%s", version))
 
+	err = discordClient.CreateNotifyAndScheduleForum()
+	if err != nil {
+		slog.Error("can't create notify and schedule forum", err)
+	}
+
 	slog.Debug("Debug!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 

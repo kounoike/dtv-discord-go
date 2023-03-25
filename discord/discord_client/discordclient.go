@@ -7,6 +7,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
+	"github.com/kounoike/dtv-discord-go/discord"
 	"golang.org/x/exp/slog"
 )
 
@@ -145,4 +146,83 @@ func (d *DiscordClient) SendMessage(category string, channel string, message str
 	} else {
 		return msg.ID, nil
 	}
+}
+
+func (d *DiscordClient) createForum(category string, forum string, topic string) (*discordgo.Channel, error) {
+	guildID := d.session.State.Guilds[0].ID
+	categoryID := ""
+	for _, ch := range d.channelsCache {
+		if ch.Type == discordgo.ChannelTypeGuildCategory && ch.Name == category {
+			categoryID = ch.ID
+			break
+		}
+	}
+	if categoryID == "" {
+		categoryChannel, err := d.session.GuildChannelCreate(guildID, category, discordgo.ChannelTypeGuildCategory)
+		if err != nil {
+			return nil, err
+		}
+		data := discordgo.GuildChannelCreateData{
+			Name:     forum,
+			Type:     discordgo.ChannelTypeGuildForum,
+			ParentID: categoryChannel.ID,
+		}
+		createdChannel, err := d.session.GuildChannelCreateComplex(guildID, data)
+		if err != nil {
+			return nil, err
+		}
+		edit := discordgo.ChannelEdit{
+			Topic: topic,
+			DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
+				EmojiName: discord.NotifyReactionEmoji,
+			},
+		}
+		d.session.ChannelEdit(createdChannel.ID, &edit)
+		if err != nil {
+			return nil, err
+		}
+		slog.Debug("GuildChannelCreateComplex OK", "name", forum, "created ch.Name", createdChannel.Name)
+		return createdChannel, nil
+	}
+	for _, ch := range d.channelsCache {
+		if ch.Type == discordgo.ChannelTypeGuildForum && ch.ParentID == categoryID && ch.Name == forum {
+			edit := discordgo.ChannelEdit{
+				Topic: topic,
+				DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
+					EmojiName: discord.NotifyReactionEmoji,
+				},
+			}
+			d.session.ChannelEdit(ch.ID, &edit)
+			return ch, nil
+		}
+	}
+	data := discordgo.GuildChannelCreateData{
+		Name:     forum,
+		Type:     discordgo.ChannelTypeGuildForum,
+		ParentID: categoryID,
+	}
+	ch, err := d.session.GuildChannelCreateComplex(guildID, data)
+	if err != nil {
+		return nil, err
+	}
+	edit := discordgo.ChannelEdit{
+		Topic: topic,
+		DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
+			EmojiName: discord.NotifyReactionEmoji,
+		},
+	}
+	ch, err = d.session.ChannelEdit(ch.ID, &edit)
+	if err != nil {
+		return nil, err
+	}
+	slog.Debug("GuildChannelCreateComplex OK", "created ch.Name", ch.Name)
+	return ch, nil
+}
+
+func (d *DiscordClient) CreateNotifyAndScheduleForum() error {
+	_, err := d.createForum(discord.NotifyAndScheduleCategory, discord.AutoActionForum, discord.AutoActionForumTopic)
+	if err != nil {
+		return err
+	}
+	return nil
 }
