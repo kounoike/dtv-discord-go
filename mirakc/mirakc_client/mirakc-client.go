@@ -121,3 +121,18 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 	}
 	return fmt.Errorf("post request:%s status code:%d", url, resp.StatusCode())
 }
+
+func (m *MirakcClient) DeleteRecordingSchedule(programID int64) error {
+	url := fmt.Sprintf("http://%s:%d/api/recording/schedules", m.host, m.port)
+	client := resty.New()
+	resp, err := client.R().
+		SetHeader("Content-Type", "application/json").
+		Delete(url)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode()/100 == 2 {
+		return nil
+	}
+	return fmt.Errorf("delete request:%s status code:%d", url, resp.StatusCode())
+}

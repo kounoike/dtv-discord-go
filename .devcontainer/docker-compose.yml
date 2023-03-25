@@ -1,7 +1,8 @@
 version: '3.8'
 services:
   devcontainer:
-    build: ./devcontainer
+    # build: ./devcontainer
+    image: mcr.microsoft.com/devcontainers/go:0-1.20-bullseye
     volumes:
       - ../..:/workspaces:cached
     # network_mode: service:tuner

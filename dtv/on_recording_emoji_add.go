@@ -65,7 +65,7 @@ func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discor
 				if err != nil {
 					return err
 				}
-				slog.Debug("AddRecordingSchedule OK", "ProgramID", programMessage.ProgramID, "contentPath", contentPath)
+				slog.Debug("録画予約 OK", "ProgramID", programMessage.ProgramID, "contentPath", contentPath)
 				err = dtv.discord.MessageReactionAdd(reaction.ChannelID, reaction.MessageID, discord.OkReactionEmoji)
 				if err != nil {
 					return err
