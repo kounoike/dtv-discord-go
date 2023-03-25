@@ -1,6 +1,7 @@
 package mirakc_handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -25,7 +26,11 @@ func NewSSEHandler(dtv dtv.DTVUsecase, host string, port uint) *SSEHandler {
 }
 
 func (h *SSEHandler) onProgramsUpdated(serviceId uint) {
-	h.dtv.OnProgramsUpdated(serviceId)
+	ctx := context.Background()
+	err := h.dtv.OnProgramsUpdated(ctx, serviceId)
+	if err != nil {
+		slog.Error("OnProgramsUpdate error", err)
+	}
 }
 
 func (h *SSEHandler) Subscribe() {

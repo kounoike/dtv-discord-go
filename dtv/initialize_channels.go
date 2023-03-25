@@ -8,6 +8,12 @@ import (
 )
 
 func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
+	forum, err := dtv.discord.CreateNotifyAndScheduleForum()
+	if err != nil {
+		slog.Error("can't create notify and schedule forum", err)
+	}
+	dtv.autoSearchForum = forum
+
 	services, err := dtv.mirakc.ListServices()
 	if err != nil {
 		return err
