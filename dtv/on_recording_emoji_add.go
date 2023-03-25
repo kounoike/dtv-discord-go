@@ -84,14 +84,16 @@ func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discor
 }
 
 func toSafePath(s string) string {
-	ret := strings.ReplaceAll(s, "/", "／")
-	ret = strings.ReplaceAll(ret, ":", "：")
-	ret = strings.ReplaceAll(ret, "*", "＊")
-	ret = strings.ReplaceAll(ret, "\\", "￥")
-	ret = strings.ReplaceAll(ret, "?", "？")
-	ret = strings.ReplaceAll(ret, "\"", "‟")
-	ret = strings.ReplaceAll(ret, "<", "＜")
-	ret = strings.ReplaceAll(ret, ">", "＞")
-	ret = strings.ReplaceAll(ret, "|", "｜")
-	return ret
+	safePathReplacer := strings.NewReplacer(
+		"/", "／",
+		":", "：",
+		"*", "＊",
+		"\\", "￥",
+		"?", "？",
+		"\"", "‟",
+		"<", "＜",
+		">", "＞",
+		"|", "｜",
+	)
+	return safePathReplacer.Replace(s)
 }

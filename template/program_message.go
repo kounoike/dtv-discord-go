@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"text/template"
 	"time"
 
@@ -23,10 +24,8 @@ var programMessageTemplateString = `{{ .Program.Name }}
 {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
 ==============================================================================================`
 
-//{{ .Program.StartTime.Format "2006/01/02 03:04"}}～{{ .Program.EndTime.Format "2006/01/02 03:04"}}
-
 func toTimeStr(t int64) string {
-	return time.Unix(t/1000, (t%1000)*1000).Format("2006/01/02 03:04")
+	return time.Unix(t/1000, (t%1000)*1000).Format("2006/01/02(Mon) 03:04")
 }
 
 func toDurationStr(d int32) string {
@@ -69,5 +68,14 @@ func GetProgramMessage(program db.Program, service db.Service) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return b.String(), nil
+	weekdayja := strings.NewReplacer(
+		"Sun", "日",
+		"Mon", "月",
+		"Tue", "火",
+		"Wed", "水",
+		"Thu", "木",
+		"Fri", "金",
+		"Sat", "土",
+	)
+	return weekdayja.Replace(b.String()), nil
 }
