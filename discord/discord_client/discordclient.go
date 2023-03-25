@@ -9,6 +9,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"golang.org/x/exp/slog"
+	"golang.org/x/text/width"
 )
 
 type DiscordClient struct {
@@ -77,9 +78,9 @@ func (d *DiscordClient) UpdateChannelsCache() error {
 }
 
 func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName string) (*discordgo.Channel, error) {
-	category := strings.ToLower(origCategory)
+	category := strings.ToLower(width.Fold.String(origCategory))
 	category = strings.ReplaceAll(category, "\u3000", "-")
-	channel := strings.ToLower(origChannelName)
+	channel := strings.ToLower(width.Fold.String(origChannelName))
 	channel = strings.ReplaceAll(channel, "\u3000", "-")
 	cacheKey := category + "/" + channel
 	cachedChannel, ok := d.channelIDCache[cacheKey]

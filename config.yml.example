@@ -10,3 +10,5 @@ mirakc:
   port: 40772
 log:
   level: INFO
+recording:
+  contentpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-0304\"}}-{{.Service.Name | fold}}.m2ts"

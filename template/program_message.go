@@ -16,13 +16,12 @@ type ProgramMessageTemplateArgs struct {
 	Service db.Service
 }
 
-var programMessageTemplateString = `==============================================================================================
-{{ .Program.Name }}
+var programMessageTemplateString = `{{ .Program.Name }}
 {{ .Program.Description }}
 {{ .Service.Name }}
 {{ .Program.Json | toExtendStr }}
 {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
-`
+==============================================================================================`
 
 //{{ .Program.StartTime.Format "2006/01/02 03:04"}}～{{ .Program.EndTime.Format "2006/01/02 03:04"}}
 
