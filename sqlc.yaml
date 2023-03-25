@@ -26,3 +26,17 @@ sql:
         go_struct_tag: json:"-"
       - column: program.updated_at
         go_struct_tag: json:"-"
+      - column: service.service_id
+        go_struct_tag: json:"serviceId"
+      - column: service.network_id
+        go_struct_tag: json:"networkId"
+      - column: service.remote_control_key_id
+        go_struct_tag: json:"remoteControlKeyId"
+      - column: service.channel_type
+        go_struct_tag: json:"-"
+      - column: service.channel
+        go_struct_tag: json:"-"
+      - column: service.created_at
+        go_struct_tag: json:"-"
+      - column: service.updated_at
+        go_struct_tag: json:"-"

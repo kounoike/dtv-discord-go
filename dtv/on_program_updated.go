@@ -47,8 +47,25 @@ func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 				slog.Error("discord SendMessage error", err)
 				return
 			}
-			p.InsertDb(ctx, *dtv.queries)
-			dtv.queries.InsertProgramMessage(ctx, db.InsertProgramMessageParams{MessageID: msgID, ProgramID: p.ID})
+			err = dtv.queries.InsertProgram(ctx, p)
+			if err != nil {
+				slog.Error("InsertProgram error", err)
+				return
+			}
+			err = dtv.queries.InsertProgramMessage(ctx, db.InsertProgramMessageParams{MessageID: msgID, ProgramID: p.ID})
+			if err != nil {
+				slog.Error("InsertProgramMessage error", err)
+				return
+			}
+			params := db.InsertProgramServiceParams{
+				ProgramID: p.ID,
+				ServiceID: service.ID,
+			}
+			err = dtv.queries.InsertProgramService(ctx, params)
+			if err != nil {
+				slog.Error("InsertProgramService error", err)
+				return
+			}
 		} else {
 			pJson, err := p.Json.MarshalJSON()
 			if err != nil {
@@ -59,7 +76,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 				continue
 			}
 			if !bytes.Equal(pJson, programJson) {
-				p.UpdateDb(ctx, *dtv.queries)
+				dtv.queries.UpdateProgram(ctx, p)
 			}
 		}
 	}

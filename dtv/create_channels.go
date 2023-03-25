@@ -1,13 +1,20 @@
 package dtv
 
-import "golang.org/x/exp/slog"
+import (
+	"context"
 
-func (dtv *DTVUsecase) CreateChannels() error {
+	"golang.org/x/exp/slog"
+)
+
+func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
 	services, err := dtv.mirakc.ListServices()
 	if err != nil {
 		return err
 	}
 	slog.Debug("ListServices OK", "len(services)", len(services))
+	for _, service := range services {
+		dtv.queries.CreateOrUpdateService(ctx, service)
+	}
 
 	err = dtv.discord.UpdateChannelsCache()
 	if err != nil {

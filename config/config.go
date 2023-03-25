@@ -17,4 +17,7 @@ type Config struct {
 	Log struct {
 		Level string `default:"INFO" env:"LOG_LEVEL"`
 	}
+	Recording struct {
+		ContentPathTemplate string `required:"true" env:"CONTENT_PATH_TEMPLATE"`
+	}
 }
