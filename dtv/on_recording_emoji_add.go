@@ -10,7 +10,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/pkg/errors"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 )
 
 type ContentPathProgram struct {
@@ -69,7 +69,7 @@ func (dtv *DTVUsecase) checkRecordingForMessage(ctx context.Context, channelID s
 		if err != nil {
 			return err
 		}
-		slog.Debug("録画予約 OK", "ProgramID", programMessage.ProgramID, "contentPath", contentPath)
+		dtv.logger.Debug("録画予約 OK", zap.Int64("ProgramID", programMessage.ProgramID), zap.String("contentPath", contentPath))
 		err = dtv.discord.MessageReactionAdd(channelID, messageID, discord.OkReactionEmoji)
 		if err != nil {
 			return err

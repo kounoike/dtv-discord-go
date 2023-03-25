@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/kounoike/dtv-discord-go/discord"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 )
 
 func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
 	forum, err := dtv.discord.CreateNotifyAndScheduleForum()
 	if err != nil {
-		slog.Error("can't create notify and schedule forum", err)
+		dtv.logger.Error("can't create notify and schedule forum", zap.Error(err))
 	}
 	dtv.autoSearchForum = forum
 
@@ -18,7 +18,7 @@ func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	slog.Debug("ListServices OK", "len(services)", len(services))
+	dtv.logger.Debug("ListServices OK", zap.Int("len(services)", len(services)))
 	for _, service := range services {
 		dtv.queries.CreateOrUpdateService(ctx, service)
 	}
@@ -29,7 +29,7 @@ func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		slog.Debug("GetCachedChannel", "ch.ID", ch.ID, "ch.Name", ch.Name)
+		dtv.logger.Debug("GetCachedChannel", zap.String("ch.ID", ch.ID), zap.String("ch.Name", ch.Name))
 	}
 	return nil
 }

@@ -6,18 +6,19 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 
 	"github.com/go-resty/resty/v2"
 )
 
 type MirakcClient struct {
-	host string
-	port uint
+	host   string
+	port   uint
+	logger *zap.Logger
 }
 
-func NewMirakcClient(host string, port uint) *MirakcClient {
-	return &MirakcClient{host: host, port: port}
+func NewMirakcClient(host string, port uint, logger *zap.Logger) *MirakcClient {
+	return &MirakcClient{host: host, port: port, logger: logger}
 }
 
 func (m *MirakcClient) ListServices() ([]db.Service, error) {
@@ -33,7 +34,6 @@ func (m *MirakcClient) ListServices() ([]db.Service, error) {
 	}
 	var services []db.Service
 	if err = json.Unmarshal(resp.Body(), &services); err != nil {
-		slog.Debug(string(resp.Body()))
 		return nil, err
 	}
 	return services, nil
@@ -115,7 +115,7 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 	if err != nil {
 		return err
 	}
-	slog.Info("録画予約完了", "StatusCode", resp.StatusCode())
+	m.logger.Info("録画予約完了", zap.Int("StatusCode", resp.StatusCode()))
 	if resp.StatusCode() == 201 {
 		return nil
 	}

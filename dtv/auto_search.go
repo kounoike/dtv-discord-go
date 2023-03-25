@@ -6,7 +6,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 	"golang.org/x/text/width"
 	"gopkg.in/yaml.v3"
 )
@@ -55,7 +55,7 @@ func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*Auto
 		var autoSearch AutoSearch
 		err := yaml.Unmarshal(content, &autoSearch)
 		if err != nil {
-			slog.Warn("thread message yaml unmarshal error", "err", err)
+			dtv.logger.Warn("thread message yaml unmarshal error", zap.Error(err))
 			continue
 		}
 		if autoSearch.Channel == "" || strings.Contains(serviceNameNormalized, normalizeString(autoSearch.Channel)) {
@@ -63,14 +63,14 @@ func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*Auto
 
 			notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
 			if err != nil {
-				slog.Warn("can't get message reactions", "msg.ChannelID", msg.ChannelID, "msg.ID", msg.ID, "emoji", discord.NotifyReactionEmoji)
+				dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji))
 				notifyUsers = []*discordgo.User{}
 			}
 			autoSearch.NotifyUsers = notifyUsers
 
 			recordingUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
 			if err != nil {
-				slog.Warn("can't get message reactions", "msg.ChannelID", msg.ChannelID, "msg.ID", msg.ID, "emoji", discord.RecordingReactionEmoji)
+				dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji))
 				recordingUsers = []*discordgo.User{}
 			}
 			autoSearch.RecordingUsers = recordingUsers

@@ -8,6 +8,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
+	"go.uber.org/zap"
 	"golang.org/x/exp/slog"
 	"golang.org/x/text/width"
 )
@@ -16,11 +17,12 @@ type DiscordClient struct {
 	cfg            config.Config
 	queries        *db.Queries
 	session        *discordgo.Session
+	logger         *zap.Logger
 	channelIDCache map[string]*discordgo.Channel
 	channelsCache  []*discordgo.Channel
 }
 
-func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, error) {
+func NewDiscordClient(cfg config.Config, queries *db.Queries, logger *zap.Logger) (*DiscordClient, error) {
 	session, err := discordgo.New("Bot " + cfg.Discord.Token)
 	if err != nil {
 		return nil, err
@@ -30,6 +32,7 @@ func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, e
 		cfg:            cfg,
 		queries:        queries,
 		session:        session,
+		logger:         logger,
 		channelIDCache: map[string]*discordgo.Channel{},
 		channelsCache:  []*discordgo.Channel{},
 	}, nil

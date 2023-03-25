@@ -5,7 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/discord"
-	"golang.org/x/exp/slog"
+	"go.uber.org/zap"
 )
 
 func (dtv *DTVUsecase) OnRecordingEmojiRemove(ctx context.Context, reaction *discordgo.MessageReactionRemove) error {
@@ -26,9 +26,9 @@ func (dtv *DTVUsecase) OnRecordingEmojiRemove(ctx context.Context, reaction *dis
 		if err != nil {
 			return err
 		}
-		slog.Debug("録画取り消し完了", "MessageID", reaction.MessageID, "ProgramID", programMessage.ProgramID)
+		dtv.logger.Debug("録画取り消し完了", zap.String("MessageID", reaction.MessageID), zap.Int64("ProgramID", programMessage.ProgramID))
 	} else {
-		slog.Debug("他のユーザの予約が残っています", "MessageID", reaction.MessageID)
+		dtv.logger.Debug("他のユーザの予約が残っています", zap.String("MessageID", reaction.MessageID))
 	}
 
 	return nil
