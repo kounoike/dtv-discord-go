@@ -1,6 +1,6 @@
 package discord
 
-var (
+const (
 	RecordingReactionEmoji = "📼"
 	OkReactionEmoji        = "🆗"
 )

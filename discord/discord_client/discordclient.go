@@ -74,8 +74,9 @@ func (d *DiscordClient) UpdateChannelsCache() error {
 	return nil
 }
 
-func (d *DiscordClient) GetCachedChannel(category string, origChannelName string) (*discordgo.Channel, error) {
-	category = strings.ToLower(category)
+func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName string) (*discordgo.Channel, error) {
+	category := strings.ToLower(origCategory)
+	category = strings.ReplaceAll(category, "\u3000", "-")
 	channel := strings.ToLower(origChannelName)
 	channel = strings.ReplaceAll(channel, "\u3000", "-")
 	cacheKey := category + "/" + channel

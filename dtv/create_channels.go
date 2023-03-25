@@ -3,6 +3,7 @@ package dtv
 import (
 	"context"
 
+	"github.com/kounoike/dtv-discord-go/discord"
 	"golang.org/x/exp/slog"
 )
 
@@ -16,14 +17,9 @@ func (dtv *DTVUsecase) InitializeServiceChannels(ctx context.Context) error {
 		dtv.queries.CreateOrUpdateService(ctx, service)
 	}
 
-	err = dtv.discord.UpdateChannelsCache()
-	if err != nil {
-		return err
-	}
-
 	for _, service := range services {
 		// 無ければ作ってくれるし、キャッシュにも入る
-		ch, err := dtv.discord.GetCachedChannel("録画-番組情報", service.Name)
+		ch, err := dtv.discord.GetCachedChannel(discord.ProgramInformationCategory, service.Name)
 		if err != nil {
 			return err
 		}
