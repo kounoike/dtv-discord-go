@@ -31,3 +31,26 @@ type ProgramMessage struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+type ProgramService struct {
+	ID        int32     `json:"id"`
+	ProgramID int64     `json:"programID"`
+	ServiceID int64     `json:"serviceID"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type Service struct {
+	ID                 int64     `json:"id"`
+	ServiceID          int32     `json:"serviceId"`
+	NetworkID          int32     `json:"networkId"`
+	Type               int32     `json:"type"`
+	LogoID             int32     `json:"logoID"`
+	RemoteControlKeyID int32     `json:"remoteControlKeyId"`
+	Name               string    `json:"name"`
+	ChannelType        string    `json:"-"`
+	Channel            string    `json:"-"`
+	HasLogoData        bool      `json:"hasLogoData"`
+	CreatedAt          time.Time `json:"-"`
+	UpdatedAt          time.Time `json:"-"`
+}

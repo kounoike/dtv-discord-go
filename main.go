@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -64,7 +65,10 @@ func main() {
 		return
 	}
 
-	usecase := dtv.NewDTVUsecase(discordClient, mirakcClient, queries)
+	usecase, err := dtv.NewDTVUsecase(config, discordClient, mirakcClient, queries)
+	if err != nil {
+		slog.Error("can't create DTVUsecase", err)
+	}
 
 	err = discordClient.Open()
 	if err != nil {
@@ -75,7 +79,8 @@ func main() {
 	slog.Debug("Debug!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
-	err = usecase.CreateChannels()
+	ctx := context.Background()
+	err = usecase.InitializeServiceChannels(ctx)
 	if err != nil {
 		slog.Error("can't create program infomation channel", err)
 		return

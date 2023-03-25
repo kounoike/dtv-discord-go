@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"time"
 )
 
 func (p *Program) UnmarshalJSON(b []byte) error {
@@ -17,7 +18,7 @@ func (p *Program) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (p *Program) InsertDb(ctx context.Context, q Queries) error {
+func (q *Queries) InsertProgram(ctx context.Context, p Program) error {
 	args := createProgramParams{
 		ID:          p.ID,
 		Json:        p.Json,
@@ -33,7 +34,7 @@ func (p *Program) InsertDb(ctx context.Context, q Queries) error {
 	return q.createProgram(ctx, args)
 }
 
-func (p *Program) UpdateDb(ctx context.Context, q Queries) error {
+func (q *Queries) UpdateProgram(ctx context.Context, p Program) error {
 	args := updateProgramParams{
 		ID:          p.ID,
 		Json:        p.Json,
@@ -47,4 +48,8 @@ func (p *Program) UpdateDb(ctx context.Context, q Queries) error {
 		Description: p.Description,
 	}
 	return q.updateProgram(ctx, args)
+}
+
+func (p *Program) StartTime() time.Time {
+	return time.Unix(p.StartAt/1000, (p.StartAt%1000)*1000)
 }

@@ -9,12 +9,11 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
-	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 )
 
 type ProgramMessageTemplateArgs struct {
 	Program db.Program
-	Service mirakc_model.Service
+	Service db.Service
 }
 
 var programMessageTemplateString = `==============================================================================================
@@ -52,7 +51,7 @@ func toExtendStr(j json.RawMessage) string {
 	return str
 }
 
-func GetProgramMessage(program db.Program, service mirakc_model.Service) (string, error) {
+func GetProgramMessage(program db.Program, service db.Service) (string, error) {
 	funcMap := map[string]interface{}{
 		"toTimeStr":     toTimeStr,
 		"toDurationStr": toDurationStr,
