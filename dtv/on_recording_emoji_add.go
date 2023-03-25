@@ -26,14 +26,14 @@ type ContentPathTemplateData struct {
 	Service ContentPathService
 }
 
-func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discordgo.MessageReactionAdd) error {
-	users, err := dtv.discord.GetMessageReactions(reaction.ChannelID, reaction.MessageID, discord.RecordingReactionEmoji)
+func (dtv *DTVUsecase) checkRecordingForMessage(ctx context.Context, channelID string, messageID string) error {
+	users, err := dtv.discord.GetMessageReactions(channelID, messageID, discord.RecordingReactionEmoji)
 	if err != nil {
 		return err
 	}
 	if len(users) == 1 {
 		// 録画しよう！
-		programMessage, err := dtv.queries.GetProgramMessageByMessageID(ctx, reaction.MessageID)
+		programMessage, err := dtv.queries.GetProgramMessageByMessageID(ctx, messageID)
 		if errors.Cause(err) == sql.ErrNoRows {
 			// NOTE: 番組情報以外の発言の場合は無視する
 			return nil
@@ -70,13 +70,17 @@ func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discor
 			return err
 		}
 		slog.Debug("録画予約 OK", "ProgramID", programMessage.ProgramID, "contentPath", contentPath)
-		err = dtv.discord.MessageReactionAdd(reaction.ChannelID, reaction.MessageID, discord.OkReactionEmoji)
+		err = dtv.discord.MessageReactionAdd(channelID, messageID, discord.OkReactionEmoji)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discordgo.MessageReactionAdd) error {
+	return dtv.checkRecordingForMessage(ctx, reaction.ChannelID, reaction.MessageID)
 }
 
 func toSafePath(s string) string {

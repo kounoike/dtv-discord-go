@@ -24,6 +24,7 @@ func NewDiscordClient(cfg config.Config, queries *db.Queries) (*DiscordClient, e
 	if err != nil {
 		return nil, err
 	}
+	session.Identify.Intents = discordgo.IntentsMessageContent
 	return &DiscordClient{
 		cfg:            cfg,
 		queries:        queries,
@@ -132,20 +133,19 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 	return ch, nil
 }
 
-func (d *DiscordClient) SendMessage(category string, channel string, message string) (string, error) {
+func (d *DiscordClient) SendMessage(category string, channel string, message string) (*discordgo.Message, error) {
 	if len(d.session.State.Guilds) != 1 {
-		return "", fmt.Errorf("discord app must join one server")
+		return nil, fmt.Errorf("discord app must join one server")
 	}
 	ch, err := d.GetCachedChannel(category, channel)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	msg, err := d.session.ChannelMessageSend(ch.ID, message)
 	if err != nil {
-		return "", err
-	} else {
-		return msg.ID, nil
+		return nil, err
 	}
+	return msg, nil
 }
 
 func (d *DiscordClient) createForum(category string, forum string, topic string) (*discordgo.Channel, error) {
@@ -219,10 +219,31 @@ func (d *DiscordClient) createForum(category string, forum string, topic string)
 	return ch, nil
 }
 
-func (d *DiscordClient) CreateNotifyAndScheduleForum() error {
-	_, err := d.createForum(discord.NotifyAndScheduleCategory, discord.AutoActionForum, discord.AutoActionForumTopic)
+func (d *DiscordClient) CreateNotifyAndScheduleForum() (*discordgo.Channel, error) {
+	return d.createForum(discord.NotifyAndScheduleCategory, discord.AutoActionForum, discord.AutoActionForumTopic)
+}
+
+func (d *DiscordClient) ListForumThredFirstMessageContents(forumID string) ([]*discordgo.Message, error) {
+	threadsList, err := d.session.GuildThreadsActive(d.session.State.Guilds[0].ID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	messages := make([]*discordgo.Message, 0)
+	for _, th := range threadsList.Threads {
+		if th.ParentID == forumID {
+			thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
+			if err != nil {
+				slog.Warn("can't get messages in thred", "th.ID", th.ID, "th.Name", th.Name)
+			}
+			if len(thMsgs) == 1 {
+				messages = append(messages, thMsgs[0])
+			}
+		}
+	}
+	return messages, nil
+}
+
+func (d *DiscordClient) SendMessageToThread(threadID string, content string) error {
+	_, err := d.session.ChannelMessageSend(threadID, content)
+	return err
 }

@@ -3,11 +3,11 @@ package dtv
 import (
 	"text/template"
 
+	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
-	"golang.org/x/exp/slog"
 )
 
 type DTVUsecase struct {
@@ -15,10 +15,10 @@ type DTVUsecase struct {
 	mirakc          *mirakc_client.MirakcClient
 	queries         *db.Queries
 	contentPathTmpl *template.Template
+	autoSearchForum *discordgo.Channel
 }
 
 func NewDTVUsecase(cfg config.Config, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, queries *db.Queries) (*DTVUsecase, error) {
-	slog.Debug("NewDTVUsecase", "cfg", cfg)
 	tmpl, err := template.New("content-path").Parse(cfg.Recording.ContentPathTemplate)
 	if err != nil {
 		return nil, err

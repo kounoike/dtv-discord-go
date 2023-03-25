@@ -87,12 +87,6 @@ func main() {
 	discordClient.UpdateChannelsCache()
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("起動しました。version:%s", version))
 
-	err = discordClient.CreateNotifyAndScheduleForum()
-	if err != nil {
-		slog.Error("can't create notify and schedule forum", err)
-	}
-
-	slog.Debug("Debug!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
 	ctx := context.Background()
@@ -105,6 +99,7 @@ func main() {
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
+	// TODO: 自動検索フォーラムに新規スレッドがあったときのハンドラ
 
 	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port)
 	sseHandler.Subscribe()
