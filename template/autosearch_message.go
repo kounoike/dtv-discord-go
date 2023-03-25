@@ -39,5 +39,5 @@ func GetAutoSearchMessage(program db.Program, service db.Service, programMessage
 	if err != nil {
 		return "", err
 	}
-	return b.String(), nil
+	return weekdayja.Replace(b.String()), nil
 }
