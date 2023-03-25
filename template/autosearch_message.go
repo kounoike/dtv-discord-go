@@ -13,8 +13,7 @@ type AutoSearchMessageTemplateArgs struct {
 	ProgramMessageURL string
 }
 
-var autoSearchMessageTemplateString = `================================================
-{{ .Program.Name }}
+var autoSearchMessageTemplateString = `{{ .Program.Name }}
 {{ .Service.Name }}
 {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
 {{ .ProgramMessageURL }}

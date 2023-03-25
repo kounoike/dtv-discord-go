@@ -8,6 +8,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
+	"golang.org/x/text/width"
 )
 
 type DTVUsecase struct {
@@ -18,8 +19,15 @@ type DTVUsecase struct {
 	autoSearchForum *discordgo.Channel
 }
 
+func fold(str string) string {
+	return width.Fold.String(str)
+}
+
 func NewDTVUsecase(cfg config.Config, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, queries *db.Queries) (*DTVUsecase, error) {
-	tmpl, err := template.New("content-path").Parse(cfg.Recording.ContentPathTemplate)
+	funcMap := map[string]interface{}{
+		"fold": fold,
+	}
+	tmpl, err := template.New("content-path").Funcs(funcMap).Parse(cfg.Recording.ContentPathTemplate)
 	if err != nil {
 		return nil, err
 	}

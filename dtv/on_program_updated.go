@@ -11,6 +11,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/template"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slog"
+	"golang.org/x/text/width"
 )
 
 func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) error {
@@ -43,6 +44,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 			if err != nil {
 				return err
 			}
+			content = width.Fold.String(content)
 			msg, err := dtv.discord.SendMessage(discord.ProgramInformationCategory, service.Name, content)
 			if err != nil {
 				return err
@@ -73,6 +75,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 					if err != nil {
 						return err
 					}
+					content = width.Fold.String(content)
 					notifyString := ""
 					recorderString := ""
 					if len(as.NotifyUsers) > 0 {
