@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/kounoike/dtv-discord-go/db"
+	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/template"
 	"github.com/pkg/errors"
 	"golang.org/x/exp/slog"
@@ -19,7 +20,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 		slog.Error("mirakc GetService Error", err)
 		return
 	}
-	_, err = dtv.discord.SendMessage("録画-情報", "動作ログ", fmt.Sprintf("programs updated: %s", service.Name))
+	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("programs updated: %s", service.Name))
 	if err != nil {
 		slog.Error("discord SendMessage error", err)
 		return
