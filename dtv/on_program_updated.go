@@ -43,7 +43,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(serviceId uint) {
 				slog.Error("template GetProgramMessage error", err)
 				return
 			}
-			msgID, err := dtv.discord.SendMessage("録画-番組情報", service.Name, msg)
+			msgID, err := dtv.discord.SendMessage(discord.ProgramInformationCategory, service.Name, msg)
 			if err != nil {
 				slog.Error("discord SendMessage error", err)
 				return
