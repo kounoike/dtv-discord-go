@@ -44,6 +44,14 @@ func (d *DiscordClient) MessageReactionAdd(channelID string, messageID string, e
 	return d.session.MessageReactionAdd(channelID, messageID, emoji)
 }
 
+func (d *DiscordClient) MessageReactionRemove(channelID string, messageID string, emoji string) error {
+	return d.session.MessageReactionRemove(channelID, messageID, emoji, d.session.State.User.ID)
+}
+
+func (d *DiscordClient) GetMessageReactions(channelID string, messageID string, emoji string) ([]*discordgo.User, error) {
+	return d.session.MessageReactions(channelID, messageID, emoji, 100, "", "")
+}
+
 func (d *DiscordClient) AddHandler(handler interface{}) {
 	d.session.AddHandler(handler)
 }
