@@ -10,6 +10,7 @@ import (
 	"github.com/jinzhu/configor"
 	"github.com/kounoike/dtv-discord-go/config"
 	sqlcdb "github.com/kounoike/dtv-discord-go/db"
+	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/discord/discord_handler"
 	"github.com/kounoike/dtv-discord-go/dtv"
@@ -17,6 +18,10 @@ import (
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	migrate "github.com/rubenv/sql-migrate"
 	"golang.org/x/exp/slog"
+)
+
+var (
+	version string
 )
 
 func main() {
@@ -43,6 +48,8 @@ func main() {
 		Level:     logLevel,
 		AddSource: true,
 	}.NewTextHandler(os.Stderr)))
+
+	slog.Info("Starting dtv-discord-go", "version", version)
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
@@ -76,6 +83,10 @@ func main() {
 		return
 	}
 	slog.Info("Connected!")
+
+	discordClient.UpdateChannelsCache()
+	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("起動しました。version:%s", version))
+
 	slog.Debug("Debug!")
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session())
 
