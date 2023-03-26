@@ -29,6 +29,7 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
     - Read Messages/View Channels
     - Send Messages
     - Send Messages in Threads
+    - Read Message History
     - Add Reactions
 14. 一番下の GENERATED URL の Copy ボタンを押して URL をコピーします
 15. コピーした URL をブラウザで開き、導入するサーバを選択して、はい→認証を押します
