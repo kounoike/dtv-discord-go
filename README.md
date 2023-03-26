@@ -8,6 +8,11 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 - 自動検索時にメンションを付ける通知機能
 - 自動検索時に録画を行う自動録画機能
 
+## 動作環境
+
+Docker / Docker Composeでの動作を想定しています。ホストでの実行などは想定していません。
+amd64とarm64のイメージを作っているので、x86_64なマシンだけでなくRaspberry Pi(64bit OS)などで動作すると思われます（未検証）。
+
 ## セットアップ
 
 ### Discord Application の登録と Bot tokenの取得
