@@ -39,7 +39,7 @@ var (
 )
 
 func toTimeStr(t int64) string {
-	return time.Unix(t/1000, (t%1000)*1000).Format("2006/01/02(Mon) 03:04")
+	return time.Unix(t/1000, (t%1000)*1000).Format("2006/01/02(Mon) 15:04")
 }
 
 func toDurationStr(d int32) string {
