@@ -59,14 +59,6 @@ func main() {
 
 	logger.Info("Starting dtv-discord-go", zap.String("version", version))
 
-	p := backoff.Exponential(
-		backoff.WithMinInterval(time.Second),
-		backoff.WithMaxInterval(time.Minute),
-		backoff.WithJitterFactor(0.05),
-	)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
 		logger.Error("can't connect to db server", zap.Error(err))
@@ -75,8 +67,17 @@ func main() {
 	queries := sqlcdb.New(db)
 	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
 
+	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// defer cancel()
+	ctx := context.Background()
+
+	p1 := backoff.Exponential(
+		backoff.WithMinInterval(time.Second),
+		backoff.WithMaxInterval(time.Minute),
+		backoff.WithJitterFactor(0.05),
+	)
 	retryMigrationFunc := func(db *sql.DB, migrations migrate.FileMigrationSource) (int, error) {
-		b := p.Start(ctx)
+		b := p1.Start(ctx)
 		for backoff.Continue(b) {
 			n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
 			if err == nil {
@@ -94,6 +95,32 @@ func main() {
 	logger.Info("Applied migrations", zap.Int("count", n))
 
 	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port, logger)
+
+	p2 := backoff.Constant(
+		backoff.WithInterval(5*time.Second),
+		backoff.WithJitterFactor(0.05),
+		backoff.WithMaxRetries((6*60*60)/5),
+	)
+	retryMirakcServiceFunc := func() error {
+		b := p2.Start(ctx)
+		for backoff.Continue(b) {
+			services, err := mirakcClient.ListServices()
+			if err != nil {
+				logger.Warn("mirakc ListServices error", zap.Error(err))
+			}
+			if err == nil && len(services) > 0 {
+				return nil
+			}
+		}
+		return errors.New("failed to get services")
+	}
+	err = retryMirakcServiceFunc()
+	if err != nil {
+		logger.Error("service retrieve error", zap.Error(err))
+		return
+	}
+	logger.Info("Get list of services: OK")
+
 	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
 	if err != nil {
 		logger.Error("can't connect to discord", zap.Error(err))
