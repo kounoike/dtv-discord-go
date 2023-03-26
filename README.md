@@ -8,6 +8,9 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 - 自動検索での番組追加時にメンションを付ける通知機能
 - 自動検索時での番組追加時に録画を行う自動録画機能
 
+機能要望や使ってみてのご意見は[Discussions](https://github.com/kounoike/dtv-discord-go/discussions)まで、明確なバグの場合は[Issues](https://github.com/kounoike/dtv-discord-go/issues)までお願いします。もちろんプルリクエストも歓迎です。
+
+
 ## 動作環境
 
 Docker / Docker Composeでの動作を想定しています。ホストでの実行などは想定していません。
