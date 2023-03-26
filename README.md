@@ -57,7 +57,9 @@ $ usermod -aG docker my-user-name
 
 #### docker-compose の設定
 
-./docker-compose/docker-compose.yml の中で録画ファイルの保存先ディレクトリを ./docker-compose/mirakc/recorded にしています。必要に応じて書き換えるか、このディレクトリをシンボリックリンクにして別の場所を指すかすると良いです。
+./docker-compose/docker-compose.yml.example を docker-compose.yml にコピーしてください。
+./docker-compose/docker-compose.yml.example の中では録画ファイルの保存先ディレクトリを ./docker-compose/mirakc/recorded にしています。必要に応じて書き換えるか、このディレクトリをシンボリックリンクにして別の場所を指すかすると良いです。
+
 
 #### dtv-discord-go の設定
 
