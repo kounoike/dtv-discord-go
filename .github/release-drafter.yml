@@ -63,4 +63,4 @@ autolabeler:
       - '*.md'
   - label: enhancement
     branch:
-      - '/(enhancement|improve)[/-].+/'
+      - '/(enhancement|improve|improvement)[/-].+/'
