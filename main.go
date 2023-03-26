@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	version string
+	version = "develop"
 )
 
 func main() {
@@ -180,7 +180,8 @@ func main() {
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
-	// TODO: 自動検索フォーラムに新規スレッドがあったときのハンドラ
+
+	logger.Info("AddDiscordHandle done. start subscribe to SSE events.")
 
 	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port, logger)
 	sseHandler.Subscribe()

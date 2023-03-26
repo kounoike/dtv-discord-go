@@ -49,5 +49,6 @@ func (h *SSEHandler) Subscribe() {
 			}
 			h.onProgramsUpdated(data.ServiceId)
 		}
+		h.logger.Debug("sse event processed successfully")
 	})
 }

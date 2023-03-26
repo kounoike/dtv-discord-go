@@ -1,6 +1,7 @@
 package discord_client
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -26,7 +27,7 @@ func NewDiscordClient(cfg config.Config, queries *db.Queries, logger *zap.Logger
 	if err != nil {
 		return nil, err
 	}
-	session.Identify.Intents = discordgo.IntentsMessageContent
+	session.Identify.Intents |= discordgo.IntentsMessageContent
 	return &DiscordClient{
 		cfg:            cfg,
 		queries:        queries,
@@ -41,12 +42,17 @@ func (d *DiscordClient) Session() *discordgo.Session {
 	return d.session
 }
 
+func (d *DiscordClient) GetChannel(channelID string) (*discordgo.Channel, error) {
+	return d.session.Channel(channelID)
+}
+
 func (d *DiscordClient) GetChannelMessage(channelID string, messageID string) (*discordgo.Message, error) {
 	return d.session.ChannelMessage(channelID, messageID)
 }
 
 func (d *DiscordClient) MessageReactionAdd(channelID string, messageID string, emoji string) error {
-	return d.session.MessageReactionAdd(channelID, messageID, emoji)
+	err := d.session.MessageReactionAdd(channelID, messageID, emoji)
+	return err
 }
 
 func (d *DiscordClient) MessageReactionRemove(channelID string, messageID string, emoji string) error {
@@ -65,6 +71,9 @@ func (d *DiscordClient) Open() error {
 	err := d.session.Open()
 	if err != nil {
 		return err
+	}
+	if len(d.session.State.Guilds) != 1 {
+		return errors.New("bot must join exactly one server")
 	}
 	return nil
 }
@@ -143,7 +152,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 
 func (d *DiscordClient) SendMessage(category string, channel string, message string) (*discordgo.Message, error) {
 	if len(d.session.State.Guilds) != 1 {
-		return nil, fmt.Errorf("discord app must join one server")
+		return nil, fmt.Errorf("discord app must join one server [%d]", len(d.session.State.Guilds))
 	}
 	ch, err := d.GetCachedChannel(category, channel)
 	if err != nil {
@@ -210,7 +219,7 @@ func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, er
 	return d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelTopic)
 }
 
-func (d *DiscordClient) ListAutoSearchChannelThredFirstMessageContents(channelID string) ([]*discordgo.Message, error) {
+func (d *DiscordClient) ListAutoSearchChannelThredOkReactionedFirstMessageContents(channelID string) ([]*discordgo.Message, error) {
 	threadsList, err := d.session.GuildThreadsActive(d.session.State.Guilds[0].ID)
 	if err != nil {
 		return nil, err
@@ -220,10 +229,18 @@ func (d *DiscordClient) ListAutoSearchChannelThredFirstMessageContents(channelID
 		if th.ParentID == channelID {
 			thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
 			if err != nil {
-				d.logger.Warn("can't get messages in thred", zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
+				d.logger.Warn("can't get messages in thred", zap.Error(err), zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
+				continue
 			}
-			if len(thMsgs) == 1 {
-				messages = append(messages, thMsgs[0])
+			if len(thMsgs) > 0 {
+				users, err := d.session.MessageReactions(th.ID, thMsgs[0].ID, discord.OkReactionEmoji, 1, "", "")
+				if err != nil {
+					d.logger.Warn("can't get message's reactions", zap.Error(err), zap.String("th.ID", th.ID), zap.String("msgID", thMsgs[0].ID))
+					continue
+				}
+				if len(users) > 0 {
+					messages = append(messages, thMsgs[0])
+				}
 			}
 		}
 	}

@@ -41,8 +41,41 @@ func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
 	}
 }
 
+func (a *AutoSearch) IsMatchService(serviceName string) bool {
+	if a.Channel == "" || strings.Contains(normalizeString(serviceName), normalizeString(a.Channel)) {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (dtv *DTVUsecase) getAutoSeachFromMessage(msg *discordgo.Message) (*AutoSearch, error) {
+	content := []byte(msg.Content)
+	var autoSearch AutoSearch
+	err := yaml.Unmarshal(content, &autoSearch)
+	if err != nil {
+		return nil, err
+	}
+	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
+	if err != nil {
+		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji))
+		notifyUsers = []*discordgo.User{}
+	}
+	autoSearch.NotifyUsers = notifyUsers
+
+	recordingUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
+	if err != nil {
+		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji))
+		recordingUsers = []*discordgo.User{}
+	}
+	autoSearch.RecordingUsers = recordingUsers
+	autoSearch.ThreadID = msg.ChannelID
+
+	return &autoSearch, nil
+}
+
 func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*AutoSearch, error) {
-	msgs, err := dtv.discord.ListAutoSearchChannelThredFirstMessageContents(dtv.autoSearchChannel.ID)
+	msgs, err := dtv.discord.ListAutoSearchChannelThredOkReactionedFirstMessageContents(dtv.autoSearchChannel.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,32 +84,14 @@ func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*Auto
 	autoSearchList := make([]*AutoSearch, 0)
 
 	for _, msg := range msgs {
-		content := []byte(msg.Content)
-		var autoSearch AutoSearch
-		err := yaml.Unmarshal(content, &autoSearch)
+		autoSearch, err := dtv.getAutoSeachFromMessage(msg)
 		if err != nil {
 			dtv.logger.Warn("thread message yaml unmarshal error", zap.Error(err))
 			continue
 		}
 		if autoSearch.Channel == "" || strings.Contains(serviceNameNormalized, normalizeString(autoSearch.Channel)) {
 			autoSearch.Title = normalizeString(autoSearch.Title)
-
-			notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
-			if err != nil {
-				dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji))
-				notifyUsers = []*discordgo.User{}
-			}
-			autoSearch.NotifyUsers = notifyUsers
-
-			recordingUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
-			if err != nil {
-				dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji))
-				recordingUsers = []*discordgo.User{}
-			}
-			autoSearch.RecordingUsers = recordingUsers
-			autoSearch.ThreadID = msg.ChannelID
-
-			autoSearchList = append(autoSearchList, &autoSearch)
+			autoSearchList = append(autoSearchList, autoSearch)
 		}
 	}
 	return autoSearchList, nil
