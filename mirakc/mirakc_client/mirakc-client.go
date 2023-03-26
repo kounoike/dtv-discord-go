@@ -124,11 +124,15 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 		},
 		Tags: []string{"manual"},
 	}
+	dataJson, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
 	// postOption := fmt.Sprintf(`{"programId": %d, "options": {"contentPath": "%d.m2ts"}, "tags": ["manual"]}`, programID, programID)
 	client := resty.New()
 	resp, err := client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(data).
+		SetBody(dataJson).
 		Post(url)
 	if err != nil {
 		return err
@@ -137,7 +141,7 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 	if resp.StatusCode() == 201 {
 		return nil
 	}
-	return fmt.Errorf("post request:%s status code:%d", url, resp.StatusCode())
+	return fmt.Errorf("post request:%s with body:%s status code:%d", url, string(dataJson), resp.StatusCode())
 }
 
 func (m *MirakcClient) DeleteRecordingSchedule(programID int64) error {

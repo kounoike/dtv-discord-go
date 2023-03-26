@@ -26,12 +26,21 @@ func NewDiscordHandler(dtv *dtv.DTVUsecase, session *discordgo.Session, logger *
 func (h *DiscordHandler) reactionAdd(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
 	h.logger.Debug("add reaction emoji", zap.String("emoji", reaction.Emoji.Name), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 
-	if reaction.Emoji.Name == discord.RecordingReactionEmoji {
+	switch reaction.Emoji.Name {
+	case discord.RecordingReactionEmoji:
 		ctx := context.Background()
 		err := h.dtv.OnRecordingEmojiAdd(ctx, reaction)
 		if err != nil {
 			h.logger.Error("onrecording emoji add error", zap.Error(err), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 		}
+	case discord.OkReactionEmoji:
+		ctx := context.Background()
+		err := h.dtv.OnOkEmojiAdd(ctx, reaction)
+		if err != nil {
+			h.logger.Error("OnOkEmojiAdd error", zap.Error(err), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
+		}
+	default:
+		h.logger.Debug("no intent for this Emoji", zap.String("emojiName", reaction.Emoji.Name))
 	}
 }
 
