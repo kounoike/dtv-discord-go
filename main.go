@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/configor"
@@ -15,6 +17,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/dtv"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
+	"github.com/lestrrat-go/backoff/v2"
 	migrate "github.com/rubenv/sql-migrate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -56,6 +59,14 @@ func main() {
 
 	logger.Info("Starting dtv-discord-go", zap.String("version", version))
 
+	p := backoff.Exponential(
+		backoff.WithMinInterval(time.Second),
+		backoff.WithMaxInterval(time.Minute),
+		backoff.WithJitterFactor(0.05),
+	)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
 		logger.Error("can't connect to db server", zap.Error(err))
@@ -63,7 +74,19 @@ func main() {
 	}
 	queries := sqlcdb.New(db)
 	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
-	n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
+
+	retryMigrationFunc := func(db *sql.DB, migrations migrate.FileMigrationSource) (int, error) {
+		b := p.Start(ctx)
+		for backoff.Continue(b) {
+			n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
+			if err == nil {
+				return n, nil
+			}
+		}
+		return 0, errors.New("failed to migration")
+	}
+
+	n, err := retryMigrationFunc(db, migrations)
 	if err != nil {
 		logger.Error("db migration error", zap.Error(err))
 		return
@@ -94,7 +117,6 @@ func main() {
 
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session(), logger)
 
-	ctx := context.Background()
 	err = usecase.InitializeServiceChannels(ctx)
 	if err != nil {
 		logger.Error("can't create program infomation channel", zap.Error(err))
