@@ -13,12 +13,12 @@ import (
 )
 
 type DTVUsecase struct {
-	discord         *discord_client.DiscordClient
-	mirakc          *mirakc_client.MirakcClient
-	queries         *db.Queries
-	logger          *zap.Logger
-	contentPathTmpl *template.Template
-	autoSearchForum *discordgo.Channel
+	discord           *discord_client.DiscordClient
+	mirakc            *mirakc_client.MirakcClient
+	queries           *db.Queries
+	logger            *zap.Logger
+	contentPathTmpl   *template.Template
+	autoSearchChannel *discordgo.Channel
 }
 
 func fold(str string) string {

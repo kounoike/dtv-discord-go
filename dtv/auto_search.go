@@ -42,7 +42,7 @@ func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
 }
 
 func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*AutoSearch, error) {
-	msgs, err := dtv.discord.ListForumThredFirstMessageContents(dtv.autoSearchForum.ID)
+	msgs, err := dtv.discord.ListAutoSearchChannelThredFirstMessageContents(dtv.autoSearchChannel.ID)
 	if err != nil {
 		return nil, err
 	}

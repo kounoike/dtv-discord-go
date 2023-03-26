@@ -5,10 +5,10 @@ const (
 	ProgramInformationCategory = "録画-番組情報"
 	NotifyAndScheduleCategory  = "録画-通知・予約"
 
-	LogChannel      = "動作ログ"
-	AutoActionForum = "自動検索"
+	LogChannel            = "動作ログ"
+	AutoActionChannelName = "自動検索"
 
-	AutoActionForumTopic = `**このフォーラムに投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**
+	AutoActionChannelTopic = `**このフォーラムに投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**
 
 **投稿形式**
 タイトル: 何でも構いません。
