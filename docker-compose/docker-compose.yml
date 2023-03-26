@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  dtv:
+    image: ghcr.io/kounoike/dtv-discord-go:latest
+    environment:
+      TZ: Asia/Tokyo
+    links:
+      - tuner:tuner
+      - db:db
+  db:
+    image: mariadb:latest
+    volumes:
+      - mysql-db:/var/lib/mysql
+    # ports:
+    #   - "3306:3306"
+    environment:
+      MYSQL_USER: dtv-discord
+      MYSQL_PASSWORD: dtv-discord
+      MYSQL_ROOT_PASSWORD: dtv-discord
+      MYSQL_DATABASE: dtv
+      TZ: "Asia/Tokyo"
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1 --default-authentication-plugin=mysql_native_password
+    restart: always
+  tuner:
+    # image: mirakc/mirakc
+    build: ./mirakc/docker
+    privileged: true
+    # ports:
+    #   - "40772:40772"
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - epg-db:/var/lib/mirakc/epg:rw
+      - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
+      - ./mirakc/recorded:/recorded:rw
+    devices:
+      - /dev/px4video0
+      - /dev/px4video1
+      - /dev/px4video2
+      - /dev/px4video3
+      - /dev/bus
+    environment:
+      TZ: Asia/Tokyo
+      MIRAKC_DEBUG_CHILD_PROCESS: ''
+      RUST_LOG: 'info,mirakc=info'
+      MIRAKC_ARIB_NO_TIMESTAMP: ''
+      MIRAKC_ARIB_LOG: 'info'
+    restart: always
+
+volumes:
+  mysql-db:
+  epg-db:

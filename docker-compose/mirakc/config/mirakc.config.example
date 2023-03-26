@@ -1,0 +1,216 @@
+epg:
+  cache-dir: /var/lib/mirakc/epg
+
+recording:
+  basedir: /recorded
+
+server:
+  addrs:
+    - http: 0.0.0.0:40772
+
+channels:
+  - name: 'ＴＯＫＹＯ　ＭＸ１'
+    type: 'GR'
+    channel: '16'
+
+  - name: 'ｔｖｋ１'
+    type: 'GR'
+    channel: '18'
+
+  - name: 'フジテレビ'
+    type: 'GR'
+    channel: '21'
+
+  - name: 'ＴＢＳ１'
+    type: 'GR'
+    channel: '22'
+
+  - name: 'テレビ東京１'
+    type: 'GR'
+    channel: '23'
+
+  - name: 'テレビ朝日'
+    type: 'GR'
+    channel: '24'
+
+  - name: '日テレ１'
+    type: 'GR'
+    channel: '25'
+
+  - name: 'ＮＨＫＥテレ１東京'
+    type: 'GR'
+    channel: '26'
+
+  - name: 'ＮＨＫ総合１・東京'
+    type: 'GR'
+    channel: '27'
+
+  - name: 'ＢＳ朝日１'
+    type: 'BS'
+    channel: 'BS1_0'
+    services: [151]
+
+  - name: 'ＢＳ朝日２'
+    type: 'BS'
+    channel: 'BS1_0'
+    services: [152]
+
+  - name: 'ＢＳ朝日３'
+    type: 'BS'
+    channel: 'BS1_0'
+    services: [153]
+
+  - name: 'ＢＳ－ＴＢＳ'
+    type: 'BS'
+    channel: 'BS1_1'
+    services: [161]
+
+  - name: 'ＢＳ－ＴＢＳ'
+    type: 'BS'
+    channel: 'BS1_1'
+    services: [162]
+
+  - name: 'ＢＳ－ＴＢＳ'
+    type: 'BS'
+    channel: 'BS1_1'
+    services: [163]
+
+  - name: 'ＢＳテレ東'
+    type: 'BS'
+    channel: 'BS1_2'
+    services: [171]
+
+  - name: 'ＢＳテレ東２'
+    type: 'BS'
+    channel: 'BS1_2'
+    services: [172]
+
+  - name: 'ＢＳテレ東３'
+    type: 'BS'
+    channel: 'BS1_2'
+    services: [173]
+
+  - name: 'ＮＨＫＢＳプレミアム'
+    type: 'BS'
+    channel: 'BS3_1'
+    services: [103]
+
+  - name: 'ＮＨＫＢＳプレミアム'
+    type: 'BS'
+    channel: 'BS3_1'
+    services: [104]
+
+  - name: 'ＢＳ１１イレブン'
+    type: 'BS'
+    channel: 'BS9_0'
+    services: [211]
+
+  - name: 'スターチャンネル１'
+    type: 'BS'
+    channel: 'BS9_1'
+    services: [200]
+
+  - name: 'ＢＳ１２トゥエルビ'
+    type: 'BS'
+    channel: 'BS9_2'
+    services: [222]
+
+  - name: 'ＢＳスカパー！'
+    type: 'BS'
+    channel: 'BS11_0'
+    services: [241]
+
+  - name: '放送大学ｅｘ'
+    type: 'BS'
+    channel: 'BS11_1'
+    services: [231]
+
+  - name: '放送大学ｏｎ'
+    type: 'BS'
+    channel: 'BS11_1'
+    services: [232]
+
+  - name: '放送大学ラジオ'
+    type: 'BS'
+    channel: 'BS11_1'
+    services: [531]
+    disabled: true
+
+  - name: 'ＢＳ釣りビジョン'
+    type: 'BS'
+    channel: 'BS11_2'
+    services: [251]
+
+  - name: 'ＢＳ日テレ'
+    type: 'BS'
+    channel: 'BS13_0'
+    services: [141]
+
+  - name: 'ＢＳ日テレ'
+    type: 'BS'
+    channel: 'BS13_0'
+    services: [142]
+
+  - name: 'ＢＳ日テレ'
+    type: 'BS'
+    channel: 'BS13_0'
+    services: [143]
+
+  - name: 'ＢＳフジ・１８１'
+    type: 'BS'
+    channel: 'BS13_1'
+    services: [181]
+
+  - name: 'ＢＳフジ・１８２'
+    type: 'BS'
+    channel: 'BS13_1'
+    services: [182]
+
+  - name: 'ＢＳフジ・１８３'
+    type: 'BS'
+    channel: 'BS13_1'
+    services: [183]
+
+  - name: 'ＢＳアニマックス'
+    type: 'BS'
+    channel: 'BS13_2'
+    services: [236]
+
+  - name: 'ＮＨＫＢＳ１'
+    type: 'BS'
+    channel: 'BS15_0'
+    services: [101]
+
+  - name: 'ＮＨＫＢＳ１'
+    type: 'BS'
+    channel: 'BS15_0'
+    services: [102]
+
+tuners:
+  - name: PX4-S1
+    types: [BS,CS]
+    command: >-
+      recpt1 --device /dev/px4video0 {{channel}} {{duration}} -
+    disabled: false
+
+  - name: PX4-S2
+    types: [BS,CS]
+    command: >-
+      recpt1 --device /dev/px4video1 {{channel}} {{duration}} -
+    disabled: false
+
+  - name: PX4-T1
+    types: [GR]
+    command: >-
+      recpt1 --device /dev/px4video2 {{channel}} {{duration}} -
+    disabled: false
+
+  - name: PX4-T2
+    types: [GR]
+    command: >-
+      recpt1 --device /dev/px4video3 {{channel}} {{duration}} -
+    disabled: false
+
+filters:
+  decode-filter:
+    command: arib-b25-stream-test
