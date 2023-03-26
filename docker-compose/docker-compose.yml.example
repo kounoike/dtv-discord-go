@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  dtv:
+  bot:
     image: ghcr.io/kounoike/dtv-discord-go:latest
     volumes:
       - ./config.yml:/config.yml:ro
