@@ -63,7 +63,7 @@ $ usermod -aG docker my-user-name
 
 #### dtv-discord-go の設定
 
-config.yml.exampleを元にconfig.ymlを作成します。設定ファイルはYAML形式になっています。基本的に書き換える必要があるのは discord.token だけです。ここに先の手順で控えておいた Discord Bot の Token を記載します。
+./docker-compose/config.yml.exampleを元にconfig.ymlを作成します。設定ファイルはYAML形式になっています。基本的に書き換える必要があるのは discord.token だけです。ここに先の手順で控えておいた Discord Bot の Token を記載します。
 
 ### 実行
 
