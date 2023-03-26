@@ -6,6 +6,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 	"go.uber.org/zap"
 
 	"github.com/go-resty/resty/v2"
@@ -19,6 +20,23 @@ type MirakcClient struct {
 
 func NewMirakcClient(host string, port uint, logger *zap.Logger) *MirakcClient {
 	return &MirakcClient{host: host, port: port, logger: logger}
+}
+
+func (m *MirakcClient) GetVersion() (*mirakc_model.Version, error) {
+	url := fmt.Sprintf("http://%s:%d/api/version", m.host, m.port)
+	client := resty.New()
+	resp, err := client.R().Get(url)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() != 200 {
+		return nil, fmt.Errorf("HTTP Error status code: %d", resp.StatusCode())
+	}
+	var version mirakc_model.Version
+	if err = json.Unmarshal(resp.Body(), &version); err != nil {
+		return nil, err
+	}
+	return &version, nil
 }
 
 func (m *MirakcClient) ListServices() ([]db.Service, error) {

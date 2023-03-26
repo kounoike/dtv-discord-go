@@ -17,6 +17,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/dtv"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
+	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 	"github.com/lestrrat-go/backoff/v2"
 	migrate "github.com/rubenv/sql-migrate"
 	"go.uber.org/zap"
@@ -126,6 +127,22 @@ func main() {
 	}
 	logger.Info("Get list of services: OK")
 
+	retryMirakcVersionFunc := func() (*mirakc_model.Version, error) {
+		b := p2.Start(ctx)
+		for backoff.Continue(b) {
+			version, err := mirakcClient.GetVersion()
+			if err == nil {
+				return version, nil
+			}
+		}
+		return nil, errors.New("failed to get services")
+	}
+	mirakcVersion, err := retryMirakcVersionFunc()
+	if err != nil {
+		logger.Error("service retrieve error", zap.Error(err))
+		return
+	}
+
 	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
 	if err != nil {
 		logger.Error("can't connect to discord", zap.Error(err))
@@ -145,7 +162,12 @@ func main() {
 	logger.Info("Connected!")
 
 	discordClient.UpdateChannelsCache()
-	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("起動しました。version:%s", version))
+	logger.Info("Running!", zap.String("dtv-discord-go version", version), zap.String("mirakc version", mirakcVersion.Current))
+	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", version, mirakcVersion.Current)
+	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, logMessage)
+	if mirakcVersion.Current != mirakcVersion.Latest {
+		discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("mirakcの新しいバージョン(%s)があります", mirakcVersion.Latest))
+	}
 
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session(), logger)
 
