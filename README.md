@@ -74,6 +74,10 @@ $ usermod -aG docker my-user-name
 
 ./docker-compose ディレクトリで `docker compose up -d` コマンドを実行すると起動します。マシンを再起動しても自動的に再度起動するようになっています。
 
+## バージョンアップ
+
+mirakc/dtv-discord-goなどの更新は./docker-composeディレクトリで`./update.sh`としてイメージをpull＆buildして、`docker compose down && docker compose up -d`を実行します。
+
 ## 使い方
 
 初回起動後は mirakc が EPG 情報を取得したり、取得した情報を dtv-discord-go が一気に書こうとして Discord の Rate Limit にひっかかったりするため、かなりの時間がかかります。
