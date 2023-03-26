@@ -105,7 +105,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 		if err != nil {
 			return nil, err
 		}
-		d.UpdateChannelsCache()
+		d.channelsCache = append(d.channelsCache, categoryChannel)
 		data := discordgo.GuildChannelCreateData{
 			Name:     channel,
 			Type:     discordgo.ChannelTypeGuildText,
@@ -115,7 +115,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 		if err != nil {
 			return nil, err
 		}
-		d.UpdateChannelsCache()
+		d.channelsCache = append(d.channelsCache, createdChannel)
 		d.logger.Debug("GuildChannelCreateComplex OK", zap.String("name", channel), zap.String("cacheKey", cacheKey), zap.String("created ch.Name", createdChannel.Name))
 		d.channelIDCache[cacheKey] = createdChannel
 		return createdChannel, nil
@@ -135,7 +135,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 	if err != nil {
 		return nil, err
 	}
-	d.UpdateChannelsCache()
+	d.channelsCache = append(d.channelsCache, ch)
 	d.logger.Debug("GuildChannelCreateComplex OK", zap.String("origChannelName", origChannelName), zap.String("cacheKey", cacheKey), zap.String("created ch.Name", ch.Name))
 	d.channelIDCache[cacheKey] = ch
 	return ch, nil
