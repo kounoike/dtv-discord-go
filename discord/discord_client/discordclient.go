@@ -9,7 +9,6 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"go.uber.org/zap"
-	"golang.org/x/exp/slog"
 	"golang.org/x/text/width"
 )
 
@@ -115,7 +114,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 		if err != nil {
 			return nil, err
 		}
-		slog.Debug("GuildChannelCreateComplex OK", "name", channel, "cacheKey", cacheKey, "created ch.Name", createdChannel.Name)
+		d.logger.Debug("GuildChannelCreateComplex OK", zap.String("name", channel), zap.String("cacheKey", cacheKey), zap.String("created ch.Name", createdChannel.Name))
 		d.channelIDCache[cacheKey] = createdChannel
 		return createdChannel, nil
 	}
@@ -134,7 +133,7 @@ func (d *DiscordClient) GetCachedChannel(origCategory string, origChannelName st
 	if err != nil {
 		return nil, err
 	}
-	slog.Debug("GuildChannelCreateComplex OK", "origChannelName", origChannelName, "cacheKey", cacheKey, "created ch.Name", ch.Name)
+	d.logger.Debug("GuildChannelCreateComplex OK", zap.String("origChannelName", origChannelName), zap.String("cacheKey", cacheKey), zap.String("created ch.Name", ch.Name))
 	d.channelIDCache[cacheKey] = ch
 	return ch, nil
 }
@@ -154,7 +153,7 @@ func (d *DiscordClient) SendMessage(category string, channel string, message str
 	return msg, nil
 }
 
-func (d *DiscordClient) createForum(category string, forum string, topic string) (*discordgo.Channel, error) {
+func (d *DiscordClient) createChannelWithTopic(category string, channel string, topic string) (*discordgo.Channel, error) {
 	guildID := d.session.State.Guilds[0].ID
 	categoryID := ""
 	for _, ch := range d.channelsCache {
@@ -169,77 +168,56 @@ func (d *DiscordClient) createForum(category string, forum string, topic string)
 			return nil, err
 		}
 		data := discordgo.GuildChannelCreateData{
-			Name:     forum,
-			Type:     discordgo.ChannelTypeGuildForum,
+			Name:     channel,
+			Type:     discordgo.ChannelTypeGuildText,
 			ParentID: categoryChannel.ID,
+			Topic:    topic,
 		}
 		createdChannel, err := d.session.GuildChannelCreateComplex(guildID, data)
 		if err != nil {
 			return nil, err
 		}
-		edit := discordgo.ChannelEdit{
-			Topic: topic,
-			DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
-				EmojiName: discord.NotifyReactionEmoji,
-			},
-		}
-		d.session.ChannelEdit(createdChannel.ID, &edit)
-		if err != nil {
-			return nil, err
-		}
-		slog.Debug("GuildChannelCreateComplex OK", "name", forum, "created ch.Name", createdChannel.Name)
+		d.logger.Debug("GuildChannelCreateComplex OK", zap.String("name", channel), zap.String("created ch.Name", createdChannel.Name))
 		return createdChannel, nil
 	}
 	for _, ch := range d.channelsCache {
-		if ch.Type == discordgo.ChannelTypeGuildForum && ch.ParentID == categoryID && ch.Name == forum {
+		if ch.Type == discordgo.ChannelTypeGuildText && ch.ParentID == categoryID && ch.Name == channel {
 			edit := discordgo.ChannelEdit{
 				Topic: topic,
-				DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
-					EmojiName: discord.NotifyReactionEmoji,
-				},
 			}
 			d.session.ChannelEdit(ch.ID, &edit)
 			return ch, nil
 		}
 	}
 	data := discordgo.GuildChannelCreateData{
-		Name:     forum,
-		Type:     discordgo.ChannelTypeGuildForum,
+		Name:     channel,
+		Type:     discordgo.ChannelTypeGuildText,
+		Topic:    topic,
 		ParentID: categoryID,
 	}
 	ch, err := d.session.GuildChannelCreateComplex(guildID, data)
 	if err != nil {
 		return nil, err
 	}
-	edit := discordgo.ChannelEdit{
-		Topic: topic,
-		DefaultReactionEmoji: &discordgo.ForumDefaultReaction{
-			EmojiName: discord.NotifyReactionEmoji,
-		},
-	}
-	ch, err = d.session.ChannelEdit(ch.ID, &edit)
-	if err != nil {
-		return nil, err
-	}
-	slog.Debug("GuildChannelCreateComplex OK", "created ch.Name", ch.Name)
+	d.logger.Debug("GuildChannelCreateComplex OK", zap.String("created ch.Name", ch.Name))
 	return ch, nil
 }
 
-func (d *DiscordClient) CreateNotifyAndScheduleForum() (*discordgo.Channel, error) {
-	return d.createForum(discord.NotifyAndScheduleCategory, discord.AutoActionForum, discord.AutoActionForumTopic)
+func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, error) {
+	return d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelTopic)
 }
 
-func (d *DiscordClient) ListForumThredFirstMessageContents(forumID string) ([]*discordgo.Message, error) {
+func (d *DiscordClient) ListAutoSearchChannelThredFirstMessageContents(channelID string) ([]*discordgo.Message, error) {
 	threadsList, err := d.session.GuildThreadsActive(d.session.State.Guilds[0].ID)
 	if err != nil {
 		return nil, err
 	}
 	messages := make([]*discordgo.Message, 0)
 	for _, th := range threadsList.Threads {
-		if th.ParentID == forumID {
+		if th.ParentID == channelID {
 			thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
 			if err != nil {
-				slog.Warn("can't get messages in thred", "th.ID", th.ID, "th.Name", th.Name)
+				d.logger.Warn("can't get messages in thred", zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
 			}
 			if len(thMsgs) == 1 {
 				messages = append(messages, thMsgs[0])
