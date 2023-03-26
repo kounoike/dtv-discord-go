@@ -103,6 +103,7 @@ func main() {
 	)
 	retryMirakcServiceFunc := func() error {
 		b := p2.Start(ctx)
+		cnt := 0
 		for backoff.Continue(b) {
 			services, err := mirakcClient.ListServices()
 			if err != nil {
@@ -111,6 +112,10 @@ func main() {
 			if err == nil && len(services) > 0 {
 				return nil
 			}
+			if cnt%12 == 0 {
+				logger.Info("waiting to mirakc service discovery...")
+			}
+			cnt += 1
 		}
 		return errors.New("failed to get services")
 	}
