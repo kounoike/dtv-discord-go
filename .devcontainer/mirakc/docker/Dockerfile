@@ -19,4 +19,4 @@ ENV MIRAKC_CONFIG=/etc/mirakc/config.yml
 
 COPY supervisord.conf /etc/supervisord.conf
 
-CMD ["/usr/local/bin/supervisord", "--nodaemon", "-c", "/etc/supervisord.conf"]
+ENTRYPOINT ["/usr/local/bin/mirakc"]
