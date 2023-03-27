@@ -19,10 +19,11 @@ type ProgramMessageTemplateArgs struct {
 
 const (
 	programMessageTemplateString = `{{ .Program.Name }}
+{{ .Program.Genre }}
 {{ .Program.Description }}
 {{ .Service.Name }}
-{{ .Program.Json | toExtendStr }}
 {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
+{{ .Program.Json | toExtendStr }}
 ==============================================================================================`
 )
 

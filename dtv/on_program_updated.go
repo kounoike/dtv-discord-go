@@ -50,6 +50,7 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 			if err != nil {
 				return err
 			}
+			dtv.logger.Debug("will insert program", zap.String("p.Genre", p.Genre))
 			err = dtv.queries.InsertProgram(ctx, p)
 			if err != nil {
 				return err

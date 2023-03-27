@@ -14,6 +14,7 @@ import (
 type AutoSearch struct {
 	Title          string            `yaml:"タイトル"`
 	Channel        string            `yaml:"チャンネル"`
+	Genre          string            `yaml:"ジャンル"`
 	NotifyUsers    []*discordgo.User `yaml:"-"`
 	RecordingUsers []*discordgo.User `yaml:"-"`
 	ThreadID       string            `yaml:"-"`
@@ -21,11 +22,13 @@ type AutoSearch struct {
 
 type AutoSearchProgram struct {
 	Title string
+	Genre string
 }
 
 func NewAutoSearchProgram(p db.Program) *AutoSearchProgram {
 	return &AutoSearchProgram{
 		Title: normalizeString(p.Name),
+		Genre: normalizeString(p.Genre),
 	}
 }
 
@@ -34,11 +37,13 @@ func normalizeString(str string) string {
 }
 
 func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
-	if strings.Contains(program.Title, a.Title) {
-		return true
-	} else {
+	if a.Title != "" && !strings.Contains(program.Title, a.Title) {
 		return false
 	}
+	if a.Genre != "" && !strings.Contains(program.Genre, a.Genre) {
+		return false
+	}
+	return true
 }
 
 func (a *AutoSearch) IsMatchService(serviceName string) bool {

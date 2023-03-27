@@ -16,8 +16,8 @@ services:
     image: mariadb:latest
     volumes:
       - mysql-db:/var/lib/mysql
-    ports:
-      - "3306:3306"
+    # ports:
+    #   - "3306:3306"
     environment:
       MYSQL_USER: dtv-discord
       MYSQL_PASSWORD: dtv-discord
@@ -30,14 +30,15 @@ services:
     # image: mirakc/mirakc
     build: ./mirakc/docker
     privileged: true
-    ports:
-      - "40772:40772"
+    # ports:
+    #   - "40772:40772"
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
       - ./mirakc/epg:/var/lib/mirakc/epg:rw
       - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
       - ./mirakc/recorded:/recorded:rw
+      - /var/run/pcscd:/var/run/pcscd:rw
     devices:
       - /dev/px4video0
       - /dev/px4video1

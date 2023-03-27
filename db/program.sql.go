@@ -11,7 +11,7 @@ import (
 )
 
 const getProgram = `-- name: GetProgram :one
-SELECT id, json, event_id, service_id, network_id, start_at, duration, is_free, name, description, created_at, updated_at FROM ` + "`" + `program` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
+SELECT id, json, event_id, service_id, network_id, start_at, duration, is_free, name, description, created_at, updated_at, genre FROM ` + "`" + `program` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgram(ctx context.Context, id int64) (Program, error) {
@@ -30,6 +30,7 @@ func (q *Queries) GetProgram(ctx context.Context, id int64) (Program, error) {
 		&i.Description,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Genre,
 	)
 	return i, err
 }
@@ -45,8 +46,9 @@ INSERT INTO ` + "`" + `program` + "`" + ` (
     ` + "`" + `duration` + "`" + `,
     ` + "`" + `is_free` + "`" + `,
     ` + "`" + `name` + "`" + `,
-    ` + "`" + `description` + "`" + `
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ` + "`" + `description` + "`" + `,
+    ` + "`" + `genre` + "`" + `
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `
 
 type createProgramParams struct {
@@ -60,6 +62,7 @@ type createProgramParams struct {
 	IsFree      bool            `json:"isFree"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
+	Genre       string          `json:"genre"`
 }
 
 func (q *Queries) createProgram(ctx context.Context, arg createProgramParams) error {
@@ -74,6 +77,7 @@ func (q *Queries) createProgram(ctx context.Context, arg createProgramParams) er
 		arg.IsFree,
 		arg.Name,
 		arg.Description,
+		arg.Genre,
 	)
 	return err
 }

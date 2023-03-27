@@ -22,6 +22,8 @@ sql:
         go_struct_tag: json:"-"
       - column: program.extends_json
         go_struct_tag: json:"-"
+      - column: program.genre
+        go_struct_tag: json:"-"
       - column: program.created_at
         go_struct_tag: json:"-"
       - column: program.updated_at
