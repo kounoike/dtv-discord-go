@@ -4,8 +4,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpcsclite-dev \
     pcscd \
-    pkg-config \
-    dvb-tools
+    pkg-config
 
 RUN npm install arib-b25-stream-test -g --unsafe 
 
