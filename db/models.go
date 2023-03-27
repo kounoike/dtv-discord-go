@@ -22,6 +22,7 @@ type Program struct {
 	Description string          `json:"description"`
 	CreatedAt   time.Time       `json:"-"`
 	UpdatedAt   time.Time       `json:"-"`
+	Genre       string          `json:"-"`
 }
 
 type ProgramMessage struct {

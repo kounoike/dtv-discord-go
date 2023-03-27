@@ -12,8 +12,9 @@ INSERT INTO `program` (
     `duration`,
     `is_free`,
     `name`,
-    `description`
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `description`,
+    `genre`
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- name: updateProgram :exec
 UPDATE `program` SET
