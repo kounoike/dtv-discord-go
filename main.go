@@ -25,7 +25,7 @@ import (
 )
 
 var (
-	tag = "develop"
+	version = "develop"
 )
 
 func main() {
@@ -58,7 +58,7 @@ func main() {
 	}
 	defer logger.Sync()
 
-	logger.Info("Starting dtv-discord-go", zap.String("version", tag))
+	logger.Info("Starting dtv-discord-go", zap.String("version", version))
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=true", config.DB.User, config.DB.Password, config.DB.Host, config.DB.Name))
 	if err != nil {
@@ -162,8 +162,8 @@ func main() {
 	logger.Info("Connected!")
 
 	discordClient.UpdateChannelsCache()
-	logger.Info("Running!", zap.String("dtv-discord-go version", tag), zap.String("mirakc version", mirakcVersion.Current))
-	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", tag, mirakcVersion.Current)
+	logger.Info("Running!", zap.String("dtv-discord-go version", version), zap.String("mirakc version", mirakcVersion.Current))
+	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", version, mirakcVersion.Current)
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, logMessage)
 	if mirakcVersion.Current != mirakcVersion.Latest {
 		discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("mirakcの新しいバージョン(%s)があります", mirakcVersion.Latest))
