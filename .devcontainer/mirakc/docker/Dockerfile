@@ -14,6 +14,4 @@ COPY --from=docker.io/mirakc/mirakc:debian /etc/mirakc/strings.yml /etc/mirakc/s
 # COPY --from=docker.io/mirakc/mirakc:debian /etc/mirakurun.openapi.json /etc/mirakurun.openapi.json
 ENV MIRAKC_CONFIG=/etc/mirakc/config.yml
 
-COPY supervisord.conf /etc/supervisord.conf
-
 ENTRYPOINT ["/usr/local/bin/mirakc"]
