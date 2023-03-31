@@ -220,7 +220,14 @@ func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, er
 	if err != nil {
 		return nil, err
 	}
+	err = d.UpdateChannelsCache()
+	if err != nil {
+		return nil, err
+	}
 	msgs, err := d.session.ChannelMessages(ch.ID, 1, "", "0", "")
+	if err != nil {
+		return nil, err
+	}
 	if len(msgs) == 0 {
 		_, err := d.SendMessage(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelWelcomeMessage)
 		if err != nil {
@@ -242,23 +249,41 @@ func (d *DiscordClient) ListAutoSearchChannelThredOkReactionedFirstMessageConten
 	if err != nil {
 		return nil, err
 	}
-	messages := make([]*discordgo.Message, 0)
+	threads := []*discordgo.Channel{}
 	for _, th := range threadsList.Threads {
 		if th.ParentID == channelID {
-			thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
+			threads = append(threads, th)
+			d.logger.Debug("found active thread", zap.String("name", th.Name))
+		}
+	}
+	for {
+		archivedThreadList, err := d.session.ThreadsArchived(channelID, nil, 100)
+		if err != nil {
+			return nil, err
+		}
+		for _, th := range archivedThreadList.Threads {
+			d.logger.Debug("found archived thread", zap.String("name", th.Name))
+		}
+		threads = append(threads, archivedThreadList.Threads...)
+		if !archivedThreadList.HasMore {
+			break
+		}
+	}
+	messages := make([]*discordgo.Message, 0)
+	for _, th := range threads {
+		thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
+		if err != nil {
+			d.logger.Warn("can't get messages in thred", zap.Error(err), zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
+			continue
+		}
+		if len(thMsgs) > 0 {
+			users, err := d.session.MessageReactions(th.ID, thMsgs[0].ID, discord.OkReactionEmoji, 1, "", "")
 			if err != nil {
-				d.logger.Warn("can't get messages in thred", zap.Error(err), zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
+				d.logger.Warn("can't get message's reactions", zap.Error(err), zap.String("th.ID", th.ID), zap.String("msgID", thMsgs[0].ID))
 				continue
 			}
-			if len(thMsgs) > 0 {
-				users, err := d.session.MessageReactions(th.ID, thMsgs[0].ID, discord.OkReactionEmoji, 1, "", "")
-				if err != nil {
-					d.logger.Warn("can't get message's reactions", zap.Error(err), zap.String("th.ID", th.ID), zap.String("msgID", thMsgs[0].ID))
-					continue
-				}
-				if len(users) > 0 {
-					messages = append(messages, thMsgs[0])
-				}
+			if len(users) > 0 {
+				messages = append(messages, thMsgs[0])
 			}
 		}
 	}
