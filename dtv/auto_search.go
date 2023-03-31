@@ -8,7 +8,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/discord"
 	"go.uber.org/zap"
 	"golang.org/x/text/width"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/ini.v1"
 )
 
 type AutoSearch struct {
@@ -56,11 +56,15 @@ func (a *AutoSearch) IsMatchService(serviceName string) bool {
 
 func (dtv *DTVUsecase) getAutoSeachFromMessage(msg *discordgo.Message) (*AutoSearch, error) {
 	content := []byte(msg.Content)
-	var autoSearch AutoSearch
-	err := yaml.Unmarshal(content, &autoSearch)
+	iniContent, err := ini.Load(content)
 	if err != nil {
 		return nil, err
 	}
+	autoSearch := AutoSearch{}
+	autoSearch.Channel = normalizeString(iniContent.Section("").Key("チャンネル").String())
+	autoSearch.Genre = normalizeString(iniContent.Section("").Key("ジャンル").String())
+	autoSearch.Title = normalizeString(iniContent.Section("").Key("タイトル").String())
+
 	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
 	if err != nil {
 		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji))
