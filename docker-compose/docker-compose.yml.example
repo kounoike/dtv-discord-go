@@ -9,6 +9,7 @@ services:
     links:
       - tuner:tuner
       - db:db
+    restart: always
   db:
     image: mariadb:latest
     volumes:
@@ -33,10 +34,11 @@ services:
       - ./mirakc/recorded:/recorded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
-      - /dev/px4video0
+      - /dev/px4video0 # for PX-W3U4
       - /dev/px4video1
       - /dev/px4video2
       - /dev/px4video3
+      # - /dev/dvb # for PX-S1UD
       - /dev/bus
     environment:
       TZ: Asia/Tokyo
