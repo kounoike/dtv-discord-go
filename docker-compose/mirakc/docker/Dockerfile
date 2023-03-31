@@ -3,6 +3,7 @@ FROM node:18-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
+    curl \
     dvb-tools \
     libpcsclite-dev \
     pcscd \
