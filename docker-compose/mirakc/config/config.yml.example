@@ -13,10 +13,6 @@ channels:
     type: 'GR'
     channel: '16'
 
-  - name: 'ｔｖｋ１'
-    type: 'GR'
-    channel: '18'
-
   - name: 'フジテレビ'
     type: 'GR'
     channel: '21'
@@ -105,42 +101,6 @@ channels:
     channel: 'BS9_0'
     services: [211]
 
-  - name: 'スターチャンネル１'
-    type: 'BS'
-    channel: 'BS9_1'
-    services: [200]
-
-  - name: 'ＢＳ１２トゥエルビ'
-    type: 'BS'
-    channel: 'BS9_2'
-    services: [222]
-
-  - name: 'ＢＳスカパー！'
-    type: 'BS'
-    channel: 'BS11_0'
-    services: [241]
-
-  - name: '放送大学ｅｘ'
-    type: 'BS'
-    channel: 'BS11_1'
-    services: [231]
-
-  - name: '放送大学ｏｎ'
-    type: 'BS'
-    channel: 'BS11_1'
-    services: [232]
-
-  - name: '放送大学ラジオ'
-    type: 'BS'
-    channel: 'BS11_1'
-    services: [531]
-    disabled: true
-
-  - name: 'ＢＳ釣りビジョン'
-    type: 'BS'
-    channel: 'BS11_2'
-    services: [251]
-
   - name: 'ＢＳ日テレ'
     type: 'BS'
     channel: 'BS13_0'
@@ -170,11 +130,6 @@ channels:
     type: 'BS'
     channel: 'BS13_1'
     services: [183]
-
-  - name: 'ＢＳアニマックス'
-    type: 'BS'
-    channel: 'BS13_2'
-    services: [236]
 
   - name: 'ＮＨＫＢＳ１'
     type: 'BS'
@@ -210,6 +165,18 @@ tuners:
     command: >-
       recpt1 --device /dev/px4video3 {{channel}} {{duration}} -
     disabled: false
+
+  # - name: DVB-T
+  #   types: [GR]
+  #   command: >-
+  #     dvbv5-zap -a 0 -C jp -c /etc/mirakc/dvbv5_channels_isdbt.conf -P {{channel}} -o -
+  #   disabled: false
+  #
+  # - name: DVB-S
+  #   types: [BS, CS]
+  #   command: >-
+  #     dvbv5-zap -a 1 -C jp -c /etc/mirakc/dvbv5_channels_isdbs.conf -P {{channel}} -o -
+  #   disabled: false
 
 filters:
   decode-filter:
