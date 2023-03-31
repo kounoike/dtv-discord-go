@@ -216,7 +216,25 @@ func (d *DiscordClient) createChannelWithTopic(category string, channel string, 
 }
 
 func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, error) {
-	return d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelTopic)
+	ch, err := d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelTopic)
+	if err != nil {
+		return nil, err
+	}
+	msgs, err := d.session.ChannelMessages(ch.ID, 1, "", "0", "")
+	if len(msgs) == 0 {
+		_, err := d.SendMessage(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelWelcomeMessage)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if msgs[0].Author.ID == d.session.State.User.ID {
+			_, err := d.session.ChannelMessageEdit(ch.ID, msgs[0].ID, discord.AutoActionChannelWelcomeMessage)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return ch, err
 }
 
 func (d *DiscordClient) ListAutoSearchChannelThredOkReactionedFirstMessageContents(channelID string) ([]*discordgo.Message, error) {
