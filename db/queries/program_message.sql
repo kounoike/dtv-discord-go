@@ -7,6 +7,7 @@ SELECT * FROM `program_message` WHERE `program_id` = ?;
 -- name: InsertProgramMessage :exec
 INSERT INTO `program_message` (
     `message_id`,
-    `program_id`
-) VALUES (?, ?);
+    `program_id`,
+    `channel_id`
+) VALUES (?, ?, ?);
 

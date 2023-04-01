@@ -12,3 +12,6 @@ INSERT INTO program_recording(
     ?,
     ?
 );
+
+-- name: DeleteProgramRecordingByProgramId :exec
+DELETE FROM program_recording WHERE program_id = ?;

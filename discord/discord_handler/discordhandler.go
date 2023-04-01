@@ -26,6 +26,11 @@ func NewDiscordHandler(dtv *dtv.DTVUsecase, session *discordgo.Session, logger *
 func (h *DiscordHandler) reactionAdd(session *discordgo.Session, reaction *discordgo.MessageReactionAdd) {
 	h.logger.Debug("add reaction emoji", zap.String("emoji", reaction.Emoji.Name), zap.String("UserID", reaction.UserID), zap.String("ChannelID", reaction.ChannelID), zap.String("MessageID", reaction.MessageID))
 
+	if reaction.UserID == h.session.State.User.ID {
+		h.logger.Debug("It's my reaction no intent.")
+		return
+	}
+
 	switch reaction.Emoji.Name {
 	case discord.RecordingReactionEmoji:
 		ctx := context.Background()

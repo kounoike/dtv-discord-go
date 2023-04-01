@@ -177,7 +177,11 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, queries, logger)
+	// NOTE: 日本国内のみをターゲットにする
+	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
+	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
+
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
@@ -205,9 +209,6 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 	logger.Info("CreateChannels OK")
-
-	// NOTE: 日本国内のみをターゲットにする
-	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
 
 	if config.Encoding.Enabled {
 		scheduler.Every("1m").Do(func() {

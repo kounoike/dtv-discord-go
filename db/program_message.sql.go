@@ -10,7 +10,7 @@ import (
 )
 
 const getProgramMessageByMessageID = `-- name: GetProgramMessageByMessageID :one
-SELECT id, message_id, program_id, created_at, updated_at FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `message_id` + "`" + ` = ?
+SELECT id, message_id, program_id, created_at, updated_at, channel_id FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `message_id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgramMessageByMessageID(ctx context.Context, messageID string) (ProgramMessage, error) {
@@ -22,12 +22,13 @@ func (q *Queries) GetProgramMessageByMessageID(ctx context.Context, messageID st
 		&i.ProgramID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ChannelID,
 	)
 	return i, err
 }
 
 const getProgramMessageByProgramID = `-- name: GetProgramMessageByProgramID :one
-SELECT id, message_id, program_id, created_at, updated_at FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `program_id` + "`" + ` = ?
+SELECT id, message_id, program_id, created_at, updated_at, channel_id FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `program_id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgramMessageByProgramID(ctx context.Context, programID int64) (ProgramMessage, error) {
@@ -39,6 +40,7 @@ func (q *Queries) GetProgramMessageByProgramID(ctx context.Context, programID in
 		&i.ProgramID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ChannelID,
 	)
 	return i, err
 }
@@ -46,16 +48,18 @@ func (q *Queries) GetProgramMessageByProgramID(ctx context.Context, programID in
 const insertProgramMessage = `-- name: InsertProgramMessage :exec
 INSERT INTO ` + "`" + `program_message` + "`" + ` (
     ` + "`" + `message_id` + "`" + `,
-    ` + "`" + `program_id` + "`" + `
-) VALUES (?, ?)
+    ` + "`" + `program_id` + "`" + `,
+    ` + "`" + `channel_id` + "`" + `
+) VALUES (?, ?, ?)
 `
 
 type InsertProgramMessageParams struct {
 	MessageID string `json:"messageID"`
 	ProgramID int64  `json:"programID"`
+	ChannelID string `json:"channelID"`
 }
 
 func (q *Queries) InsertProgramMessage(ctx context.Context, arg InsertProgramMessageParams) error {
-	_, err := q.db.ExecContext(ctx, insertProgramMessage, arg.MessageID, arg.ProgramID)
+	_, err := q.db.ExecContext(ctx, insertProgramMessage, arg.MessageID, arg.ProgramID, arg.ChannelID)
 	return err
 }
