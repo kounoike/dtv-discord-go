@@ -17,10 +17,10 @@ import (
 
 func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) error {
 	service, err := dtv.mirakc.GetService(serviceId)
-	_ = service
 	if err != nil {
 		return err
 	}
+	dtv.logger.Debug("Start onProgramsUpdated", zap.Uint("serviceID", serviceId), zap.String("serviceName", service.Name))
 	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("programs updated: %s", service.Name))
 	if err != nil {
 		return err
@@ -103,12 +103,19 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 }
 
 func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) error {
-	dtv.scheduler.Do(func() {
-		err := dtv.onProgramsUpdated(ctx, serviceId)
+	job, err := dtv.scheduler.Every("1m").LimitRunsTo(1).Do(func() {
+		newCtx := context.Background()
+		err := dtv.onProgramsUpdated(newCtx, serviceId)
 		if err != nil {
 			dtv.logger.Error("onProgramsUpdated error", zap.Error(err))
 		}
+		dtv.logger.Debug("onProgramsUpdated completed", zap.Uint("serviceId", serviceId))
 	})
+	if err != nil {
+		dtv.logger.Error("scheduling error", zap.Error(err))
+		return err
+	}
+	dtv.logger.Debug("scheduled onProgramsUpdated", zap.Uint("serviceId", serviceId), zap.Time("NextRun", job.NextRun()))
 	return nil
 }
 

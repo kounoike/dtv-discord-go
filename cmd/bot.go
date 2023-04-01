@@ -179,7 +179,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 
 	// NOTE: 日本国内のみをターゲットにする
 	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
-	scheduler.SetMaxConcurrentJobs(1, gocron.WaitMode)
+	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
 
 	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger)
 	if err != nil {
