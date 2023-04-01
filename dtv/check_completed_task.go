@@ -38,7 +38,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			dtv.logger.Warn("failed to InsertEncodeTask", zap.Error(err))
 			continue
 		}
-		_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, fmt.Sprintf("`%s`のエンコードが完了しました", payload.OutputPath))
+		_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, fmt.Sprintf("**エンコード完了** `%s`のエンコードが完了しました", payload.OutputPath))
 		if err != nil {
 			dtv.logger.Warn("failed to SendMessage", zap.Error(err))
 			continue
