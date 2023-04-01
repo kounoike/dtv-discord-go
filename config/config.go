@@ -31,4 +31,7 @@ type Config struct {
 		OutputPathTemplate    string `required:"true" env:"ENCODING_OUTPUT_PATH_TEMPLATE"`
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
 	}
+	Match struct {
+		KanaMatch bool `default:"true" env:"KANA_MATCH"`
+	}
 }

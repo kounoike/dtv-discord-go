@@ -52,14 +52,14 @@ func (dtv *DTVUsecase) OnOkEmojiAdd(ctx context.Context, reaction *discordgo.Mes
 	}
 
 	for _, service := range services {
-		if autoSearch.IsMatchService(service.Name) {
+		if autoSearch.IsMatchService(service.Name, dtv.kanaMatch) {
 			programs, err := dtv.mirakc.ListPrograms(uint(service.ID))
 			if err != nil {
 				dtv.logger.Warn("ListPrograms error", zap.Error(err))
 				continue
 			}
 			for _, program := range programs {
-				asp := NewAutoSearchProgram(program)
+				asp := NewAutoSearchProgram(program, dtv.kanaMatch)
 				if autoSearch.IsMatchProgram(asp) {
 					// NOTE: DBに入ってるか確認する
 					_, err := dtv.queries.GetProgram(ctx, program.ID)
