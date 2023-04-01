@@ -14,6 +14,8 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 
 v0.6.0で自動検索メッセージの書式を`:`から`=`に変更しました。メッセージ編集などで対応してください。
 
+v0.7.0で自動エンコード機能を追加しました。`docker-compose.yml.example`と`config.yml.example`の差分を見て必要な設定を追加してください。
+
 ## 動作環境
 
 Docker / Docker Composeでの動作を想定しています。ホストでの実行などは想定していません。
