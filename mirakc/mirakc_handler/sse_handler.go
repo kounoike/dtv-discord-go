@@ -51,6 +51,14 @@ func (h *SSEHandler) onRecordingStarted(programId int64) {
 	}
 }
 
+func (h *SSEHandler) onRecordingFailed(data mirakc_model.RecordingFailedEventData) {
+	ctx := context.Background()
+	err := h.dtv.OnRecordingFailed(ctx, data.ProgramId, data.ToString())
+	if err != nil {
+		h.logger.Error("OnRecordingFailed error", zap.Error(err))
+	}
+}
+
 func (h *SSEHandler) Subscribe() {
 	h.sse.Subscribe("messages", func(msg *sse.Event) {
 		// Got some data!
@@ -81,6 +89,14 @@ func (h *SSEHandler) Subscribe() {
 				return
 			}
 			h.onRecordingStopped(data.ProgramId)
+		case "recording.failed":
+			var data mirakc_model.RecordingFailedEventData
+			err := json.Unmarshal(msg.Data, &data)
+			if err != nil {
+				h.logger.Error("json Unmarshall error", zap.Error(err))
+				return
+			}
+			h.onRecordingFailed(data)
 		}
 		h.logger.Debug("sse event processed successfully")
 	})

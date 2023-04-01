@@ -1,10 +1,10 @@
 package discord
 
 const (
-	InformationCategory = "録画-情報"
-	LogChannel          = "動作ログ"
-	RecordedChannel     = "録画開始・完了"
-	FailedChannel       = "録画失敗"
+	InformationCategory    = "録画-情報"
+	LogChannel             = "動作ログ"
+	RecordingChannel       = "録画開始・完了"
+	RecordingFailedChannel = "録画失敗"
 
 	ProgramInformationCategory = "録画-番組情報"
 	// サービス名でチャンネルが出来る
