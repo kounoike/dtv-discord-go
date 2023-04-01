@@ -21,3 +21,5 @@ encoding:
   basepath: "/encoded"
   outputpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-1504\"}}-{{.Service.Name | fold}}.mp4"
   encodecommandtemplate: "ffmpeg -i {{.InputPath}} {{.OutputPath}} -y"
+match:
+  kanamatch: true
