@@ -16,11 +16,11 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 	if err != nil {
 		return err
 	}
-	recording, err := dtv.queries.GetProgramRecordingByProgramId(ctx, programId)
+	contentPath, err := dtv.mirakc.GetRecordingScheduleContentPath(programId)
 	if err != nil {
 		return err
 	}
-	msg, err := template.GetRecordingStoppedMessage(program, service, recording.ContentPath)
+	msg, err := template.GetRecordingStoppedMessage(program, service, contentPath)
 	if err != nil {
 		return err
 	}

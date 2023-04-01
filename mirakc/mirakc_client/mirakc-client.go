@@ -122,7 +122,7 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 		Options: scheduleOptions{
 			ContentPath: contentPath,
 		},
-		Tags: []string{"manual"},
+		Tags: []string{"dtv-discord-bot"},
 	}
 	dataJson, err := json.Marshal(data)
 	if err != nil {
@@ -157,4 +157,23 @@ func (m *MirakcClient) DeleteRecordingSchedule(programID int64) error {
 		return nil
 	}
 	return fmt.Errorf("delete request:%s status code:%d", url, resp.StatusCode())
+}
+
+func (m *MirakcClient) GetRecordingScheduleContentPath(programID int64) (string, error) {
+	url := fmt.Sprintf("http://%s:%d/api/recording/schedules/%d", m.host, m.port, programID)
+	client := resty.New()
+	resp, err := client.R().
+		Get(url)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode()/100 == 2 {
+		var data scheduleData
+		err := json.Unmarshal(resp.Body(), &data)
+		if err != nil {
+			return "", err
+		}
+		return data.Options.ContentPath, nil
+	}
+	return "", fmt.Errorf("get request:%s status code:%d", url, resp.StatusCode())
 }
