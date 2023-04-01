@@ -13,11 +13,11 @@ type programMessageTemplateArgs struct {
 }
 
 const (
-	programMessageTemplateString = `{{ .Program.Name }}
-{{ .Program.Genre }}
-{{ .Program.Description }}
-{{ .Service.Name }}
-{{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
+	programMessageTemplateString = `**{{ .Program.Name }}**
+**ジャンル**:{{ .Program.Genre }}
+**説明**:{{ .Program.Description }}
+**放送局**:{{ .Service.Name }} **放送時間**:{{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
+**番組詳細**
 {{ .Program.Json | toExtendStr }}`
 )
 
