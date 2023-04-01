@@ -14,7 +14,7 @@ import (
 )
 
 func (dtv *DTVUsecase) CheckFailedTask(ctx context.Context) error {
-	dtv.logger.Debug("Start CheckCompletedTask")
+	dtv.logger.Debug("Start CheckFailedTask")
 	if dtv.inspector == nil {
 		return nil
 	}
