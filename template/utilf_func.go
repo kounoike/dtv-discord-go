@@ -41,7 +41,7 @@ func toExtendStr(j json.RawMessage) string {
 	any := jsoniter.Get(b, "extended")
 	str := ""
 	for _, key := range any.Keys() {
-		str += fmt.Sprintf("%s:%s\n", key, any.Get(key).ToString())
+		str += fmt.Sprintf("**%s**: %s\n", key, any.Get(key).ToString())
 	}
 	return str
 }
