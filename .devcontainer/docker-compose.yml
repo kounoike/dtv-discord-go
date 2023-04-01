@@ -26,6 +26,11 @@ services:
       TZ: "Asia/Tokyo"
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --performance-schema=false --expire_logs_days=1 --default-authentication-plugin=mysql_native_password
     restart: always
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-db:/data
+    command: redis-server --appendonly yes
   tuner:
     # image: mirakc/mirakc
     build: ./mirakc/docker
@@ -52,7 +57,16 @@ services:
       MIRAKC_ARIB_NO_TIMESTAMP: ''
       MIRAKC_ARIB_LOG: 'info'
     restart: always
+  asynqmon:
+    image: hibiken/asynqmon
+    command:
+      - "--redis-addr"
+      - "redis:6379"
+    ports:
+      - "8080:8080"
+    links:
+      - redis:redis
 
 volumes:
   mysql-db:
-  
+  redis-db:
