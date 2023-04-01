@@ -32,6 +32,7 @@ type Config struct {
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
 	}
 	Match struct {
-		KanaMatch bool `default:"true" env:"KANA_MATCH"`
+		KanaMatch  bool `default:"true" env:"KANA_MATCH"`
+		FuzzyMatch bool `default:"true" env:"FUZZY_MATCH"`
 	}
 }
