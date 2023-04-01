@@ -17,11 +17,12 @@
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
 	,
-	"postCreateCommand": "go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && go install github.com/rubenv/sql-migrate/...@latest && sudo apt update && sudo apt install mariadb-client",
+	"postCreateCommand": "go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && go install github.com/rubenv/sql-migrate/...@latest && sudo apt update && sudo apt install -y mariadb-client ffmpeg",
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"github.vscode-pull-request-github"
+				"github.vscode-pull-request-github",
+				"ms-azuretools.vscode-docker"
 			]
 		}
 	}

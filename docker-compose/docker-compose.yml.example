@@ -47,6 +47,22 @@ services:
       MIRAKC_ARIB_NO_TIMESTAMP: ''
       MIRAKC_ARIB_LOG: 'info'
     restart: always
+  # 自動エンコード機能用なので自動エンコードを使わない場合はコメントアウトして外してOK
+  worker:
+    build: ./worker
+    volumes:
+      - ./config.yml:/config.yml:ro
+    environment:
+      TZ: Asia/Tokyo
+    links:
+      - redis:redis
+    restart: always
+  # 自動エンコード機能用なので自動エンコードを使わない場合はコメントアウトして外してOK
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-db:/data
+    command: redis-server --appendonly yes
 
 volumes:
   mysql-db:

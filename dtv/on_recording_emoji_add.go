@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"strings"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -13,19 +12,6 @@ import (
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
-
-type ContentPathProgram struct {
-	Name      string
-	StartTime time.Time
-}
-type ContentPathService struct {
-	Name string
-}
-
-type ContentPathTemplateData struct {
-	Program ContentPathProgram
-	Service ContentPathService
-}
 
 func (dtv *DTVUsecase) checkRecordingForMessage(ctx context.Context, channelID string, messageID string) error {
 	users, err := dtv.discord.GetMessageReactions(channelID, messageID, discord.RecordingReactionEmoji)
@@ -50,12 +36,12 @@ func (dtv *DTVUsecase) checkRecordingForMessage(ctx context.Context, channelID s
 		if err != nil {
 			return err
 		}
-		data := ContentPathTemplateData{
-			Program: ContentPathProgram{
+		data := PathTemplateData{
+			Program: PathProgram{
 				Name:      program.Name,
 				StartTime: program.StartTime(),
 			},
-			Service: ContentPathService{
+			Service: PathService{
 				Name: service.Name,
 			},
 		}

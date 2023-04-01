@@ -3,12 +3,21 @@ db:
   name: dtv
   user: dtv-discord
   password: dtv-discord
+redis:
+  host: redis
+  port: 6379
 discord:
   token: YOUR_DISCORD_TOKEN
 mirakc:
   host: tuner
   port: 40772
 log:
-  level: INFO
+  level: DEBUG
 recording:
-  contentpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-0304\"}}-{{.Service.Name | fold}}.m2ts"
+  basepath: "/recorded"
+  contentpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-1504\"}}-{{.Service.Name | fold}}.m2ts"
+encoding:
+  enabled: true
+  basepath: "/encoded"
+  outputpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-1504\"}}-{{.Service.Name | fold}}.mp4"
+  encodecommandtemplate: "ffmpeg -i {{.InputPath}} {{.OutputPath}} -y"
