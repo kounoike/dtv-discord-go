@@ -52,6 +52,8 @@ services:
     build: ./worker
     volumes:
       - ./config.yml:/config.yml:ro
+      - ./mirakc/recorded:/recorded:rw
+      - ./mirakc/encoded:/encoded:rw
     environment:
       TZ: Asia/Tokyo
     links:
