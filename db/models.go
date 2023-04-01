@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type EncodeTask struct {
+	ID        int32     `json:"id"`
+	TaskID    string    `json:"taskID"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type Program struct {
 	ID          int64           `json:"id"`
 	Json        json.RawMessage `json:"-"`

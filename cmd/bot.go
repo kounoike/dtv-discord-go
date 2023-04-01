@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-co-op/gocron"
 	"github.com/google/subcommands"
 	"github.com/hibiken/asynq"
 	"github.com/jinzhu/configor"
@@ -109,12 +110,17 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logger.Info("Applied migrations", zap.Int("count", n))
 
 	var asynqClient *asynq.Client
+	var asynqInspector *asynq.Inspector
+
 	if config.Encoding.Enabled {
 		redisAddr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
 		asynqClient = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 		defer asynqClient.Close()
+		asynqInspector = asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr})
+		defer asynqInspector.Close()
 	} else {
 		asynqClient = nil
+		asynqInspector = nil
 	}
 
 	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port, logger)
@@ -171,7 +177,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, discordClient, mirakcClient, queries, logger)
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, queries, logger)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
@@ -199,6 +205,23 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 	logger.Info("CreateChannels OK")
+
+	// NOTE: 日本国内のみをターゲットにする
+	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
+
+	if config.Encoding.Enabled {
+		scheduler.Every("1m").Do(func() {
+			err := usecase.CheckCompletedTask(ctx)
+			if err != nil {
+				logger.Error("CheckCompletedTask error", zap.Error(err))
+			}
+			err = usecase.CheckFailedTask(ctx)
+			if err != nil {
+				logger.Error("CheckFailedTask error", zap.Error(err))
+			}
+		})
+	}
+	scheduler.StartAsync()
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
