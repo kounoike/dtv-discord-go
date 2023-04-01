@@ -1,12 +1,16 @@
 package discord
 
 const (
-	InformationCategory        = "録画-情報"
-	ProgramInformationCategory = "録画-番組情報"
-	NotifyAndScheduleCategory  = "録画-通知・予約"
+	InformationCategory = "録画-情報"
+	LogChannel          = "動作ログ"
+	RecordedChannel     = "録画開始・完了"
+	FailedChannel       = "録画失敗"
 
-	LogChannel            = "動作ログ"
-	AutoActionChannelName = "自動検索"
+	ProgramInformationCategory = "録画-番組情報"
+	// サービス名でチャンネルが出来る
+
+	NotifyAndScheduleCategory = "録画-通知・予約"
+	AutoActionChannelName     = "自動検索"
 
 	AutoActionChannelTopic          = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**`
 	AutoActionChannelWelcomeMessage = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**

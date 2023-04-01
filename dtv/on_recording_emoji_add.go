@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -69,6 +70,12 @@ func (dtv *DTVUsecase) checkRecordingForMessage(ctx context.Context, channelID s
 		if err != nil {
 			return err
 		}
+
+		err = dtv.queries.InsertProgramRecording(ctx, db.InsertProgramRecordingParams{ProgramID: programMessage.ProgramID, ContentPath: contentPath})
+		if err != nil {
+			return err
+		}
+
 		dtv.logger.Debug("録画予約 OK", zap.Int64("ProgramID", programMessage.ProgramID), zap.String("contentPath", contentPath))
 		err = dtv.discord.MessageReactionAdd(channelID, messageID, discord.OkReactionEmoji)
 		if err != nil {
