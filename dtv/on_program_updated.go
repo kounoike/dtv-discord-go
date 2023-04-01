@@ -15,7 +15,7 @@ import (
 	"golang.org/x/text/width"
 )
 
-func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) error {
+func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) error {
 	service, err := dtv.mirakc.GetService(serviceId)
 	_ = service
 	if err != nil {
@@ -50,12 +50,16 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 			if err != nil {
 				return err
 			}
+			err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
+			if err != nil {
+				return err
+			}
 			dtv.logger.Debug("will insert program", zap.String("p.Genre", p.Genre))
 			err = dtv.queries.InsertProgram(ctx, p)
 			if err != nil {
 				return err
 			}
-			err = dtv.queries.InsertProgramMessage(ctx, db.InsertProgramMessageParams{MessageID: msg.ID, ProgramID: p.ID})
+			err = dtv.queries.InsertProgramMessage(ctx, db.InsertProgramMessageParams{MessageID: msg.ID, ProgramID: p.ID, ChannelID: msg.ChannelID})
 			if err != nil {
 				return err
 			}
@@ -98,6 +102,16 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 	return nil
 }
 
+func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) error {
+	dtv.scheduler.Do(func() {
+		err := dtv.onProgramsUpdated(ctx, serviceId)
+		if err != nil {
+			dtv.logger.Error("onProgramsUpdated error", zap.Error(err))
+		}
+	})
+	return nil
+}
+
 func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *discordgo.Message, p db.Program, service *db.Service, as *AutoSearch) error {
 	url := discord.BuildMessageLinkURL(dtv.discord.Session().State.Guilds[0].ID, msg.ChannelID, msg.ID)
 	content, err := template.GetAutoSearchMessage(p, *service, url)
@@ -129,11 +143,7 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 				return nil
 			}
 		}
-		err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
-		if err != nil {
-			return err
-		}
-		err = dtv.checkRecordingForMessage(ctx, msg.ChannelID, msg.ID)
+		err = dtv.scheduleRecordForMessage(ctx, msg.ChannelID, msg.ID)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,9 @@
 package discord
 
 const (
-	RecordingReactionEmoji = "📼"
+	RecordingReactionEmoji = "🔴"
+	RecordedReactionEmoji  = "📼"
+	EncodedReactionEmoji   = "🗜️"
 	OkReactionEmoji        = "🆗"
 	NotifyReactionEmoji    = "👀"
 )

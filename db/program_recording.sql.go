@@ -9,6 +9,15 @@ import (
 	"context"
 )
 
+const deleteProgramRecordingByProgramId = `-- name: DeleteProgramRecordingByProgramId :exec
+DELETE FROM program_recording WHERE program_id = ?
+`
+
+func (q *Queries) DeleteProgramRecordingByProgramId(ctx context.Context, programID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteProgramRecordingByProgramId, programID)
+	return err
+}
+
 const getProgramRecording = `-- name: GetProgramRecording :one
 SELECT id, program_id, content_path, created_at, updated_at FROM program_recording WHERE id = ?
 `

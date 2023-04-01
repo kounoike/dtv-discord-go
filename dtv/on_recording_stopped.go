@@ -23,14 +23,26 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 	if err != nil {
 		return err
 	}
-	msg, err := template.GetRecordingStoppedMessage(program, service, contentPath)
+	content, err := template.GetRecordingStoppedMessage(program, service, contentPath)
 	if err != nil {
 		return err
 	}
 
-	dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, msg)
+	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, content)
+	if err != nil {
+		return err
+	}
+	programMessage, err := dtv.queries.GetProgramMessageByProgramID(ctx, program.ID)
+	if err != nil {
+		return err
+	}
+	err = dtv.discord.MessageReactionAdd(programMessage.ChannelID, programMessage.MessageID, discord.RecordedReactionEmoji)
+	if err != nil {
+		return err
+	}
 
 	if dtv.asynq != nil {
+		// NOTE: encoding.enabled = trueのとき
 		var b bytes.Buffer
 		data := PathTemplateData{
 			Program: PathProgram{
@@ -50,14 +62,14 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		task, err := tasks.NewProgramEncodeTask(programId, contentPath, outputPath)
 		if err != nil {
 			// NOTE: 多分JSONMarshalの失敗なので無視する
-			dtv.logger.Error("NewProgramEncodeTask failed", zap.Error(err))
+			dtv.logger.Warn("NewProgramEncodeTask failed", zap.Error(err))
 			return nil
 		}
 
 		info, err := dtv.asynq.Enqueue(task)
 		if err != nil {
 			// NOTE: エンキュー失敗は無視する
-			dtv.logger.Error("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+			dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
 			return nil
 		}
 		dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))

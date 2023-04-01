@@ -18,8 +18,7 @@ const (
 {{ .Program.Description }}
 {{ .Service.Name }}
 {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
-{{ .Program.Json | toExtendStr }}
-==============================================================================================`
+{{ .Program.Json | toExtendStr }}`
 )
 
 func GetProgramMessage(program db.Program, service db.Service) (string, error) {

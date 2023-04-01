@@ -39,6 +39,7 @@ type ProgramMessage struct {
 	ProgramID int64     `json:"programID"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+	ChannelID string    `json:"channelID"`
 }
 
 type ProgramRecording struct {

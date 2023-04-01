@@ -4,6 +4,7 @@ import (
 	"text/template"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/go-co-op/gocron"
 	"github.com/hibiken/asynq"
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -18,6 +19,7 @@ type DTVUsecase struct {
 	inspector         *asynq.Inspector
 	discord           *discord_client.DiscordClient
 	mirakc            *mirakc_client.MirakcClient
+	scheduler         *gocron.Scheduler
 	queries           *db.Queries
 	logger            *zap.Logger
 	contentPathTmpl   *template.Template
@@ -29,7 +31,7 @@ func fold(str string) string {
 	return width.Fold.String(str)
 }
 
-func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asynq.Inspector, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, queries *db.Queries, logger *zap.Logger) (*DTVUsecase, error) {
+func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asynq.Inspector, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, scheduler *gocron.Scheduler, queries *db.Queries, logger *zap.Logger) (*DTVUsecase, error) {
 	funcMap := map[string]interface{}{
 		"fold": fold,
 	}
@@ -46,6 +48,7 @@ func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asyn
 		inspector:       inspector,
 		discord:         discordClient,
 		mirakc:          mirakcClient,
+		scheduler:       scheduler,
 		queries:         queries,
 		logger:          logger,
 		contentPathTmpl: contentTmpl,

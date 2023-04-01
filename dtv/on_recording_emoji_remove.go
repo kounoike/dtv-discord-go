@@ -13,7 +13,7 @@ func (dtv *DTVUsecase) OnRecordingEmojiRemove(ctx context.Context, reaction *dis
 	if err != nil {
 		return err
 	}
-	if len(users) == 0 {
+	if len(users) == 1 && users[0].ID == dtv.discord.Session().State.User.ID {
 		programMessage, err := dtv.queries.GetProgramMessageByMessageID(ctx, reaction.MessageID)
 		if err != nil {
 			return err
@@ -23,6 +23,10 @@ func (dtv *DTVUsecase) OnRecordingEmojiRemove(ctx context.Context, reaction *dis
 			return err
 		}
 		err = dtv.discord.MessageReactionRemove(reaction.ChannelID, reaction.MessageID, discord.OkReactionEmoji)
+		if err != nil {
+			return err
+		}
+		err = dtv.queries.DeleteProgramRecordingByProgramId(ctx, programMessage.ProgramID)
 		if err != nil {
 			return err
 		}
