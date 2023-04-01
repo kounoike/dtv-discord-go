@@ -7,6 +7,7 @@ import (
 	"github.com/ikawaha/kagome/tokenizer"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
+	"github.com/lithammer/fuzzysearch/fuzzy"
 	"go.uber.org/zap"
 	"golang.org/x/text/width"
 	"gopkg.in/ini.v1"
@@ -53,21 +54,41 @@ func normalizeString(str string, kanaMatch bool) string {
 	}
 }
 
-func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
-	if a.Title != "" && !strings.Contains(program.Title, a.Title) {
-		return false
-	}
-	if a.Genre != "" && !strings.Contains(program.Genre, a.Genre) {
-		return false
-	}
-	return true
-}
-
-func (a *AutoSearch) IsMatchService(serviceName string, kanaMatch bool) bool {
-	if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
+func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram, fuzzyMatch bool) bool {
+	if fuzzyMatch {
+		if a.Title != "" && !fuzzy.Match(a.Title, program.Title) {
+			return false
+		}
+		if a.Genre != "" && !fuzzy.Match(a.Genre, program.Genre) {
+			return false
+		}
 		return true
 	} else {
-		return false
+		if a.Title != "" && !strings.Contains(program.Title, a.Title) {
+			return false
+		}
+		if a.Genre != "" && !strings.Contains(program.Genre, a.Genre) {
+			return false
+		}
+		return true
+	}
+}
+
+func (a *AutoSearch) IsMatchService(serviceName string, kanaMatch bool, fuzzyMatch bool) bool {
+	if fuzzyMatch {
+		asNormalized := normalizeString(a.Channel, kanaMatch)
+		serviceNormalized := normalizeString(serviceName, kanaMatch)
+		if a.Channel == "" || fuzzy.Match(asNormalized, serviceNormalized) {
+			return true
+		} else {
+			return false
+		}
+	} else {
+		if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
+			return true
+		} else {
+			return false
+		}
 	}
 }
 

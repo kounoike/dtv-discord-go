@@ -26,13 +26,14 @@ type DTVUsecase struct {
 	outputPathTmpl    *template.Template
 	autoSearchChannel *discordgo.Channel
 	kanaMatch         bool
+	fuzzyMatch        bool
 }
 
 func fold(str string) string {
 	return width.Fold.String(str)
 }
 
-func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asynq.Inspector, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, scheduler *gocron.Scheduler, queries *db.Queries, logger *zap.Logger, kanaMatch bool) (*DTVUsecase, error) {
+func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asynq.Inspector, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, scheduler *gocron.Scheduler, queries *db.Queries, logger *zap.Logger, kanaMatch bool, fuzzyMatch bool) (*DTVUsecase, error) {
 	funcMap := map[string]interface{}{
 		"fold": fold,
 	}
@@ -55,5 +56,6 @@ func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asyn
 		contentPathTmpl: contentTmpl,
 		outputPathTmpl:  outputTmpl,
 		kanaMatch:       kanaMatch,
+		fuzzyMatch:      fuzzyMatch,
 	}, nil
 }
