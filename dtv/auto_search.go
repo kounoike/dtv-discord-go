@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/ikawaha/kagome/tokenizer"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"go.uber.org/zap"
@@ -25,15 +26,31 @@ type AutoSearchProgram struct {
 	Genre string
 }
 
-func NewAutoSearchProgram(p db.Program) *AutoSearchProgram {
+func NewAutoSearchProgram(p db.Program, kanaMatch bool) *AutoSearchProgram {
 	return &AutoSearchProgram{
-		Title: normalizeString(p.Name),
-		Genre: normalizeString(p.Genre),
+		Title: normalizeString(p.Name, kanaMatch),
+		Genre: normalizeString(p.Genre, kanaMatch),
 	}
 }
 
-func normalizeString(str string) string {
-	return strings.ToLower(width.Fold.String(str))
+func normalizeString(str string, kanaMatch bool) string {
+	normalized := strings.ToLower(width.Fold.String(str))
+	if kanaMatch {
+		retKana := ""
+		t := tokenizer.New()
+		tokens := t.Tokenize(normalized)
+		normalizedRune := []rune(normalized)
+		for _, token := range tokens {
+			if len(token.Features()) > 7 {
+				retKana += token.Features()[7]
+			} else {
+				retKana += string(normalizedRune[token.Start:token.End])
+			}
+		}
+		return retKana
+	} else {
+		return normalized
+	}
 }
 
 func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
@@ -46,8 +63,8 @@ func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
 	return true
 }
 
-func (a *AutoSearch) IsMatchService(serviceName string) bool {
-	if a.Channel == "" || strings.Contains(normalizeString(serviceName), normalizeString(a.Channel)) {
+func (a *AutoSearch) IsMatchService(serviceName string, kanaMatch bool) bool {
+	if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
 		return true
 	} else {
 		return false
@@ -61,9 +78,9 @@ func (dtv *DTVUsecase) getAutoSeachFromMessage(msg *discordgo.Message) (*AutoSea
 		return nil, err
 	}
 	autoSearch := AutoSearch{}
-	autoSearch.Channel = normalizeString(iniContent.Section("").Key("チャンネル").String())
-	autoSearch.Genre = normalizeString(iniContent.Section("").Key("ジャンル").String())
-	autoSearch.Title = normalizeString(iniContent.Section("").Key("タイトル").String())
+	autoSearch.Channel = normalizeString(iniContent.Section("").Key("チャンネル").String(), dtv.kanaMatch)
+	autoSearch.Genre = normalizeString(iniContent.Section("").Key("ジャンル").String(), dtv.kanaMatch)
+	autoSearch.Title = normalizeString(iniContent.Section("").Key("タイトル").String(), dtv.kanaMatch)
 
 	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
 	if err != nil {
@@ -88,7 +105,7 @@ func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*Auto
 	if err != nil {
 		return nil, err
 	}
-	serviceNameNormalized := normalizeString(serviceName)
+	serviceNameNormalized := normalizeString(serviceName, dtv.kanaMatch)
 
 	autoSearchList := make([]*AutoSearch, 0)
 
@@ -98,8 +115,8 @@ func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*Auto
 			dtv.logger.Warn("thread message yaml unmarshal error", zap.Error(err))
 			continue
 		}
-		if autoSearch.Channel == "" || strings.Contains(serviceNameNormalized, normalizeString(autoSearch.Channel)) {
-			autoSearch.Title = normalizeString(autoSearch.Title)
+		if autoSearch.Channel == "" || strings.Contains(serviceNameNormalized, normalizeString(autoSearch.Channel, dtv.kanaMatch)) {
+			autoSearch.Title = normalizeString(autoSearch.Title, dtv.kanaMatch)
 			autoSearchList = append(autoSearchList, autoSearch)
 		}
 	}

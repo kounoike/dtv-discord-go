@@ -181,7 +181,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
 	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger)
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger, config.Match.KanaMatch)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
