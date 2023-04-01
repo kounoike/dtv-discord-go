@@ -11,7 +11,7 @@ INSERT INTO `program_service` (
 ) VALUES (?, ?);
 
 -- name: GetServiceByProgramID :one
-SELECT service.id, service.service_id, service.network_id, service.type, service.logo_id, service.remote_control_key_id, service.name, service.channel_type, service.channel, service.has_logo_data, service.created_at, service.updated_at
+SELECT service.*
 FROM `service`
 JOIN `program_service` on `program_service`.`service_id` = `service`.`id`
 WHERE `program_service`.`program_id` = ?;

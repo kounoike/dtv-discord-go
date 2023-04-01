@@ -33,6 +33,14 @@ type ProgramMessage struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type ProgramRecording struct {
+	ID          int32     `json:"id"`
+	ProgramID   int64     `json:"programID"`
+	ContentPath string    `json:"contentPath"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
 type ProgramService struct {
 	ID        int32     `json:"id"`
 	ProgramID int64     `json:"programID"`

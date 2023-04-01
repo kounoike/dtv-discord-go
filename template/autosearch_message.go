@@ -7,7 +7,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 )
 
-type AutoSearchMessageTemplateArgs struct {
+type autoSearchMessageTemplateArgs struct {
 	Program           db.Program
 	Service           db.Service
 	ProgramMessageURL string
@@ -30,7 +30,7 @@ func GetAutoSearchMessage(program db.Program, service db.Service, programMessage
 		return "", err
 	}
 	var b bytes.Buffer
-	args := AutoSearchMessageTemplateArgs{
+	args := autoSearchMessageTemplateArgs{
 		Program:           program,
 		Service:           service,
 		ProgramMessageURL: programMessageURL,

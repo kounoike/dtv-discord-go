@@ -2,17 +2,12 @@ package template
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
-	"strings"
 	"text/template"
-	"time"
 
-	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
 )
 
-type ProgramMessageTemplateArgs struct {
+type programMessageTemplateArgs struct {
 	Program db.Program
 	Service db.Service
 }
@@ -27,43 +22,6 @@ const (
 ==============================================================================================`
 )
 
-var (
-	weekdayja = strings.NewReplacer(
-		"Sun", "日",
-		"Mon", "月",
-		"Tue", "火",
-		"Wed", "水",
-		"Thu", "木",
-		"Fri", "金",
-		"Sat", "土",
-	)
-)
-
-func toTimeStr(t int64) string {
-	return time.Unix(t/1000, (t%1000)*1000).Format("2006/01/02(Mon) 15:04")
-}
-
-func toDurationStr(d int32) string {
-	hour := d / (60 * 60 * 1000)
-	hourStr := ""
-	if hour > 0 {
-		hourStr = fmt.Sprintf("%d時間", hour)
-	}
-	min := d % (60 * 60 * 1000) / (60 * 1000)
-	minStr := fmt.Sprintf("%d分", min)
-	return hourStr + minStr
-}
-
-func toExtendStr(j json.RawMessage) string {
-	b, _ := j.MarshalJSON()
-	any := jsoniter.Get(b, "extended")
-	str := ""
-	for _, key := range any.Keys() {
-		str += fmt.Sprintf("%s:%s\n", key, any.Get(key).ToString())
-	}
-	return str
-}
-
 func GetProgramMessage(program db.Program, service db.Service) (string, error) {
 	funcMap := map[string]interface{}{
 		"toTimeStr":     toTimeStr,
@@ -75,7 +33,7 @@ func GetProgramMessage(program db.Program, service db.Service) (string, error) {
 		return "", err
 	}
 	var b bytes.Buffer
-	args := ProgramMessageTemplateArgs{
+	args := programMessageTemplateArgs{
 		Program: program,
 		Service: service,
 	}
