@@ -7,7 +7,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/template"
 )
 
-func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) error {
+func (dtv *DTVUsecase) OnRecordingFailed(ctx context.Context, programId int64, reason string) error {
 	program, err := dtv.queries.GetProgram(ctx, programId)
 	if err != nil {
 		return err
@@ -20,12 +20,12 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 	if err != nil {
 		return err
 	}
-	msg, err := template.GetRecordingStoppedMessage(program, service, recording.ContentPath)
+	msg, err := template.GetRecordingFailedMessage(program, service, recording.ContentPath, reason)
 	if err != nil {
 		return err
 	}
 
-	dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, msg)
+	dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingFailedChannel, msg)
 
 	return nil
 }

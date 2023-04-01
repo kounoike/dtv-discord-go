@@ -25,7 +25,7 @@ func (dtv *DTVUsecase) OnRecordingStarted(ctx context.Context, programId int64) 
 		return err
 	}
 
-	dtv.discord.SendMessage(discord.InformationCategory, discord.RecordedChannel, msg)
+	dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, msg)
 
 	return nil
 }
