@@ -20,11 +20,6 @@ const (
 )
 
 func GetRecordingStoppedMessage(program db.Program, service db.Service, contentPath string) (string, error) {
-	funcMap := map[string]interface{}{
-		"toTimeStr":     toTimeStr,
-		"toDurationStr": toDurationStr,
-		"toExtendStr":   toExtendStr,
-	}
 	tmpl, err := template.New("recording-stopped-message").Funcs(funcMap).Parse(recordingStoppedMessageTemplateString)
 	if err != nil {
 		return "", err

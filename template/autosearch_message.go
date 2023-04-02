@@ -20,11 +20,6 @@ var autoSearchMessageTemplateString = `{{ .Program.Name }}
 `
 
 func GetAutoSearchMessage(program db.Program, service db.Service, programMessageURL string) (string, error) {
-	funcMap := map[string]interface{}{
-		"toTimeStr":     toTimeStr,
-		"toDurationStr": toDurationStr,
-		"toExtendStr":   toExtendStr,
-	}
 	tmpl, err := template.New("autosearch-message").Funcs(funcMap).Parse(autoSearchMessageTemplateString)
 	if err != nil {
 		return "", err
