@@ -22,11 +22,6 @@ const (
 )
 
 func GetProgramMessage(program db.Program, service db.Service) (string, error) {
-	funcMap := map[string]interface{}{
-		"toTimeStr":     toTimeStr,
-		"toDurationStr": toDurationStr,
-		"toExtendStr":   toExtendStr,
-	}
 	tmpl, err := template.New("program-message").Funcs(funcMap).Parse(programMessageTemplateString)
 	if err != nil {
 		return "", err

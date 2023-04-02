@@ -45,3 +45,9 @@ func toExtendStr(j json.RawMessage) string {
 	}
 	return str
 }
+
+var funcMap = map[string]interface{}{
+	"toTimeStr":     toTimeStr,
+	"toDurationStr": toDurationStr,
+	"toExtendStr":   toExtendStr,
+}
