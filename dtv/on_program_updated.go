@@ -117,8 +117,8 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 				}
 				asp := NewAutoSearchProgram(p, dtv.kanaMatch)
 				for _, as := range autoSearchList {
-					dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp)))
-					if as.IsMatchProgram(asp) {
+					dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp, dtv.fuzzyMatch)))
+					if as.IsMatchProgram(asp, dtv.fuzzyMatch) {
 						dtv.logger.Debug("program matched", zap.String("program.Name", p.Name), zap.String("as.Title", as.Title))
 						err := dtv.sendAutoSearchMatchMessage(ctx, msg, p, service, as)
 						if err != nil {
