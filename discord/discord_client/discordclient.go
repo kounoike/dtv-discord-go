@@ -165,6 +165,21 @@ func (d *DiscordClient) SendMessage(category string, channel string, message str
 	return msg, nil
 }
 
+func (d *DiscordClient) EditMessage(category string, channel string, messageID, message string) (*discordgo.Message, error) {
+	if len(d.session.State.Guilds) != 1 {
+		return nil, fmt.Errorf("discord app must join one server [%d]", len(d.session.State.Guilds))
+	}
+	ch, err := d.GetCachedChannel(category, channel)
+	if err != nil {
+		return nil, err
+	}
+	msg, err := d.session.ChannelMessageEdit(ch.ID, messageID, message)
+	if err != nil {
+		return nil, err
+	}
+	return msg, nil
+}
+
 func (d *DiscordClient) createChannelWithTopic(category string, channel string, topic string) (*discordgo.Channel, error) {
 	guildID := d.session.State.Guilds[0].ID
 	categoryID := ""

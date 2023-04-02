@@ -95,7 +95,38 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 				continue
 			}
 			if !bytes.Equal(pJson, programJson) {
-				dtv.queries.UpdateProgram(ctx, p)
+				// JSONに違いがあった場合
+				dtv.logger.Debug("EPG info updated")
+
+				content, err := template.GetProgramMessage(p, *service)
+				if err != nil {
+					return err
+				}
+				content = width.Fold.String(content)
+				programMessage, err := dtv.queries.GetProgramMessageByProgramID(ctx, p.ID)
+				if err != nil {
+					return err
+				}
+				msg, err := dtv.discord.EditMessage(discord.ProgramInformationCategory, service.Name, programMessage.MessageID, content)
+				if err != nil {
+					return err
+				}
+				err = dtv.queries.UpdateProgram(ctx, p)
+				if err != nil {
+					return err
+				}
+				asp := NewAutoSearchProgram(p, dtv.kanaMatch)
+				for _, as := range autoSearchList {
+					dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp)))
+					if as.IsMatchProgram(asp) {
+						dtv.logger.Debug("program matched", zap.String("program.Name", p.Name), zap.String("as.Title", as.Title))
+						err := dtv.sendAutoSearchMatchMessage(ctx, msg, p, service, as)
+						if err != nil {
+							dtv.logger.Warn("sendAutoSearchMatchMessage error", zap.Error(err))
+							continue
+						}
+					}
+				}
 			}
 		}
 	}
