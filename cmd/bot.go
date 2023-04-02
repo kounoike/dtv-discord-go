@@ -195,7 +195,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 
 	discordClient.UpdateChannelsCache()
 	logger.Info("Running!", zap.String("dtv-discord-go version", c.version), zap.String("mirakc version", mirakcVersion.Current))
-	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", c.version, mirakcVersion.Current)
+	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", "v"+c.version, mirakcVersion.Current)
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, logMessage)
 	if mirakcVersion.Current != mirakcVersion.Latest {
 		discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("mirakcの新しいバージョン(%s)があります", mirakcVersion.Latest))
@@ -210,6 +210,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	}
 	logger.Info("CreateChannels OK")
 
+	// エンコード結果取得タスク
 	if config.Encoding.Enabled {
 		scheduler.Every("1m").Do(func() {
 			err := usecase.CheckCompletedTask(ctx)
@@ -222,6 +223,16 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 			}
 		})
 	}
+
+	// バージョンチェックするタスク
+	// 適当に12:30に動かしてみる
+	scheduler.Every(1).Day().At("12:30").Do(func() {
+		err := usecase.CheckUpdateTask(ctx, c.version)
+		if err != nil {
+			logger.Error("CheckUpdateTask error", zap.Error(err))
+		}
+	})
+
 	scheduler.StartAsync()
 
 	discordHandler.AddReactionAddHandler()

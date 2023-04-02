@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type ComponentVersion struct {
+	ID        int32     `json:"id"`
+	Component string    `json:"component"`
+	Version   string    `json:"version"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type EncodeTask struct {
 	ID        int32     `json:"id"`
 	TaskID    string    `json:"taskID"`
