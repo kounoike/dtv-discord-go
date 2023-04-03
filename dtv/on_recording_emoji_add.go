@@ -1,7 +1,6 @@
 package dtv
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"strings"
@@ -56,21 +55,11 @@ func (dtv *DTVUsecase) scheduleRecordForMessage(ctx context.Context, channelID s
 	if err != nil {
 		return err
 	}
-	data := PathTemplateData{
-		Program: PathProgram{
-			Name:      program.Name,
-			StartTime: program.StartTime(),
-		},
-		Service: PathService{
-			Name: service.Name,
-		},
-	}
-	var buffer bytes.Buffer
-	err = dtv.contentPathTmpl.Execute(&buffer, data)
+
+	contentPath, err := dtv.getContentPath(ctx, program, service)
 	if err != nil {
 		return err
 	}
-	contentPath := toSafePath(buffer.String())
 
 	err = dtv.mirakc.AddRecordingSchedule(programMessage.ProgramID, contentPath)
 	if err != nil {

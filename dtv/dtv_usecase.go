@@ -9,6 +9,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/config"
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
+	"github.com/kounoike/dtv-discord-go/gpt"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"go.uber.org/zap"
 	"golang.org/x/text/width"
@@ -27,13 +28,26 @@ type DTVUsecase struct {
 	autoSearchChannel *discordgo.Channel
 	kanaMatch         bool
 	fuzzyMatch        bool
+	gpt               *gpt.GPTClient
 }
 
 func fold(str string) string {
 	return width.Fold.String(str)
 }
 
-func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asynq.Inspector, discordClient *discord_client.DiscordClient, mirakcClient *mirakc_client.MirakcClient, scheduler *gocron.Scheduler, queries *db.Queries, logger *zap.Logger, kanaMatch bool, fuzzyMatch bool) (*DTVUsecase, error) {
+func NewDTVUsecase(
+	cfg config.Config,
+	asynqClient *asynq.Client,
+	inspector *asynq.Inspector,
+	discordClient *discord_client.DiscordClient,
+	mirakcClient *mirakc_client.MirakcClient,
+	scheduler *gocron.Scheduler,
+	queries *db.Queries,
+	logger *zap.Logger,
+	kanaMatch bool,
+	fuzzyMatch bool,
+	gpt *gpt.GPTClient,
+) (*DTVUsecase, error) {
 	funcMap := map[string]interface{}{
 		"fold": fold,
 	}
@@ -57,5 +71,6 @@ func NewDTVUsecase(cfg config.Config, asynqClient *asynq.Client, inspector *asyn
 		outputPathTmpl:  outputTmpl,
 		kanaMatch:       kanaMatch,
 		fuzzyMatch:      fuzzyMatch,
+		gpt:             gpt,
 	}, nil
 }

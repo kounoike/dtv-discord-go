@@ -18,6 +18,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/discord/discord_handler"
 	"github.com/kounoike/dtv-discord-go/dtv"
+	"github.com/kounoike/dtv-discord-go/gpt"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
@@ -181,7 +182,9 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
 	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger, config.Match.KanaMatch, config.Match.FuzzyMatch)
+	gptClient := gpt.NewGPTClient(config.ParseTitleWithGPT.Enabled, config.ParseTitleWithGPT.OpenAIToken, logger)
+
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
