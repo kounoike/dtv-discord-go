@@ -7,6 +7,7 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 - 自動的な番組検索の機能
 - 自動検索での番組追加時にメンションを付ける通知機能
 - 自動検索時での番組追加時に録画を行う自動録画機能
+- 録画ファイル名を決める際にOpenAIのGPT3.5を用いてタイトル・サブタイトル・話数を切り出す機能
 
 機能要望や使ってみてのご意見は[Discussions](https://github.com/kounoike/dtv-discord-go/discussions)まで、明確なバグの場合は[Issues](https://github.com/kounoike/dtv-discord-go/issues)までお願いします。もちろんプルリクエストも歓迎です。
 
@@ -79,6 +80,8 @@ $ usermod -aG docker my-user-name
 #### dtv-discord-go の設定
 
 ./docker-compose/config.yml.exampleを元にconfig.ymlを作成します。設定ファイルはYAML形式になっています。基本的に書き換える必要があるのは discord.token だけです。ここに先の手順で控えておいた Discord Bot の Token を記載します。
+
+TBW: OpenAIのトークンの設定方法と録画ファイル名のテンプレートの書き方
 
 ### 実行
 
