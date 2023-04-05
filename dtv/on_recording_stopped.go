@@ -1,7 +1,6 @@
 package dtv
 
 import (
-	"bytes"
 	"context"
 
 	"github.com/kounoike/dtv-discord-go/discord"
@@ -43,21 +42,10 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 
 	if dtv.asynq != nil {
 		// NOTE: encoding.enabled = trueのとき
-		var b bytes.Buffer
-		data := PathTemplateData{
-			Program: PathProgram{
-				Name:      program.Name,
-				StartTime: program.StartTime(),
-			},
-			Service: PathService{
-				Name: service.Name,
-			},
-		}
-		err = dtv.outputPathTmpl.Execute(&b, data)
+		outputPath, err := dtv.getOutputPath(ctx, program, service)
 		if err != nil {
 			return err
 		}
-		outputPath := b.String()
 
 		task, err := tasks.NewProgramEncodeTask(programId, contentPath, outputPath)
 		if err != nil {

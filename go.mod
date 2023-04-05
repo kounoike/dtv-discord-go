@@ -19,6 +19,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/r3labs/sse/v2 v2.10.0
 	github.com/rubenv/sql-migrate v1.4.0
+	github.com/sashabaranov/go-openai v1.5.8
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.8.0
 	gopkg.in/guregu/null.v4 v4.0.0
