@@ -1,5 +1,7 @@
 # dtv-discord-go
 
+![](images/logo.png)
+
 Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc) による録画管理ツールです。以下の機能を持っています。
 
 - 番組情報の自動投稿機能
@@ -9,6 +11,8 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 - 自動検索時での番組追加時に録画を行う自動録画機能
 
 機能要望や使ってみてのご意見は[Discussions](https://github.com/kounoike/dtv-discord-go/discussions)まで、明確なバグの場合は[Issues](https://github.com/kounoike/dtv-discord-go/issues)までお願いします。もちろんプルリクエストも歓迎です。
+
+マスコットキャラクターはBing DALL-Eに生成してもらいました。
 
 ## 非互換バージョンアップのお知らせ
 
@@ -50,7 +54,9 @@ amd64とarm64のイメージを作っているので、x86_64なマシンだけ�
 15. コピーした URL をブラウザで開き、導入するサーバを選択して、はい→認証を押します
 
 3.の手順で入れた名前、6.の手順で登録したアイコンがサーバ上でのボットの名前・アバターになります。好きな名前・アバターをお使いください。
+もし良ければ以下のアイコンをお使いください（愛称募集中）。
 
+![](images/bot-icon.png)
 
 ### Docker / docker-compose のインストール
 
