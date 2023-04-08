@@ -44,7 +44,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			continue
 		}
 		programMessage, err := dtv.queries.GetProgramMessageByProgramID(ctx, payload.ProgramId)
-		if errors.As(err, sql.ErrNoRows) {
+		if errors.Cause(err) == sql.ErrNoRows {
 			dtv.logger.Warn("failed to GetProgramMessageByProgramID", zap.Error(err))
 			continue
 		}
