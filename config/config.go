@@ -35,8 +35,8 @@ type Config struct {
 		KanaMatch  bool `default:"true" env:"KANA_MATCH"`
 		FuzzyMatch bool `default:"true" env:"FUZZY_MATCH"`
 	}
-	ParseTitleWithGPT struct {
-		Enabled     bool   `default:"false" env:"PARSE_TITLE_WITH_GPT"`
-		OpenAIToken string `default:"" env:"OPENAI_TOKEN"`
+	OpenAI struct {
+		Enabled bool   `default:"false" env:"PARSE_TITLE_WITH_GPT"`
+		Token   string `default:"" env:"OPENAI_TOKEN"`
 	}
 }

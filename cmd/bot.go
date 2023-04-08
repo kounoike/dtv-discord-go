@@ -182,7 +182,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
 	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
 
-	gptClient := gpt.NewGPTClient(config.ParseTitleWithGPT.Enabled, config.ParseTitleWithGPT.OpenAIToken, logger)
+	gptClient := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, logger)
 
 	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient)
 	if err != nil {
