@@ -23,6 +23,9 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 		return err
 	}
 	for _, taskInfo := range taskInfoList {
+		if taskInfo.Type != tasks.TypeProgramEncode {
+			continue
+		}
 		_, err := dtv.queries.GetEncodeTaskByTaskID(ctx, taskInfo.ID)
 		if errors.Cause(err) != sql.ErrNoRows {
 			continue
