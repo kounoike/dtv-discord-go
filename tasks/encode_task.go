@@ -63,6 +63,11 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 
 	var buf bytes.Buffer
 
+	if p.ContentPath == "" || p.OutputPath == "" {
+		e.logger.Error("empty ContentPath or OutputPath")
+		return nil
+	}
+
 	err = e.encodeCommandTemplate.Execute(&buf, commandTemplateData{
 		InputPath:  shellescape.Quote(filepath.Join(e.recordedBasePath, p.ContentPath)),
 		OutputPath: shellescape.Quote(filepath.Join(e.encodedBasePath, p.OutputPath)),
