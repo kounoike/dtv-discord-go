@@ -22,6 +22,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
+	"github.com/kounoike/dtv-discord-go/tasks"
 	"github.com/lestrrat-go/backoff/v2"
 	migrate "github.com/rubenv/sql-migrate"
 	"go.uber.org/zap"
@@ -119,6 +120,8 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		defer asynqClient.Close()
 		asynqInspector = asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr})
 		defer asynqInspector.Close()
+		helloTask, _ := tasks.NewHelloTask()
+		asynqClient.Enqueue(helloTask)
 	} else {
 		asynqClient = nil
 		asynqInspector = nil

@@ -79,6 +79,7 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 	mux := asynq.NewServeMux()
 	tmpl := template.Must(template.New("output-name-tmpl").Parse(config.Encoding.EncodeCommandTemplate))
 	mux.Handle(tasks.TypeProgramEncode, tasks.NewProgramEncoder(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath))
+	mux.HandleFunc(tasks.TypeHello, tasks.HelloTask)
 
 	logger.Debug("Starting worker server")
 	if err := srv.Run(mux); err != nil {
