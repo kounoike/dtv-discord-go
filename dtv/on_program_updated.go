@@ -171,7 +171,7 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 		return err
 	}
 	if len(as.RecordingUsers) > 0 {
-		users, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
+		users, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.OkReactionEmoji)
 		if err != nil {
 			return err
 		}
@@ -185,6 +185,7 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 		if err != nil {
 			return err
 		}
+		err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.OkReactionEmoji)
 	}
 	return nil
 }
