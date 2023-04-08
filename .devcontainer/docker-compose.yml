@@ -42,7 +42,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./mirakc/epg:/var/lib/mirakc/epg:rw
       - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
-      - ./mirakc/recorded:/recorded:rw
+      - /qnap/video/recorded_develop:/recorded:rw
+      - /qnap/video/encoded_develop:/encoded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
       - /dev/px4video0
