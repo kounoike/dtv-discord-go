@@ -24,3 +24,6 @@ encoding:
 match:
   kanamatch: true
   fuzzymatch: true
+openai:
+  enabled: true
+  token: YOUR_OPENAI_API_TOKEN
