@@ -14,9 +14,7 @@ type recordingStoppedMessageTemplateArgs struct {
 }
 
 const (
-	recordingStoppedMessageTemplateString = `**録画完了**：{{ .Program.Name }}
-{{ .Service.Name }} {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
-保存先：` + "`" + `{{ .ContentPath }}` + "`"
+	recordingStoppedMessageTemplateString = `**録画完了**：保存先：` + "`" + `{{ .ContentPath }}` + "`"
 )
 
 func GetRecordingStoppedMessage(program db.Program, service db.Service, contentPath string) (string, error) {
