@@ -13,6 +13,12 @@ const systemPrompt = `Parse user message with this format:
 {"title": title name of the program, "subtitle": subtitle name of the program including the part used to extract the number of episodes, empty if it does not exist, "episode": number of episodes extracted from Arabic or Chinese numerals in numeric type, 0 if not present}
 Please return in strict JSON format. Never include non-JSON content in the output, such as commentary. Line breaks are not required.`
 
+const transcribeInitialPrompt = `そうだ。今日はピクニックしない？天気もいいし、絶好のピクニック日和だと思う。いいですね。
+では、準備をはじめましょうか。そうしよう！どこに行く？そうですね。三ツ池公園なんか良いんじゃないかな。
+今の時期なら桜が綺麗だしね。じゃあそれで決まり！わかりました。電車だと550円掛かるみたいです。
+少し時間が掛かりますが、歩いた方が健康的かもしれません。
+`
+
 type GPTClient struct {
 	enabled bool
 	token   string
@@ -73,6 +79,7 @@ func (c *GPTClient) TranscribeText(ctx context.Context, audioFilePath string) (s
 	}
 	req := openai.AudioRequest{
 		Model:    openai.Whisper1,
+		Prompt:   transcribeInitialPrompt,
 		Language: "ja",
 		FilePath: audioFilePath,
 	}
