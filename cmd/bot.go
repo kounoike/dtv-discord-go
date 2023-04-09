@@ -114,7 +114,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	var asynqClient *asynq.Client
 	var asynqInspector *asynq.Inspector
 
-	if config.Encoding.Enabled {
+	if config.Encoding.Enabled || config.Transcription.Enabled {
 		redisAddr := fmt.Sprintf("%s:%d", config.Redis.Host, config.Redis.Port)
 		asynqClient = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 		defer asynqClient.Close()
@@ -217,7 +217,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logger.Info("CreateChannels OK")
 
 	// エンコード結果取得タスク
-	if config.Encoding.Enabled {
+	if config.Encoding.Enabled || config.Transcription.Enabled {
 		scheduler.Every("1m").Do(func() {
 			err := usecase.CheckCompletedTask(ctx)
 			if err != nil {

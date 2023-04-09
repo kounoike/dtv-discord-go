@@ -41,26 +41,58 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 	}
 
 	if dtv.asynq != nil {
-		// NOTE: encoding.enabled = trueのとき
-		outputPath, err := dtv.getOutputPath(ctx, program, service)
-		if err != nil {
-			return err
-		}
+		// NOTE: encoding.enabled = true or transcription.enabled = trueのとき
+		pathData := template.PathTemplateData{}
 
-		task, err := tasks.NewProgramEncodeTask(programId, contentPath, outputPath)
-		if err != nil {
-			// NOTE: 多分JSONMarshalの失敗なので無視する
-			dtv.logger.Warn("NewProgramEncodeTask failed", zap.Error(err))
-			return nil
-		}
+		_ = dtv.gpt.ParseTitle(ctx, program.Name, &pathData)
 
-		info, err := dtv.asynq.Enqueue(task)
-		if err != nil {
-			// NOTE: エンキュー失敗は無視する
-			dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
-			return nil
+		pathData.Program = template.PathProgram{
+			Name:      program.Name,
+			StartTime: program.StartTime(),
 		}
-		dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
+		pathData.Service = template.PathService{
+			Name: service.Name,
+		}
+		if dtv.encodingEnabled {
+			outputPath, err := dtv.getEncodingOutputPath(ctx, program, service, &pathData)
+			if err != nil {
+				return err
+			}
+			task, err := tasks.NewProgramEncodeTask(programId, contentPath, outputPath)
+			if err != nil {
+				// NOTE: 多分JSONMarshalの失敗なので無視する
+				dtv.logger.Warn("NewProgramEncodeTask failed", zap.Error(err))
+				return nil
+			}
+
+			info, err := dtv.asynq.Enqueue(task)
+			if err != nil {
+				// NOTE: エンキュー失敗は無視する
+				dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+				return nil
+			}
+			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
+		}
+		if dtv.transcriptionEnabled {
+			outputPath, err := dtv.getTranscriptionOutputPath(ctx, program, service, &pathData)
+			if err != nil {
+				return err
+			}
+			task, err := tasks.NewProgramTranscriptionTask(programId, contentPath, outputPath)
+			if err != nil {
+				// NOTE: 多分JSONMarshalの失敗なので無視する
+				dtv.logger.Warn("NewProgramTranscriptionTask failed", zap.Error(err))
+				return nil
+			}
+
+			info, err := dtv.asynq.Enqueue(task)
+			if err != nil {
+				// NOTE: エンキュー失敗は無視する
+				dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+				return nil
+			}
+			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
+		}
 	}
 
 	return nil

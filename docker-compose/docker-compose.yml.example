@@ -54,6 +54,7 @@ services:
       - ./config.yml:/config.yml:ro
       - ./mirakc/recorded:/recorded:rw
       - ./mirakc/encoded:/encoded:rw
+      - ./mirakc/transcribed:/transcribed:rw
     environment:
       TZ: Asia/Tokyo
     links:
