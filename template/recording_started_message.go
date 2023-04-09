@@ -15,8 +15,8 @@ type recordingStartedMessageTemplateArgs struct {
 
 const (
 	recordingStartedMessageTemplateString = `**録画開始**：{{ .Program.Name }}
-{{ .Service.Name }} {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
-保存先：` + "`" + `{{ .ContentPath }}` + "`"
+　{{ .Service.Name }} {{ .Program.StartAt |toTimeStr }}～{{ .Program.Duration | toDurationStr }}
+　保存先：` + "`" + `{{ .ContentPath }}` + "`"
 )
 
 func GetRecordingStartedMessage(program db.Program, service db.Service, contentPath string) (string, error) {

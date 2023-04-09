@@ -66,3 +66,21 @@ func (c *GPTClient) ParseTitle(ctx context.Context, title string, pathTemplateDa
 
 	return nil
 }
+
+func (c *GPTClient) TranscribeText(ctx context.Context, audioFilePath string) (string, error) {
+	if !c.enabled {
+		return "", nil
+	}
+	req := openai.AudioRequest{
+		Model:    openai.Whisper1,
+		Language: "ja",
+		FilePath: audioFilePath,
+	}
+	client := openai.NewClient(c.token)
+	resp, err := client.CreateTranscription(ctx, req)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.Text, nil
+}

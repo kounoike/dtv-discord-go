@@ -10,6 +10,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/jinzhu/configor"
 	"github.com/kounoike/dtv-discord-go/config"
+	"github.com/kounoike/dtv-discord-go/gpt"
 	"github.com/kounoike/dtv-discord-go/tasks"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -76,9 +77,12 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 		},
 	)
 
+	gpt := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, logger)
+
 	mux := asynq.NewServeMux()
-	tmpl := template.Must(template.New("output-name-tmpl").Parse(config.Encoding.EncodeCommandTemplate))
+	tmpl := template.Must(template.New("encode-command-tmpl").Parse(config.Encoding.EncodeCommandTemplate))
 	mux.Handle(tasks.TypeProgramEncode, tasks.NewProgramEncoder(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath))
+	mux.Handle(tasks.TypeProgramTranscription, tasks.NewProgramTranscriber(logger, gpt, tmpl, config.Recording.BasePath, config.Transcription.BasePath))
 	mux.HandleFunc(tasks.TypeHello, tasks.HelloTask)
 
 	logger.Debug("Starting worker server")

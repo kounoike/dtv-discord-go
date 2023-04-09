@@ -31,6 +31,11 @@ type Config struct {
 		OutputPathTemplate    string `required:"true" env:"ENCODING_OUTPUT_PATH_TEMPLATE"`
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
 	}
+	Transcription struct {
+		Enabled            bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`
+		BasePath           string `required:"true" env:"TRANSCRIPTION_BASE_PATH"`
+		OutputPathTemplate string `required:"true" env:"TRANSCRIPTION_OUTPUT_PATH_TEMPLATE"`
+	}
 	Match struct {
 		KanaMatch  bool `default:"true" env:"KANA_MATCH"`
 		FuzzyMatch bool `default:"true" env:"FUZZY_MATCH"`
