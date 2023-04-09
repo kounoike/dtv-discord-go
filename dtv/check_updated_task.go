@@ -83,6 +83,10 @@ func (dtv *DTVUsecase) checkDtvDiscordGoVersion(ctx context.Context, version str
 	if err != nil {
 		return err
 	}
+	err = dtv.queries.UpdateComponentVersion(ctx, db.UpdateComponentVersionParams{Component: "dtv-discord-go", Version: ghVersion})
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
