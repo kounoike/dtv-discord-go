@@ -38,6 +38,10 @@ func (dtv *DTVUsecase) checkMirakcUpdateTask(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		err = dtv.queries.UpdateComponentVersion(ctx, db.UpdateComponentVersionParams{Component: "mirakc", Version: mirakcVersion.Latest})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
