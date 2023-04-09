@@ -186,6 +186,9 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 			return err
 		}
 		err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.OkReactionEmoji)
+		if err != nil {
+			dtv.logger.Warn("MessageReactionAdd error", zap.Error(err), zap.String("ChannelID", msg.ChannelID), zap.String("msgID", msg.ID), zap.String("emoji", discord.OkReactionEmoji), zap.String("content", msg.Content))
+		}
 	}
 	return nil
 }

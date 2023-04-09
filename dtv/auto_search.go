@@ -105,14 +105,14 @@ func (dtv *DTVUsecase) getAutoSeachFromMessage(msg *discordgo.Message) (*AutoSea
 
 	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
 	if err != nil {
-		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji))
+		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji), zap.String("content", msg.Content))
 		notifyUsers = []*discordgo.User{}
 	}
 	autoSearch.NotifyUsers = notifyUsers
 
 	recordingUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
 	if err != nil {
-		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji))
+		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji), zap.String("content", msg.Content))
 		recordingUsers = []*discordgo.User{}
 	}
 	autoSearch.RecordingUsers = recordingUsers
