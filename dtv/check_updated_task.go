@@ -44,6 +44,7 @@ func (dtv *DTVUsecase) checkMirakcUpdateTask(ctx context.Context) error {
 
 type GitHubRelease struct {
 	TagName string `json:"tag_name"`
+	Body    string `json:"body"`
 }
 
 func (dtv *DTVUsecase) checkDtvDiscordGoVersion(ctx context.Context, version string) error {
@@ -78,7 +79,7 @@ func (dtv *DTVUsecase) checkDtvDiscordGoVersion(ctx context.Context, version str
 			return nil
 		}
 	}
-	content := fmt.Sprintf("dtv-discord-goの新しいバージョン(%s)が出ています。現在(%s)", ghVersion, currentVersion)
+	content := fmt.Sprintf("**dtv-discord-goの新しいバージョン(%s)が出ています。**現在(%s)\n%s", ghVersion, currentVersion, release.Body)
 	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.UpdateChannel, content)
 	if err != nil {
 		return err
