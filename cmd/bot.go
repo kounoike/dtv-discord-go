@@ -231,6 +231,12 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	}
 
 	// バージョンチェックするタスク
+	// 起動直後に1回
+	err = usecase.CheckUpdateTask(ctx, c.version)
+	if err != nil {
+		logger.Error("CheckUpdateTask error", zap.Error(err))
+	}
+
 	// 適当に12:30に動かしてみる
 	scheduler.Every(1).Day().At("12:30").Do(func() {
 		err := usecase.CheckUpdateTask(ctx, c.version)
