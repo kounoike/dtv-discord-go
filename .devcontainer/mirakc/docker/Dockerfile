@@ -1,7 +1,7 @@
 FROM node:18-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-# RUN apt-get update && apt-get install -y \
+    # RUN apt-get update && apt-get install -y \
     build-essential \
     libpcsclite-dev \
     pcscd \

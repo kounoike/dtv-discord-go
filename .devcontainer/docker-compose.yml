@@ -20,8 +20,8 @@ services:
     image: mariadb:latest
     volumes:
       - mysql-db:/var/lib/mysql
-    # ports:
-    #   - "3306:3306"
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_USER: dtv-discord
       MYSQL_PASSWORD: dtv-discord
@@ -39,8 +39,8 @@ services:
     # image: mirakc/mirakc
     build: ./mirakc/docker
     privileged: true
-    # ports:
-    #   - "40772:40772"
+    ports:
+      - "40772:40772"
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
