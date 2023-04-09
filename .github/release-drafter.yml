@@ -2,24 +2,24 @@ name-template: 'v$RESOLVED_VERSION 🌈'
 tag-template: 'v$RESOLVED_VERSION'
 
 categories:
-  - title: '🚀 Features'
+  - title: '🚀 機能追加'
     labels:
       - 'feature'
-  - title: '💪 Enhancement'
+  - title: '💪 改善'
     labels:
       - 'enhancement'
-  - title: '🐛 Bug Fixes'
+  - title: '🐛 バグ修正'
     labels:
       - 'fix'
       - 'bugfix'
       - 'bug'
-  - title: '🧰 Maintenance'
+  - title: '🧰 微修正'
     label: 'chore'
-  - title: '🔧 Refactoring'
+  - title: '🔧 リファクタリング'
     label: 'refactor'
-  - title: '📖 Documentation'
+  - title: '📖 ドキュメント'
     label: 'documentation'
-  - title: '⛓️ Dependency update'
+  - title: '⛓️ 依存関係更新'
     label: 'dependencies'
 
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
@@ -39,7 +39,7 @@ version-resolver:
   default: patch
 
 template: |
-  ## Changes
+  ## 変更点
 
   $CHANGES
 
