@@ -31,21 +31,6 @@ func (dtv *DTVUsecase) scheduleRecordForMessage(ctx context.Context, channelID s
 		return nil
 	}
 
-	users, err := dtv.discord.GetMessageReactions(channelID, messageID, discord.RecordingReactionEmoji)
-	if err != nil {
-		return err
-	}
-	count := len(users)
-	for _, u := range users {
-		if u.ID == dtv.discord.Session().State.User.ID {
-			count -= 1
-		}
-	}
-	if count == 0 {
-		// Bot以外🔴リアクションしていないので無視
-		return nil
-	}
-
 	// 録画しよう！
 	program, err := dtv.queries.GetProgram(ctx, programMessage.ProgramID)
 	if err != nil {
@@ -81,6 +66,10 @@ func (dtv *DTVUsecase) scheduleRecordForMessage(ctx context.Context, channelID s
 }
 
 func (dtv *DTVUsecase) OnRecordingEmojiAdd(ctx context.Context, reaction *discordgo.MessageReactionAdd) error {
+	if reaction.UserID == dtv.discord.Session().State.User.ID {
+		// NOTE: 自分のリアクションなので無視
+		return nil
+	}
 	return dtv.scheduleRecordForMessage(ctx, reaction.ChannelID, reaction.MessageID)
 }
 

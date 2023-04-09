@@ -88,6 +88,10 @@ func (dtv *DTVUsecase) OnOkEmojiAdd(ctx context.Context, reaction *discordgo.Mes
 						continue
 					}
 					err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.AutoSearchReactionEmoji)
+					if err != nil {
+						dtv.logger.Warn("MessageReactionAdd error", zap.Error(err), zap.String("channelID", msg.ChannelID), zap.String("messageID", msg.ID), zap.String("emoji", discord.AutoSearchReactionEmoji))
+						continue
+					}
 				}
 			}
 		}
