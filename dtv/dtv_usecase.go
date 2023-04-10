@@ -16,22 +16,22 @@ import (
 )
 
 type DTVUsecase struct {
-	asynq                       *asynq.Client
-	inspector                   *asynq.Inspector
-	discord                     *discord_client.DiscordClient
-	mirakc                      *mirakc_client.MirakcClient
-	scheduler                   *gocron.Scheduler
-	queries                     *db.Queries
-	logger                      *zap.Logger
-	contentPathTmpl             *template.Template
-	encodingOutputPathTmpl      *template.Template
-	transcriptionOutputPathTmpl *template.Template
-	autoSearchChannel           *discordgo.Channel
-	gpt                         *gpt.GPTClient
-	kanaMatch                   bool
-	fuzzyMatch                  bool
-	encodingEnabled             bool
-	transcriptionEnabled        bool
+	asynq                *asynq.Client
+	inspector            *asynq.Inspector
+	discord              *discord_client.DiscordClient
+	mirakc               *mirakc_client.MirakcClient
+	scheduler            *gocron.Scheduler
+	queries              *db.Queries
+	logger               *zap.Logger
+	contentPathTmpl      *template.Template
+	encodedExt           string
+	transcribedExt       string
+	autoSearchChannel    *discordgo.Channel
+	gpt                  *gpt.GPTClient
+	kanaMatch            bool
+	fuzzyMatch           bool
+	encodingEnabled      bool
+	transcriptionEnabled bool
 }
 
 func fold(str string) string {
@@ -58,29 +58,21 @@ func NewDTVUsecase(
 	if err != nil {
 		return nil, err
 	}
-	encodingOutputTmpl, err := template.New("encoding-output-path").Funcs(funcMap).Parse(cfg.Encoding.OutputPathTemplate)
-	if err != nil {
-		return nil, err
-	}
-	transcriptionOutputTmpl, err := template.New("transcription-output-path").Funcs(funcMap).Parse(cfg.Transcription.OutputPathTemplate)
-	if err != nil {
-		return nil, err
-	}
 	return &DTVUsecase{
-		asynq:                       asynqClient,
-		inspector:                   inspector,
-		discord:                     discordClient,
-		mirakc:                      mirakcClient,
-		scheduler:                   scheduler,
-		queries:                     queries,
-		logger:                      logger,
-		gpt:                         gpt,
-		contentPathTmpl:             contentTmpl,
-		encodingOutputPathTmpl:      encodingOutputTmpl,
-		transcriptionOutputPathTmpl: transcriptionOutputTmpl,
-		kanaMatch:                   kanaMatch,
-		fuzzyMatch:                  fuzzyMatch,
-		encodingEnabled:             cfg.Encoding.Enabled,
-		transcriptionEnabled:        cfg.Transcription.Enabled,
+		asynq:                asynqClient,
+		inspector:            inspector,
+		discord:              discordClient,
+		mirakc:               mirakcClient,
+		scheduler:            scheduler,
+		queries:              queries,
+		logger:               logger,
+		gpt:                  gpt,
+		contentPathTmpl:      contentTmpl,
+		encodedExt:           cfg.Encoding.Ext,
+		transcribedExt:       cfg.Transcription.Ext,
+		kanaMatch:            kanaMatch,
+		fuzzyMatch:           fuzzyMatch,
+		encodingEnabled:      cfg.Encoding.Enabled,
+		transcriptionEnabled: cfg.Transcription.Enabled,
 	}, nil
 }

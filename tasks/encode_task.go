@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"text/template"
@@ -66,6 +67,11 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	if p.ContentPath == "" || p.OutputPath == "" {
 		e.logger.Error("empty ContentPath or OutputPath")
 		return nil
+	}
+
+	err = os.MkdirAll(filepath.Dir(filepath.Join(e.encodedBasePath, p.OutputPath)), 0777)
+	if err != nil {
+		return err
 	}
 
 	err = e.encodeCommandTemplate.Execute(&buf, commandTemplateData{

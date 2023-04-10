@@ -42,22 +42,8 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 
 	if dtv.asynq != nil {
 		// NOTE: encoding.enabled = true or transcription.enabled = trueのとき
-		pathData := template.PathTemplateData{}
-
-		_ = dtv.gpt.ParseTitle(ctx, program.Name, &pathData)
-
-		pathData.Program = template.PathProgram{
-			Name:      program.Name,
-			StartTime: program.StartTime(),
-		}
-		pathData.Service = template.PathService{
-			Name: service.Name,
-		}
 		if dtv.encodingEnabled {
-			outputPath, err := dtv.getEncodingOutputPath(ctx, program, service, &pathData)
-			if err != nil {
-				return err
-			}
+			outputPath := dtv.getEncodingOutputPath(contentPath)
 			task, err := tasks.NewProgramEncodeTask(programId, contentPath, outputPath)
 			if err != nil {
 				// NOTE: 多分JSONMarshalの失敗なので無視する
@@ -74,10 +60,7 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 		}
 		if dtv.transcriptionEnabled {
-			outputPath, err := dtv.getTranscriptionOutputPath(ctx, program, service, &pathData)
-			if err != nil {
-				return err
-			}
+			outputPath := dtv.getTranscriptionOutputPath(contentPath)
 			task, err := tasks.NewProgramTranscriptionTask(programId, contentPath, outputPath)
 			if err != nil {
 				// NOTE: 多分JSONMarshalの失敗なので無視する

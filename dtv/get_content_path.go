@@ -3,10 +3,13 @@ package dtv
 import (
 	"bytes"
 	"context"
+	"path"
 
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/template"
 )
+
+const mkDirPerm = 0777
 
 func (dtv *DTVUsecase) getContentPath(ctx context.Context, program db.Program, service db.Service) (string, error) {
 	data := template.PathTemplateData{}
@@ -14,12 +17,12 @@ func (dtv *DTVUsecase) getContentPath(ctx context.Context, program db.Program, s
 	_ = dtv.gpt.ParseTitle(ctx, program.Name, &data)
 
 	data.Program = template.PathProgram{
-		Name:      program.Name,
+		Name:      toSafePath(program.Name),
 		StartTime: program.StartTime(),
 	}
 
 	data.Service = template.PathService{
-		Name: service.Name,
+		Name: toSafePath(service.Name),
 	}
 
 	var buffer bytes.Buffer
@@ -27,29 +30,15 @@ func (dtv *DTVUsecase) getContentPath(ctx context.Context, program db.Program, s
 	if err != nil {
 		return "", err
 	}
-	contentPath := toSafePath(buffer.String())
-	return contentPath, nil
+	return buffer.String(), nil
 }
 
-func (dtv *DTVUsecase) getEncodingOutputPath(ctx context.Context, program db.Program, service db.Service, pathData *template.PathTemplateData) (string, error) {
-	var b bytes.Buffer
-
-	err := dtv.encodingOutputPathTmpl.Execute(&b, pathData)
-	if err != nil {
-		return "", err
-	}
-	outputPath := b.String()
-
-	return outputPath, nil
+func (dtv *DTVUsecase) getEncodingOutputPath(contentPath string) string {
+	ext := path.Ext(contentPath)
+	return contentPath[:len(contentPath)-len(ext)] + dtv.encodedExt
 }
 
-func (dtv *DTVUsecase) getTranscriptionOutputPath(ctx context.Context, program db.Program, service db.Service, pathData *template.PathTemplateData) (string, error) {
-	var b bytes.Buffer
-	err := dtv.transcriptionOutputPathTmpl.Execute(&b, pathData)
-	if err != nil {
-		return "", err
-	}
-	outputPath := b.String()
-
-	return outputPath, nil
+func (dtv *DTVUsecase) getTranscriptionOutputPath(contentPath string) string {
+	ext := path.Ext(contentPath)
+	return contentPath[:len(contentPath)-len(ext)] + dtv.transcribedExt
 }
