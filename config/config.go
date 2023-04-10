@@ -28,13 +28,13 @@ type Config struct {
 	Encoding struct {
 		Enabled               bool   `required:"true" env:"ENCODING_ENABLED"`
 		BasePath              string `required:"true" env:"ENCODING_BASE_PATH"`
-		OutputPathTemplate    string `required:"true" env:"ENCODING_OUTPUT_PATH_TEMPLATE"`
+		Ext                   string `required:"true" env:"ENCODING_EXT"`
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
 	}
 	Transcription struct {
-		Enabled            bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`
-		BasePath           string `required:"true" env:"TRANSCRIPTION_BASE_PATH"`
-		OutputPathTemplate string `required:"true" env:"TRANSCRIPTION_OUTPUT_PATH_TEMPLATE"`
+		Enabled  bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`
+		BasePath string `required:"true" env:"TRANSCRIPTION_BASE_PATH"`
+		Ext      string `required:"true" env:"TRANSCRIPTION_EXT"`
 	}
 	Match struct {
 		KanaMatch  bool `default:"true" env:"KANA_MATCH"`

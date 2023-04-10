@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"text/template"
 	"time"
 
@@ -59,6 +60,11 @@ func (e *ProgramTranscriber) ProcessTask(ctx context.Context, t *asynq.Task) err
 	if p.ContentPath == "" || p.OutputPath == "" {
 		e.logger.Error("empty ContentPath or OutputPath")
 		return nil
+	}
+
+	err = os.MkdirAll(filepath.Dir(filepath.Join(e.transcribedBasePath, p.OutputPath)), 0777)
+	if err != nil {
+		return err
 	}
 
 	tmpFile := fmt.Sprintf("/tmp/%d.m4a", p.ProgramId)
