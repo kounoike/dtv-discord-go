@@ -1,6 +1,6 @@
 # dtv-discord-go
 
-![](images/logo.png)
+![](images/social-preview.png)
 
 Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc) による録画管理ツールです。以下の機能を持っています。
 
@@ -13,7 +13,7 @@ Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc)
 
 機能要望や使ってみてのご意見は[Discussions](https://github.com/kounoike/dtv-discord-go/discussions)まで、明確なバグの場合は[Issues](https://github.com/kounoike/dtv-discord-go/issues)までお願いします。もちろんプルリクエストも歓迎です。
 
-マスコットキャラクターはBing DALL-Eに生成してもらいました。
+マスコットキャラクターはBing DALL-E/OpenAI DALL-Eに生成してもらいました。
 
 ## 免責事項
 
