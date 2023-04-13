@@ -1,0 +1,31 @@
+{
+  "name": "dtv-discord-go-indexer",
+  "version": "0.0.1",
+  "description": "indexer for flex",
+  "main": "src/app.ts",
+  "repository": "https://github.com/kounoike/dtv-discord-go.git",
+  "author": "KOUNOIKE Yuusuke",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/app.js"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.21",
+    "@types/node": "^18.15.11",
+    "@zoltu/typescript-transformer-append-js-extension": "^1.0.1",
+    "eslint": "^8.38.0",
+    "prettier": "^2.8.7",
+    "rimraf": "^5.0.0",
+    "sirv-cli": "^2.0.2",
+    "ts-node": "^10.9.1",
+    "ttypescript": "^1.5.15",
+    "typescript": "^5.0.4",
+    "yarn-run-all": "^3.1.1"
+  },
+  "dependencies": {
+    "fuse.js": "^6.6.2",
+    "mysql2": "^3.2.0"
+  }
+}
