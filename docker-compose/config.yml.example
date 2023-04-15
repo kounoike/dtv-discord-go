@@ -19,12 +19,12 @@ recording:
 encoding:
   enabled: true
   basepath: "/encoded"
-  outputpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-1504\"}}-{{.Service.Name | fold}}.mp4"
+  ext: .mp4
   encodecommandtemplate: "ffmpeg -i {{.InputPath}} {{.OutputPath}} -y"
 transcription:
   enabled: true
   basepath: "/transcribed"
-  outputpathtemplate: "{{.Title | fold}} #{{.Episode}} [{{.Subtitle}}] {{.Program.StartTime.Format \"20060102-1504\"}} {{.Service.Name | fold}}.txt"
+  ext: .txt
 match:
   kanamatch: true
   fuzzymatch: true

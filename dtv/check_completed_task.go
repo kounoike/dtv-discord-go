@@ -53,12 +53,51 @@ func (dtv *DTVUsecase) onProgramEncoded(ctx context.Context, taskInfo *asynq.Tas
 	return nil
 }
 
-func (dtv *DTVUsecase) onProgramTranscribed(ctx context.Context, taskInfo *asynq.TaskInfo) error {
+func (dtv *DTVUsecase) onProgramTranscribedApi(ctx context.Context, taskInfo *asynq.TaskInfo) error {
 	_, err := dtv.queries.GetTranscribeTaskByTaskID(ctx, taskInfo.ID)
 	if errors.Cause(err) != sql.ErrNoRows {
 		return err
 	}
-	var payload tasks.ProgramTranscriptionPayload
+	var payload tasks.ProgramTranscriptionApiPayload
+	err = json.Unmarshal(taskInfo.Payload, &payload)
+	if err != nil {
+		dtv.logger.Warn("task payload json.Unmarshal error", zap.Error(err))
+		return err
+	}
+	err = dtv.queries.InsertTranscribeTask(ctx, db.InsertTranscribeTaskParams{TaskID: taskInfo.ID, Status: "success"})
+	if err != nil {
+		dtv.logger.Warn("failed to InsertEncodeTask", zap.Error(err))
+		return err
+	}
+	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingChannel, fmt.Sprintf("**文字起こし完了** `%s`の文字起こしが完了しました", payload.OutputPath))
+	if err != nil {
+		dtv.logger.Warn("failed to SendMessage", zap.Error(err))
+		return err
+	}
+	programMessage, err := dtv.queries.GetProgramMessageByProgramID(ctx, payload.ProgramId)
+	if errors.Cause(err) == sql.ErrNoRows {
+		dtv.logger.Warn("failed to GetProgramMessageByProgramID", zap.Error(err))
+		return err
+	}
+	if err != nil {
+		dtv.logger.Warn("failed to GetProgramMessageByProgramID", zap.Error(err))
+		return err
+	}
+
+	err = dtv.discord.MessageReactionAdd(programMessage.ChannelID, programMessage.MessageID, discord.TranscriptionReactionEmoji)
+	if err != nil {
+		dtv.logger.Warn("failed to MessageReactionAdd", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (dtv *DTVUsecase) onProgramTranscribedLocal(ctx context.Context, taskInfo *asynq.TaskInfo) error {
+	_, err := dtv.queries.GetTranscribeTaskByTaskID(ctx, taskInfo.ID)
+	if errors.Cause(err) != sql.ErrNoRows {
+		return err
+	}
+	var payload tasks.ProgramTranscriptionLocalPayload
 	err = json.Unmarshal(taskInfo.Payload, &payload)
 	if err != nil {
 		dtv.logger.Warn("task payload json.Unmarshal error", zap.Error(err))
@@ -106,8 +145,10 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			continue
 		case tasks.TypeProgramEncode:
 			_ = dtv.onProgramEncoded(ctx, taskInfo)
-		case tasks.TypeProgramTranscription:
-			_ = dtv.onProgramTranscribed(ctx, taskInfo)
+		case tasks.TypeProgramTranscriptionApi:
+			_ = dtv.onProgramTranscribedApi(ctx, taskInfo)
+		case tasks.TypeProgramTranscriptionLocal:
+			_ = dtv.onProgramTranscribedLocal(ctx, taskInfo)
 		}
 	}
 	return nil

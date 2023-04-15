@@ -60,21 +60,40 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 		}
 		if dtv.transcriptionEnabled {
-			outputPath := dtv.getTranscriptionOutputPath(contentPath)
-			task, err := tasks.NewProgramTranscriptionTask(programId, contentPath, outputPath)
-			if err != nil {
-				// NOTE: 多分JSONMarshalの失敗なので無視する
-				dtv.logger.Warn("NewProgramTranscriptionTask failed", zap.Error(err))
-				return nil
-			}
+			switch dtv.transcriptionType {
+			case "api":
+				outputPath := dtv.getTranscriptionOutputPath(contentPath)
+				task, err := tasks.NewProgramTranscriptionApiTask(programId, contentPath, outputPath)
+				if err != nil {
+					// NOTE: 多分JSONMarshalの失敗なので無視する
+					dtv.logger.Warn("NewProgramTranscriptionApiTask failed", zap.Error(err))
+					return nil
+				}
 
-			info, err := dtv.asynq.Enqueue(task)
-			if err != nil {
-				// NOTE: エンキュー失敗は無視する
-				dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
-				return nil
+				info, err := dtv.asynq.Enqueue(task)
+				if err != nil {
+					// NOTE: エンキュー失敗は無視する
+					dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+					return nil
+				}
+				dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
+			case "local":
+				outputPath := dtv.getTranscriptionOutputPath(contentPath)
+				task, err := tasks.NewProgramTranscriptionLocalTask(programId, contentPath, outputPath)
+				if err != nil {
+					// NOTE: 多分JSONMarshalの失敗なので無視する
+					dtv.logger.Warn("NewProgramTranscriptionLocalTask failed", zap.Error(err))
+					return nil
+				}
+
+				info, err := dtv.asynq.Enqueue(task)
+				if err != nil {
+					// NOTE: エンキュー失敗は無視する
+					dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+					return nil
+				}
+				dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 			}
-			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 		}
 	}
 

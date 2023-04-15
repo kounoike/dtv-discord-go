@@ -32,6 +32,7 @@ type DTVUsecase struct {
 	fuzzyMatch           bool
 	encodingEnabled      bool
 	transcriptionEnabled bool
+	transcriptionType    string
 }
 
 func fold(str string) string {
@@ -74,5 +75,6 @@ func NewDTVUsecase(
 		fuzzyMatch:           fuzzyMatch,
 		encodingEnabled:      cfg.Encoding.Enabled,
 		transcriptionEnabled: cfg.Transcription.Enabled,
+		transcriptionType:    cfg.Transcription.Type,
 	}, nil
 }

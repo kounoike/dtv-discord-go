@@ -18,7 +18,7 @@
 	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
-	"postCreateCommand": ". ${NVM_DIR}/nvm.sh && nvm install --lts && go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && go install github.com/rubenv/sql-migrate/...@latest && sudo apt update && sudo apt install -y mariadb-client",
+	// "postCreateCommand": ". ${NVM_DIR}/nvm.sh && nvm install --lts && go install github.com/kyleconroy/sqlc/cmd/sqlc@latest && go install github.com/rubenv/sql-migrate/...@latest && sudo apt update && sudo apt install -y mariadb-client",
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -26,11 +26,10 @@
 				"ms-azuretools.vscode-docker",
 				"streetsidesoftware.code-spell-checker",
 				"esbenp.prettier-vscode",
-				"rvest.vs-code-prettier-eslint"
+				"rvest.vs-code-prettier-eslint",
+				"golang.go",
+				"ms-python.python"
 			]
 		}
-	},
-	"features": {
-		"ghcr.io/devcontainers-contrib/features/ffmpeg-apt-get:1": {}
 	}
 }

@@ -1,8 +1,14 @@
 version: '3.8'
 services:
   devcontainer:
-    # build: ./devcontainer
-    image: mcr.microsoft.com/devcontainers/go:0-1.20-bullseye
+    build: ./devcontainer
+    # image: mcr.microsoft.com/devcontainers/go:0-1.20-bullseye
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ "gpu", "video" ]
     volumes:
       - ../..:/workspaces:cached
       - /etc/timezone:/etc/timezone:ro
@@ -10,7 +16,8 @@ services:
       - /qnap/video/recorded_develop:/recorded:rw
       - /qnap/video/encoded_develop:/encoded:rw
       - /qnap/video/transcribed_develop:/transcribed:rw
-      - index-db:/document_index:rw
+      - index-volume:/document_index:rw
+      - model-volume:/models:rw
     # network_mode: service:tuner
     command: sleep infinity
     environment:
@@ -77,4 +84,5 @@ services:
 volumes:
   mysql-db:
   redis-db:
-  index-db:
+  index-volume:
+  model-volume:
