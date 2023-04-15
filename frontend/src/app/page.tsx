@@ -145,7 +145,7 @@ export default function Home() {
                 label="番組検索"
                 value={query}
                 style={{ width: "100%" }}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => setQuery(e.target.value.normalize("NFKC"))}
               />
             </form>
             <div ref={resultRef} className={styles.result}>
