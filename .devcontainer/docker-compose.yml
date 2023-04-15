@@ -44,6 +44,8 @@ services:
     volumes:
       - redis-db:/data
     command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
   tuner:
     # image: mirakc/mirakc
     build: ./mirakc/docker

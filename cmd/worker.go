@@ -81,14 +81,14 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 
 	mux := asynq.NewServeMux()
 	tmpl := template.Must(template.New("encode-command-tmpl").Parse(config.Encoding.EncodeCommandTemplate))
-	mux.Handle(tasks.TypeProgramEncode, tasks.NewProgramEncoder(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath))
+	mux.Handle(tasks.TypeProgramEncode, tasks.NewProgramEncoder(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Encoding.DeleteOriginalFile))
 	mux.HandleFunc(tasks.TypeHello, tasks.HelloTask)
 
 	switch config.Transcription.Type {
 	case "api":
-		mux.Handle(tasks.TypeProgramTranscriptionApi, tasks.NewProgramTranscriberApi(logger, gpt, tmpl, config.Recording.BasePath, config.Transcription.BasePath))
+		mux.Handle(tasks.TypeProgramTranscriptionApi, tasks.NewProgramTranscriberApi(logger, gpt, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Transcription.BasePath))
 	case "local":
-		mux.Handle(tasks.TypeProgramTranscriptionLocal, tasks.NewProgramTranscriberLocal(logger, tmpl, config.Recording.BasePath, config.Transcription.BasePath, config.Transcription.ScriptPath, config.Transcription.ModelSize))
+		mux.Handle(tasks.TypeProgramTranscriptionLocal, tasks.NewProgramTranscriberLocal(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Transcription.BasePath, config.Transcription.ScriptPath, config.Transcription.ModelSize))
 	default:
 		logger.Fatal(fmt.Sprintf("unsupported Transcription.Type:%s", config.Transcription.Type))
 	}

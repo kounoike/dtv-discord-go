@@ -21,11 +21,12 @@ const TypeProgramTranscriptionLocal = "program:transcription:local"
 type ProgramTranscriptionLocalPayload struct {
 	ProgramId   int64  `json:"programId"`
 	ContentPath string `json:"contentPath"`
+	EncodedPath string `json:"encodedPath"`
 	OutputPath  string `json:"outputPath"`
 }
 
-func NewProgramTranscriptionLocalTask(programId int64, contentPath string, outputPath string) (*asynq.Task, error) {
-	payload, err := json.Marshal(ProgramTranscriptionLocalPayload{ProgramId: programId, ContentPath: contentPath, OutputPath: outputPath})
+func NewProgramTranscriptionLocalTask(programId int64, contentPath string, encodedPath string, outputPath string) (*asynq.Task, error) {
+	payload, err := json.Marshal(ProgramTranscriptionLocalPayload{ProgramId: programId, ContentPath: contentPath, EncodedPath: encodedPath, OutputPath: outputPath})
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +36,17 @@ func NewProgramTranscriptionLocalTask(programId int64, contentPath string, outpu
 type ProgramTranscriberLocal struct {
 	logger              *zap.Logger
 	recordedBasePath    string
+	encodedBasePath     string
 	transcribedBasePath string
 	runWhisperScript    string
 	whisperModel        string
 }
 
-func NewProgramTranscriberLocal(logger *zap.Logger, encodeCommandTmpl *template.Template, recordedBasePath string, transcribedBasePath string, runWhisperScript string, whisperModel string) *ProgramTranscriberLocal {
+func NewProgramTranscriberLocal(logger *zap.Logger, encodeCommandTmpl *template.Template, recordedBasePath string, encodedBasePath string, transcribedBasePath string, runWhisperScript string, whisperModel string) *ProgramTranscriberLocal {
 	return &ProgramTranscriberLocal{
 		logger:              logger,
 		recordedBasePath:    recordedBasePath,
+		encodedBasePath:     encodedBasePath,
 		transcribedBasePath: transcribedBasePath,
 		runWhisperScript:    runWhisperScript,
 		whisperModel:        whisperModel,
@@ -68,8 +71,13 @@ func (e *ProgramTranscriberLocal) ProcessTask(ctx context.Context, t *asynq.Task
 		return err
 	}
 
+	inputFile := path.Join(e.recordedBasePath, p.ContentPath)
+	if _, err := os.Stat(inputFile); os.IsNotExist(err) {
+		inputFile = path.Join(e.encodedBasePath, p.EncodedPath)
+	}
+
 	tmpFile := fmt.Sprintf("/tmp/%d.wav", p.ProgramId)
-	commandLine := fmt.Sprintf(`ffmpeg -i "%s" -vn "%s" -y`, path.Join(e.recordedBasePath, p.ContentPath), tmpFile)
+	commandLine := fmt.Sprintf(`ffmpeg -i "%s" -vn "%s" -y`, inputFile, tmpFile)
 
 	e.logger.Info("Running split audio command", zap.String("command", commandLine))
 
