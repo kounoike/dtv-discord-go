@@ -19,4 +19,6 @@ COPY --from=docker.io/mirakc/mirakc:debian /usr/local/bin/* /usr/local/bin/
 COPY --from=docker.io/mirakc/mirakc:debian /etc/mirakc/strings.yml /etc/mirakc/strings.yml
 ENV MIRAKC_CONFIG=/etc/mirakc/config.yml
 
+USER node
+
 ENTRYPOINT ["/usr/local/bin/mirakc"]
