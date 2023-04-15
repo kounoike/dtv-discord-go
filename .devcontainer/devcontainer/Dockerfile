@@ -32,12 +32,14 @@ RUN npm install -g yarn
 RUN wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz && \
     tar zxf go1.20.3.linux-amd64.tar.gz -C /usr/local && \
     rm go1.20.3.linux-amd64.tar.gz
-RUN echo 'export PATH=$PATH:/usr/local/go/bin' >> /home/vscode/.bashrc
+RUN echo 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin' >> /home/vscode/.bashrc
 
+ENV GOPATH=/usr/local/go
 RUN /usr/local/go/bin/go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 RUN /usr/local/go/bin/go install github.com/rubenv/sql-migrate/...@latest
-RUN /usr/local/go/bin/go golang.org/x/tools/gopls@latest
+RUN /usr/local/go/bin/go install golang.org/x/tools/gopls@latest
 
 RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz"
 
+ENV GOPATH=
 USER vscode
