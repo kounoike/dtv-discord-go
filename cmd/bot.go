@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/go-co-op/gocron"
@@ -49,7 +50,10 @@ func (c *BotCommand) SetFlags(f *flag.FlagSet) {
 func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...interface{}) subcommands.ExitStatus {
 	// programs, err := getPrograms()
 	var config config.Config
-	configor.Load(&config, "config.yml")
+	if err := configor.Load(&config, "config.yml"); err != nil {
+		fmt.Fprintf(os.Stderr, "config load Error: %v\n", err)
+		return subcommands.ExitFailure
+	}
 
 	logCfg := zap.NewDevelopmentConfig()
 	logCfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
