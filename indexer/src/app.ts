@@ -39,23 +39,28 @@ async function main() {
       program_message.message_id
     FROM program
       JOIN service ON program.service_id = service.service_id
-        AND program.network_id = service.service_id
+        AND program.network_id = service.network_id
       JOIN program_message ON program.id = program_message.program_id
       `,
   })
 
-  const parseExtended = (extended: Object) => {
-    return JSON.stringify(extended)
+  const parseExtended = (extended?: Object) => {
+    if (extended === undefined) return ""
+    let ret = ""
+    for (const [k, v] of Object.entries(extended)) {
+      ret += `${k.normalize("NFKC")}: ${v.normalize("NFKC")}\n`
+    }
+    return ret
   }
 
   const document = rows.map((row): Program => {
     return {
       id: row.id,
-      name: row.name.normalize(),
-      description: row.description.normalize(),
-      channel: row.channel.normalize(),
+      name: row.name.normalize("NFKC"),
+      description: row.description.normalize("NFKC"),
+      channel: row.channel.normalize("NFKC"),
       startAt: new Date(row.start_at),
-      extended: parseExtended(JSON.parse(row.json).extended).normalize(),
+      extended: parseExtended(JSON.parse(row.json).extended),
     }
   })
 
@@ -72,9 +77,11 @@ async function main() {
 
   const fuse = new Fuse<Program>(document, options, index)
 
-  console.log(fuse.search("トニカク").map((e) => [e.item.name, e.score]))
+  console.log(fuse.search("NEWS").map((e) => [e.item.name, e.score]))
 
   connection.destroy()
 }
 
 await main()
+
+console.log("ＮＥＷＳ".normalize("NFKC"))
