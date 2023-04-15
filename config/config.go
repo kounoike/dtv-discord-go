@@ -32,9 +32,12 @@ type Config struct {
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
 	}
 	Transcription struct {
-		Enabled  bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`
-		BasePath string `required:"true" env:"TRANSCRIPTION_BASE_PATH"`
-		Ext      string `required:"true" env:"TRANSCRIPTION_EXT"`
+		Enabled    bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`
+		BasePath   string `required:"true" env:"TRANSCRIPTION_BASE_PATH"`
+		Ext        string `required:"true" env:"TRANSCRIPTION_EXT"`
+		Type       string `default:"local" env:"TRANSCRIPTION_TYPE"` // local or api
+		ScriptPath string `required:"true" env:"TRANSCRIPTION_SCRIPT_PATH"`
+		ModelSize  string `required:"true" env:"TRANSCRIPTION_MODEL_SIZE"`
 	}
 	Match struct {
 		KanaMatch  bool `default:"true" env:"KANA_MATCH"`
