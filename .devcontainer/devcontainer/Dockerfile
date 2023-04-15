@@ -38,6 +38,7 @@ ENV GOPATH=/usr/local/go
 RUN /usr/local/go/bin/go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
 RUN /usr/local/go/bin/go install github.com/rubenv/sql-migrate/...@latest
 RUN /usr/local/go/bin/go install golang.org/x/tools/gopls@latest
+RUN /usr/local/go/bin/go install github.com/go-delve/delve/cmd/dlv@latest
 
 RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz"
 
