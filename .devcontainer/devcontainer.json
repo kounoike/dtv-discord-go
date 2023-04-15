@@ -29,7 +29,8 @@
 				"rvest.vs-code-prettier-eslint",
 				"golang.go",
 				"ms-python.python",
-				"mhutchie.git-graph"
+				"mhutchie.git-graph",
+				"github.copilot"
 			]
 		}
 	}
