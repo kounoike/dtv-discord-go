@@ -22,11 +22,12 @@ const TypeProgramTranscriptionApi = "program:transcription:api"
 type ProgramTranscriptionApiPayload struct {
 	ProgramId   int64  `json:"programId"`
 	ContentPath string `json:"contentPath"`
+	EncodedPath string `json:"encodedPath"`
 	OutputPath  string `json:"outputPath"`
 }
 
-func NewProgramTranscriptionApiTask(programId int64, contentPath string, outputPath string) (*asynq.Task, error) {
-	payload, err := json.Marshal(ProgramTranscriptionApiPayload{ProgramId: programId, ContentPath: contentPath, OutputPath: outputPath})
+func NewProgramTranscriptionApiTask(programId int64, contentPath string, encodedPath string, outputPath string) (*asynq.Task, error) {
+	payload, err := json.Marshal(ProgramTranscriptionApiPayload{ProgramId: programId, ContentPath: contentPath, EncodedPath: encodedPath, OutputPath: outputPath})
 	if err != nil {
 		return nil, err
 	}
@@ -36,15 +37,17 @@ func NewProgramTranscriptionApiTask(programId int64, contentPath string, outputP
 type ProgramTranscriberApi struct {
 	logger              *zap.Logger
 	recordedBasePath    string
+	encodedBasePath     string
 	transcribedBasePath string
 	gpt                 *gpt.GPTClient
 }
 
-func NewProgramTranscriberApi(logger *zap.Logger, gpt *gpt.GPTClient, encodeCommandTmpl *template.Template, recordedBasePath string, transcribedBasePath string) *ProgramTranscriberApi {
+func NewProgramTranscriberApi(logger *zap.Logger, gpt *gpt.GPTClient, encodeCommandTmpl *template.Template, recordedBasePath string, encodedBasePath string, transcribedBasePath string) *ProgramTranscriberApi {
 	return &ProgramTranscriberApi{
 		logger:              logger,
 		gpt:                 gpt,
 		recordedBasePath:    recordedBasePath,
+		encodedBasePath:     encodedBasePath,
 		transcribedBasePath: transcribedBasePath,
 	}
 }
@@ -67,8 +70,13 @@ func (e *ProgramTranscriberApi) ProcessTask(ctx context.Context, t *asynq.Task) 
 		return err
 	}
 
+	inputFile := path.Join(e.recordedBasePath, p.ContentPath)
+	if _, err := os.Stat(inputFile); os.IsNotExist(err) {
+		inputFile = path.Join(e.encodedBasePath, p.EncodedPath)
+	}
+
 	tmpFile := fmt.Sprintf("/tmp/%d.m4a", p.ProgramId)
-	commandLine := fmt.Sprintf(`ffmpeg -i "%s" -vn -ac 1 -ar 16000 -ab 32k "%s" -y`, path.Join(e.recordedBasePath, p.ContentPath), tmpFile)
+	commandLine := fmt.Sprintf(`ffmpeg -i "%s" -vn -ac 1 -ar 16000 -ab 32k "%s" -y`, inputFile, tmpFile)
 
 	e.logger.Info("Running split audio command", zap.String("command", commandLine))
 

@@ -30,6 +30,7 @@ type Config struct {
 		BasePath              string `required:"true" env:"ENCODING_BASE_PATH"`
 		Ext                   string `required:"true" env:"ENCODING_EXT"`
 		EncodeCommandTemplate string `required:"true" env:"ENCODING_COMMAND"`
+		DeleteOriginalFile    bool   `required:"true" env:"ENCODING_DELETE_ORIGINAL_FILE"`
 	}
 	Transcription struct {
 		Enabled    bool   `required:"true" env:"TRANSCRIPTION_ENABLED"`

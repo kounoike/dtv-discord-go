@@ -43,14 +43,16 @@ type ProgramEncoder struct {
 	encodeCommandTemplate *template.Template
 	recordedBasePath      string
 	encodedBasePath       string
+	deleteOriginalFile    bool
 }
 
-func NewProgramEncoder(logger *zap.Logger, encodeCommandTmpl *template.Template, recordedBasePath string, encodedBasePath string) *ProgramEncoder {
+func NewProgramEncoder(logger *zap.Logger, encodeCommandTmpl *template.Template, recordedBasePath string, encodedBasePath string, deleteOriginalFile bool) *ProgramEncoder {
 	return &ProgramEncoder{
 		logger:                logger,
 		encodeCommandTemplate: encodeCommandTmpl,
 		recordedBasePath:      recordedBasePath,
 		encodedBasePath:       encodedBasePath,
+		deleteOriginalFile:    deleteOriginalFile,
 	}
 }
 
@@ -105,6 +107,13 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	e.logger.Debug("encode command succeeded")
+
+	if e.deleteOriginalFile {
+		filePath := filepath.Join(e.recordedBasePath, p.ContentPath)
+		if err := os.Remove(filePath); err != nil {
+			e.logger.Error("can't remove original file", zap.Error(err), zap.String("filePath", filePath))
+		}
+	}
 
 	return nil
 }

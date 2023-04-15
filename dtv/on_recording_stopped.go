@@ -62,8 +62,9 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		if dtv.transcriptionEnabled {
 			switch dtv.transcriptionType {
 			case "api":
+				encodedPath := dtv.getEncodingOutputPath(contentPath)
 				outputPath := dtv.getTranscriptionOutputPath(contentPath)
-				task, err := tasks.NewProgramTranscriptionApiTask(programId, contentPath, outputPath)
+				task, err := tasks.NewProgramTranscriptionApiTask(programId, contentPath, encodedPath, outputPath)
 				if err != nil {
 					// NOTE: 多分JSONMarshalの失敗なので無視する
 					dtv.logger.Warn("NewProgramTranscriptionApiTask failed", zap.Error(err))
@@ -78,8 +79,9 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 				}
 				dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 			case "local":
+				encodedPath := dtv.getEncodingOutputPath(contentPath)
 				outputPath := dtv.getTranscriptionOutputPath(contentPath)
-				task, err := tasks.NewProgramTranscriptionLocalTask(programId, contentPath, outputPath)
+				task, err := tasks.NewProgramTranscriptionLocalTask(programId, contentPath, encodedPath, outputPath)
 				if err != nil {
 					// NOTE: 多分JSONMarshalの失敗なので無視する
 					dtv.logger.Warn("NewProgramTranscriptionLocalTask failed", zap.Error(err))
