@@ -5,25 +5,29 @@ import styles from "./page.module.css"
 import {
   AppBar,
   IconButton,
-  InputBase,
+  ListItem,
+  ListItemText,
   TextField,
   Toolbar,
   Typography,
+  Link,
+  Box,
 } from "@mui/material"
 import { useAsync, useDebounce } from "react-use"
 import Fuse from "fuse.js"
-import { stringify } from "querystring"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { FixedSizeList, ListChildComponentProps } from "react-window"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const documentUrl = "/document.json"
-const indexUrl = "/index.json"
+const documentUrl = "/index/document.json"
+const indexUrl = "/index/index.json"
 
 interface Program {
   id: number
   name: string
   description: string
+  json: string
 }
 
 const fuseOptions: Fuse.IFuseOptions<Program> = {
@@ -53,6 +57,14 @@ export default function Home() {
   const [query, setQuery] = useState<string>("")
   const [debouncedQuery, setDebouncedQuery] = useState<string>("")
   const [results, setResults] = useState<Fuse.FuseResult<Program>[]>()
+  const resultRef = useRef<HTMLDivElement>(null)
+  const [resultHeight, setResultHeight] = useState<number>(0)
+
+  useEffect(() => {
+    if (resultRef.current) {
+      setResultHeight(resultRef.current.getBoundingClientRect().height)
+    }
+  }, [resultRef, query])
 
   const [, cancel] = useDebounce(
     () => {
@@ -70,6 +82,25 @@ export default function Home() {
     }
     setResults(asyncState.value.search(debouncedQuery))
   }, [debouncedQuery, asyncState.value])
+
+  const renderRow = ({ index, style }: ListChildComponentProps) => {
+    if (results === undefined) return <></>
+    return (
+      <ListItem
+        style={style}
+        key={index}
+        component="div"
+        disablePadding
+        className={styles.listItem}
+      >
+        <ListItemText
+          primary={results[index].item.name}
+          secondary={results[index].item.description}
+        />
+        <Link href="/">Discord Link</Link>
+      </ListItem>
+    )
+  }
 
   return (
     <>
@@ -89,7 +120,7 @@ export default function Home() {
           <AppBar position="sticky" className={styles.appbar}>
             <Toolbar>
               <Typography variant="h6" className={styles.title}>
-                視聴ちゃん
+                視聴ちゃん {resultHeight}
               </Typography>
               <div className={styles.grow} />
               <IconButton>
@@ -104,10 +135,10 @@ export default function Home() {
           </AppBar>
           <main className={styles.main}>
             <form
-              style={{ width: "100%" }}
               noValidate
               autoComplete="off"
               onSubmit={(e) => e.preventDefault()}
+              className={styles.form}
             >
               <TextField
                 id="search-program"
@@ -117,25 +148,19 @@ export default function Home() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </form>
-            {results && (
-              <ul>
-                {results.slice(0, 20).map((result) => (
-                  <li key={result.item.id}>
-                    {result.item.name} score: {result.score ?? "???"} matches
-                    len: {result.matches?.length}
-                    <ul>
-                      {result.matches?.map((match, idx) => (
-                        <li key={result.item.id + "-" + idx}>
-                          indices: {match.indices.join(",")} key: {match.key}{" "}
-                          refIndex: {match.refIndex} value:{" "}
-                          {buildMatchValue(match)}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div ref={resultRef} className={styles.result}>
+              {results && (
+                <FixedSizeList
+                  height={resultHeight}
+                  width="100%"
+                  itemSize={46}
+                  itemCount={results.length}
+                  overscanCount={5}
+                >
+                  {renderRow}
+                </FixedSizeList>
+              )}
+            </div>
           </main>
         </>
       )}

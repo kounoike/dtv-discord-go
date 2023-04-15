@@ -15,13 +15,29 @@
   min-height: 100vh;
 }
 
+.form {
+  width: 100%;
+  height: 3rem;
+}
+
+.result {
+  width: 100%;
+  height: calc(100vh - 66px - 12rem);
+}
+
+.listItem {
+}
+
+.listItem:nth-child(odd) {
+  background-color: #ededed;
+}
 
 .main {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 6rem;
+  padding: 3rem 6rem;
   min-height: calc(100vh - 66px);
 }
 
