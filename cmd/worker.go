@@ -88,7 +88,7 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 	case "api":
 		mux.Handle(tasks.TypeProgramTranscriptionApi, tasks.NewProgramTranscriberApi(logger, gpt, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Transcription.BasePath))
 	case "local":
-		mux.Handle(tasks.TypeProgramTranscriptionLocal, tasks.NewProgramTranscriberLocal(logger, tmpl, config.Recording.BasePath, config.Transcription.BasePath, config.Encoding.BasePath, config.Transcription.ScriptPath, config.Transcription.ModelSize))
+		mux.Handle(tasks.TypeProgramTranscriptionLocal, tasks.NewProgramTranscriberLocal(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Transcription.BasePath, config.Transcription.ScriptPath, config.Transcription.ModelSize))
 	default:
 		logger.Fatal(fmt.Sprintf("unsupported Transcription.Type:%s", config.Transcription.Type))
 	}
