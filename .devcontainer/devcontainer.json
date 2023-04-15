@@ -28,7 +28,8 @@
 				"esbenp.prettier-vscode",
 				"rvest.vs-code-prettier-eslint",
 				"golang.go",
-				"ms-python.python"
+				"ms-python.python",
+				"mhutchie.git-graph"
 			]
 		}
 	}
