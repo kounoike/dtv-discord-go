@@ -5,48 +5,63 @@ import styles from "./page.module.css"
 import {
   AppBar,
   IconButton,
-  ListItem,
-  ListItemText,
   TextField,
   Toolbar,
   Typography,
   Link,
-  Box,
+  ListItemIcon,
 } from "@mui/material"
-import { useAsync, useDebounce } from "react-use"
+import { useAsync } from "react-use"
 import Fuse from "fuse.js"
 import { useEffect, useRef, useState } from "react"
-import { FixedSizeList, ListChildComponentProps } from "react-window"
+import { Virtuoso } from "react-virtuoso"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const documentUrl = "/index/program_document.json"
-const indexUrl = "/index/program_index.json"
+const documentUrl = "/index/recorded_document.json"
+const indexUrl = "/index/recorded_index.json"
 
-interface Program {
+interface RecordedFiles {
   id: number
+  programId: number
+  m2tsPath?: string | null
+  mp4Path?: string | null
+  aribB24Subtitle?: string
+  transcribedText?: string
+  startAt: Date
+  duration: number
+  genre: string
+  extended: string
   name: string
   description: string
-  json: string
+  channel: string
 }
 
-const fuseOptions: Fuse.IFuseOptions<Program> = {
-  keys: ["name", "description", "json"],
+const fuseOptions: Fuse.IFuseOptions<RecordedFiles> = {
+  keys: [
+    "name",
+    "description",
+    "extended",
+    "genre",
+    "channel",
+    "aribB24Subtitle",
+    "transcribedText",
+  ],
   includeScore: true,
   includeMatches: true,
   shouldSort: true,
 }
 
-export default function Home() {
+export default function SearchPage() {
   const asyncState = useAsync(async () => {
     const documentPromise = (async () => {
       const response = await fetch(documentUrl)
-      const result = JSON.parse(await response.text()) as Program[]
+      const result = JSON.parse(await response.text()) as RecordedFiles[]
       return result
     })()
     const indexPromise = (async () => {
       const response = await fetch(indexUrl)
-      return Fuse.parseIndex<Program>(JSON.parse(await response.text()))
+      return Fuse.parseIndex<RecordedFiles>(JSON.parse(await response.text()))
     })()
     const [document, index] = await Promise.all([documentPromise, indexPromise])
 
@@ -55,8 +70,7 @@ export default function Home() {
   })
 
   const [query, setQuery] = useState<string>("")
-  const [debouncedQuery, setDebouncedQuery] = useState<string>("")
-  const [results, setResults] = useState<Fuse.FuseResult<Program>[]>()
+  const [results, setResults] = useState<Fuse.FuseResult<RecordedFiles>[]>()
   const resultRef = useRef<HTMLDivElement>(null)
   const [resultHeight, setResultHeight] = useState<number>(0)
 
@@ -66,39 +80,66 @@ export default function Home() {
     }
   }, [resultRef, query])
 
-  const [, cancel] = useDebounce(
-    () => {
-      setDebouncedQuery(query)
-    },
-    250,
-    [query]
-  )
-
   useEffect(() => {
     if (asyncState.value === undefined) return
-    if (debouncedQuery === "") {
+    if (query === "") {
       setResults(undefined)
       return
     }
-    setResults(asyncState.value.search(debouncedQuery.normalize("NFKC")))
-  }, [debouncedQuery, asyncState.value])
+    setResults(asyncState.value.search(query.normalize("NFKC")))
+  }, [query, asyncState.value])
 
-  const renderRow = ({ index, style }: ListChildComponentProps) => {
+  const renderRow = (index: number) => {
     if (results === undefined) return <></>
     return (
-      <ListItem
-        style={style}
-        key={index}
-        component="div"
-        disablePadding
-        className={styles.listItem}
-      >
-        <ListItemText
-          primary={results[index].item.name}
-          secondary={results[index].item.description}
-        />
-        <Link href="/">Discord Link</Link>
-      </ListItem>
+      <div>
+        <div style={{ background: "#f0f0f0" }}>
+          {results[index].item.name + ": " + results[index].item.description}
+        </div>
+        <div>{results[index].matches?.map((m) => buildMatchValue(m))}</div>
+        <div style={{ marginBottom: "1rem" }}>
+          <Link href={"/recorded/mp4/" + results[index].item.mp4Path}>
+            MP4 Link
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const buildMatchValue = (match: Fuse.FuseResultMatch) => {
+    if (match.value === undefined) return <></>
+
+    let ret = [] as JSX.Element[]
+    let prev = 0
+    match.indices.slice(0, 10).forEach((tpl) => {
+      ret.push(
+        <>
+          {Math.max(prev, tpl[0] - 20) <= 0 ? "" : "…"}
+          {match.value?.slice(Math.max(prev, tpl[0] - 20), tpl[0])}
+          <b>{match.value?.slice(tpl[0], tpl[1] + 1)}</b>
+          {match.value?.slice(tpl[1] + 1, tpl[1] + 20)}…
+        </>
+      )
+      // prev = tpl[1] + 1
+    })
+
+    const keyDescriptions: any = {
+      name: "番組名",
+      description: "番組説明",
+      extended: "番組詳細",
+      genre: "ジャンル",
+      channel: "チャンネル",
+      aribB24Subtitle: "字幕",
+      transcribedText: "文字起こし",
+    }
+
+    return (
+      <>
+        <p>
+          {match.key && <b key="title">{keyDescriptions[match.key]}: </b>}
+          {ret}
+        </p>
+      </>
     )
   }
 
@@ -120,7 +161,7 @@ export default function Home() {
           <AppBar position="sticky" className={styles.appbar}>
             <Toolbar>
               <Typography variant="h6" className={styles.title}>
-                視聴ちゃん 番組検索
+                視聴ちゃん 録画検索
               </Typography>
               <div className={styles.grow} />
               <IconButton>
@@ -142,7 +183,7 @@ export default function Home() {
             >
               <TextField
                 id="search-program"
-                label="番組検索"
+                label="録画検索"
                 value={query}
                 style={{ width: "100%" }}
                 onChange={(e) => setQuery(e.target.value)}
@@ -150,43 +191,16 @@ export default function Home() {
             </form>
             <div ref={resultRef} className={styles.result}>
               {results && (
-                <FixedSizeList
-                  height={resultHeight}
-                  width="100%"
-                  itemSize={46}
-                  itemCount={results.length}
-                  overscanCount={5}
-                >
-                  {renderRow}
-                </FixedSizeList>
+                <Virtuoso
+                  style={{ height: resultHeight }}
+                  totalCount={results.length}
+                  itemContent={renderRow}
+                />
               )}
             </div>
           </main>
         </>
       )}
-    </>
-  )
-}
-
-function buildMatchValue(match: Fuse.FuseResultMatch) {
-  if (match.value === undefined) return <></>
-
-  let ret = Array<JSX.Element>()
-  let prev = 0
-  match.indices.forEach((tpl) => {
-    ret.push(
-      <>
-        {match.value?.slice(prev, tpl[0])}
-        <b>{match.value?.slice(tpl[0], tpl[1] + 1)}</b>
-      </>
-    )
-    prev = tpl[1] + 1
-  })
-
-  return (
-    <>
-      {ret}
-      {match.value?.slice(prev)}
     </>
   )
 }
