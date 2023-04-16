@@ -15,6 +15,8 @@ builds:
 dockers:
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:latest-amd64
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-amd64
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-amd64
     use: buildx
     goos: linux
     goarch: amd64
@@ -25,6 +27,8 @@ dockers:
       - db/migrations
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:latest-arm64
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-arm64
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-arm64
     use: buildx
     goos: linux
     goarch: arm64
@@ -35,6 +39,8 @@ dockers:
       - db/migrations
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:latest-armv7
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-armv7
+      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-armv7
     use: buildx
     goos: linux
     goarch: arm
@@ -47,8 +53,6 @@ dockers:
 
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-amd64
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-amd64
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-amd64
     use: buildx
     goos: linux
     goarch: amd64
@@ -58,8 +62,6 @@ dockers:
       - db/migrations
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-arm64
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-arm64
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-arm64
     use: buildx
     goos: linux
     goarch: arm64
@@ -69,8 +71,6 @@ dockers:
       - db/migrations
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-armv7
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-armv7
-      - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-armv7
     use: buildx
     goos: linux
     goarch: arm
@@ -97,11 +97,13 @@ docker_manifests:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-amd64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-armv7
+    skip_push: auto
   - name_template: ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}
     image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-amd64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-armv7
+    skip_push: auto
 # The lines beneath this are called `modelines`. See `:help modeline`
 # Feel free to remove those if you don't want/use them.
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
