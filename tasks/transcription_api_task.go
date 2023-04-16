@@ -26,12 +26,12 @@ type ProgramTranscriptionApiPayload struct {
 	OutputPath  string `json:"outputPath"`
 }
 
-func NewProgramTranscriptionApiTask(programId int64, contentPath string, encodedPath string, outputPath string) (*asynq.Task, error) {
+func NewProgramTranscriptionApiTask(programId int64, contentPath string, encodedPath string, outputPath string, queueName string) (*asynq.Task, error) {
 	payload, err := json.Marshal(ProgramTranscriptionApiPayload{ProgramId: programId, ContentPath: contentPath, EncodedPath: encodedPath, OutputPath: outputPath})
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramTranscriptionApi, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute)), nil
+	return asynq.NewTask(TypeProgramTranscriptionApi, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
 }
 
 type ProgramTranscriberApi struct {
@@ -76,7 +76,7 @@ func (e *ProgramTranscriberApi) ProcessTask(ctx context.Context, t *asynq.Task) 
 	}
 
 	tmpFile := fmt.Sprintf("/tmp/%d.m4a", p.ProgramId)
-	commandLine := fmt.Sprintf(`ffmpeg -i "%s" -vn -ac 1 -ar 16000 -ab 32k "%s" -y`, inputFile, tmpFile)
+	commandLine := fmt.Sprintf(`ffmpeg -hide_banner -i "%s" -vn -ac 1 -ar 16000 -ab 32k "%s" -y`, inputFile, tmpFile)
 
 	e.logger.Info("Running split audio command", zap.String("command", commandLine))
 

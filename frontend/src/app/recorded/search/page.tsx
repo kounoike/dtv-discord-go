@@ -66,13 +66,15 @@ export default function SearchPage() {
     const [document, index] = await Promise.all([documentPromise, indexPromise])
 
     const fuse = new Fuse(document, fuseOptions, index)
-    return fuse
+    return { document, fuse }
   })
 
   const [query, setQuery] = useState<string>("")
   const [results, setResults] = useState<Fuse.FuseResult<RecordedFiles>[]>()
   const resultRef = useRef<HTMLDivElement>(null)
   const [resultHeight, setResultHeight] = useState<number>(0)
+  const defaultRef = useRef<HTMLDivElement>(null)
+  const [defaultHeight, setDefaultHeight] = useState<number>(0)
 
   useEffect(() => {
     if (resultRef.current) {
@@ -81,15 +83,47 @@ export default function SearchPage() {
   }, [resultRef, query])
 
   useEffect(() => {
+    if (defaultRef.current) {
+      setDefaultHeight(defaultRef.current.getBoundingClientRect().height)
+    }
+  }, [defaultRef, asyncState.value])
+
+  useEffect(() => {
     if (asyncState.value === undefined) return
     if (query === "") {
       setResults(undefined)
       return
     }
-    setResults(asyncState.value.search(query.normalize("NFKC")))
+    setResults(asyncState.value.fuse.search(query.normalize("NFKC")))
   }, [query, asyncState.value])
 
-  const renderRow = (index: number) => {
+  const renderRow = (documentIndex: number) => {
+    if (!asyncState.value) return
+
+    const idx = asyncState.value.document.length - documentIndex - 1
+
+    return (
+      <div>
+        <div style={{ background: "#f0f0f0" }}>
+          {asyncState.value.document[idx].name +
+            ": " +
+            asyncState.value.document[idx].description}
+        </div>
+        <div>{asyncState.value.document[idx].extended}</div>
+        <div style={{ marginBottom: "1rem" }}>
+          {asyncState.value.document[idx].mp4Path && (
+            <Link
+              href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
+            >
+              MP4 Link
+            </Link>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  const renderSearchRow = (index: number) => {
     if (results === undefined) return <></>
     return (
       <div>
@@ -189,15 +223,23 @@ export default function SearchPage() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </form>
-            <div ref={resultRef} className={styles.result}>
-              {results && (
+            {results !== undefined && results.length > 0 ? (
+              <div ref={resultRef} className={styles.result}>
                 <Virtuoso
                   style={{ height: resultHeight }}
                   totalCount={results.length}
+                  itemContent={renderSearchRow}
+                />
+              </div>
+            ) : (
+              <div ref={defaultRef} className={styles.result}>
+                <Virtuoso
+                  style={{ height: defaultHeight }}
+                  totalCount={asyncState.value?.document.length ?? 0}
                   itemContent={renderRow}
                 />
-              )}
-            </div>
+              </div>
+            )}
           </main>
         </>
       )}
