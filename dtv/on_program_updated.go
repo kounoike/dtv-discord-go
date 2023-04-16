@@ -147,6 +147,11 @@ func (dtv *DTVUsecase) OnProgramsUpdated(ctx context.Context, serviceId uint) er
 		return err
 	}
 	dtv.logger.Debug("scheduled onProgramsUpdated", zap.Uint("serviceId", serviceId), zap.Time("NextRun", job.NextRun()))
+	err = dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "program", Status: "invalid"})
+	if err != nil {
+		dtv.logger.Error("SetIndexInvalid error", zap.Error(err))
+		return err
+	}
 	return nil
 }
 

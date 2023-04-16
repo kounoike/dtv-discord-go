@@ -47,6 +47,11 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		return err
 	}
 
+	if err := dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "recorded", Status: "invalid"}); err != nil {
+		dtv.logger.Warn("SetIndexInvalid failed", zap.Error(err))
+		return err
+	}
+
 	if dtv.asynq != nil {
 		monitorTaskIds := []string{}
 
