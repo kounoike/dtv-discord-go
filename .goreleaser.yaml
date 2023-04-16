@@ -15,6 +15,37 @@ builds:
 dockers:
   - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:latest-amd64
+    use: buildx
+    goos: linux
+    goarch: amd64
+    skip_push: auto
+    build_flag_templates:
+      - --platform=linux/amd64
+    extra_files:
+      - db/migrations
+  - image_templates:
+      - ghcr.io/kounoike/dtv-discord-go:latest-arm64
+    use: buildx
+    goos: linux
+    goarch: arm64
+    skip_push: auto
+    build_flag_templates:
+      - --platform=linux/arm64
+    extra_files:
+      - db/migrations
+  - image_templates:
+      - ghcr.io/kounoike/dtv-discord-go:latest-armv7
+    use: buildx
+    goos: linux
+    goarch: arm
+    goarm: 7
+    skip_push: auto
+    build_flag_templates:
+      - --platform=linux/arm/v7
+    extra_files:
+      - db/migrations
+
+  - image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-amd64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-amd64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-amd64
@@ -26,7 +57,6 @@ dockers:
     extra_files:
       - db/migrations
   - image_templates:
-      - ghcr.io/kounoike/dtv-discord-go:latest-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-arm64
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-arm64
@@ -38,7 +68,6 @@ dockers:
     extra_files:
       - db/migrations
   - image_templates:
-      - ghcr.io/kounoike/dtv-discord-go:latest-armv7
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-armv7
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}-armv7
       - ghcr.io/kounoike/dtv-discord-go:{{ .Major }}.{{ .Minor }}-armv7
@@ -57,6 +86,7 @@ docker_manifests:
       - ghcr.io/kounoike/dtv-discord-go:latest-amd64
       - ghcr.io/kounoike/dtv-discord-go:latest-arm64
       - ghcr.io/kounoike/dtv-discord-go:latest-armv7
+    skip_push: auto
   - name_template: ghcr.io/kounoike/dtv-discord-go:{{ .Version }}
     image_templates:
       - ghcr.io/kounoike/dtv-discord-go:{{ .Version }}-amd64
