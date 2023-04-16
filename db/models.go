@@ -5,6 +5,7 @@
 package db
 
 import (
+	"database/sql"
 	"encoding/json"
 	"time"
 )
@@ -20,6 +21,14 @@ type ComponentVersion struct {
 type EncodeTask struct {
 	ID        int32     `json:"id"`
 	TaskID    string    `json:"taskID"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type IndexInvalid struct {
+	ID        int32     `json:"id"`
+	Type      string    `json:"type"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
@@ -64,6 +73,17 @@ type ProgramService struct {
 	ServiceID int64     `json:"serviceID"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type RecordedFile struct {
+	ID                 int32          `json:"id"`
+	ProgramID          int64          `json:"programID"`
+	M2tsPath           sql.NullString `json:"m2tsPath"`
+	Mp4Path            sql.NullString `json:"mp4Path"`
+	Aribb24TxtPath     sql.NullString `json:"aribb24TxtPath"`
+	TranscribedTxtPath sql.NullString `json:"transcribedTxtPath"`
+	CreatedAt          time.Time      `json:"createdAt"`
+	UpdatedAt          time.Time      `json:"updatedAt"`
 }
 
 type Service struct {

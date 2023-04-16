@@ -20,8 +20,8 @@ import { FixedSizeList, ListChildComponentProps } from "react-window"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const documentUrl = "/index/document.json"
-const indexUrl = "/index/index.json"
+const documentUrl = "/index/program_document.json"
+const indexUrl = "/index/program_index.json"
 
 interface Program {
   id: number

@@ -13,6 +13,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
+    wget \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts
 
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
@@ -20,14 +21,19 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && /bin/bash /tmp/common-debian.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" \
     && apt-get install -y --no-install-recommends \
-    ffmpeg \
     mariadb-client \
     nodejs \
     python-is-python3 \
     python3-pip \
+    xz-utils \
     && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/common-debian.sh
 
 RUN npm install -g yarn
+
+RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n6.0-latest-linux64-gpl-6.0.tar.xz && \
+    tar Jxf ffmpeg-n6.0-latest-linux64-gpl-6.0.tar.xz -C /usr/local --strip-component 1 && \
+    rm ffmpeg-n6.0-latest-linux64-gpl-6.0.tar.xz
+
 
 RUN wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz && \
     tar zxf go1.20.3.linux-amd64.tar.gz -C /usr/local && \

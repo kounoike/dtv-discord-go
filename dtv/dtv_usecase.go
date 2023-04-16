@@ -33,6 +33,7 @@ type DTVUsecase struct {
 	encodingEnabled      bool
 	transcriptionEnabled bool
 	transcriptionType    string
+	deleteOriginalFile   bool
 }
 
 func fold(str string) string {
@@ -76,5 +77,6 @@ func NewDTVUsecase(
 		encodingEnabled:      cfg.Encoding.Enabled,
 		transcriptionEnabled: cfg.Transcription.Enabled,
 		transcriptionType:    cfg.Transcription.Type,
+		deleteOriginalFile:   cfg.Encoding.DeleteOriginalFile,
 	}, nil
 }

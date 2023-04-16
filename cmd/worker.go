@@ -82,6 +82,7 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 	mux := asynq.NewServeMux()
 	tmpl := template.Must(template.New("encode-command-tmpl").Parse(config.Encoding.EncodeCommandTemplate))
 	mux.Handle(tasks.TypeProgramEncode, tasks.NewProgramEncoder(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Encoding.DeleteOriginalFile))
+	mux.Handle(tasks.TypeProgramExtractSubtitle, tasks.NewProgramExtractor(logger, config.Recording.BasePath, config.Transcription.BasePath))
 	mux.HandleFunc(tasks.TypeHello, tasks.HelloTask)
 
 	switch config.Transcription.Type {
@@ -91,6 +92,9 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 		mux.Handle(tasks.TypeProgramTranscriptionLocal, tasks.NewProgramTranscriberLocal(logger, tmpl, config.Recording.BasePath, config.Encoding.BasePath, config.Transcription.BasePath, config.Transcription.ScriptPath, config.Transcription.ModelSize))
 	default:
 		logger.Fatal(fmt.Sprintf("unsupported Transcription.Type:%s", config.Transcription.Type))
+	}
+	if config.Encoding.DeleteOriginalFile {
+		mux.Handle(tasks.TypeProgramDeleteoriginal, tasks.NewProgramDeleter(logger, asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr}), config.Recording.BasePath))
 	}
 
 	logger.Debug("Starting worker server")
