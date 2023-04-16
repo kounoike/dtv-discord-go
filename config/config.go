@@ -48,4 +48,9 @@ type Config struct {
 		Enabled bool   `default:"false" env:"PARSE_TITLE_WITH_GPT"`
 		Token   string `default:"" env:"OPENAI_TOKEN"`
 	}
+	TaskQueue struct {
+		DefaultQueueName    string `default:"default" env:"TASK_QUEUE_DEFAULT_QUEUE_NAME"`
+		EncodeQueueName     string `default:"encode" env:"TASK_QUEUE_ENCODE_QUEUE_NAME"`
+		TranscribeQueueName string `default:"transcribe" env:"TASK_QUEUE_TRANSCRIBE_QUEUE_NAME"`
+	}
 }

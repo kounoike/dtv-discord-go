@@ -34,6 +34,9 @@ type DTVUsecase struct {
 	transcriptionEnabled bool
 	transcriptionType    string
 	deleteOriginalFile   bool
+	defaultQueueName     string
+	encodeQueueName      string
+	transcribeQueueName  string
 }
 
 func fold(str string) string {
@@ -78,5 +81,8 @@ func NewDTVUsecase(
 		transcriptionEnabled: cfg.Transcription.Enabled,
 		transcriptionType:    cfg.Transcription.Type,
 		deleteOriginalFile:   cfg.Encoding.DeleteOriginalFile,
+		defaultQueueName:     cfg.TaskQueue.DefaultQueueName,
+		encodeQueueName:      cfg.TaskQueue.EncodeQueueName,
+		transcribeQueueName:  cfg.TaskQueue.TranscribeQueueName,
 	}, nil
 }

@@ -18,17 +18,18 @@ import (
 
 type WorkerCommand struct {
 	version string
+	queue   string
 }
 
-func NewWorkerCommand(version string) *WorkerCommand {
-	return &WorkerCommand{version: version}
+func NewWorkerCommand(version string, queue string) *WorkerCommand {
+	return &WorkerCommand{version: version, queue: queue}
 }
 
-func (c *WorkerCommand) Name() string { return "worker" }
+func (c *WorkerCommand) Name() string { return c.queue }
 
 func (c *WorkerCommand) Synopsis() string { return "worker subcommand" }
 
-func (c *WorkerCommand) Usage() string { return "worker" }
+func (c *WorkerCommand) Usage() string { return "worker " + c.queue }
 
 func (c *WorkerCommand) SetFlags(f *flag.FlagSet) {
 }
@@ -72,7 +73,7 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 		asynq.Config{
 			Concurrency: 1,
 			Queues: map[string]int{
-				"default": 5,
+				c.queue: 5,
 			},
 		},
 	)
