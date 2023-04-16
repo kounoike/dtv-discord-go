@@ -30,12 +30,12 @@ type commandTemplateData struct {
 	OutputPath string
 }
 
-func NewProgramEncodeTask(programId int64, contentPath string, outputPath string) (*asynq.Task, error) {
+func NewProgramEncodeTask(programId int64, contentPath string, outputPath string, queueName string) (*asynq.Task, error) {
 	payload, err := json.Marshal(ProgramEncodePayload{ProgramId: programId, ContentPath: contentPath, OutputPath: outputPath})
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramEncode, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute)), nil
+	return asynq.NewTask(TypeProgramEncode, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
 }
 
 type ProgramEncoder struct {

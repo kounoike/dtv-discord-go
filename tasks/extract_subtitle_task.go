@@ -22,12 +22,12 @@ type ProgramExtractSubtilePayload struct {
 	OutputPath  string `json:"outputPath"`
 }
 
-func NewProgramExtractSubtileTask(programId int64, contentPath string, outputPath string) (*asynq.Task, error) {
+func NewProgramExtractSubtileTask(programId int64, contentPath string, outputPath string, queueName string) (*asynq.Task, error) {
 	payload, err := json.Marshal(ProgramExtractSubtilePayload{ProgramId: programId, ContentPath: contentPath, OutputPath: outputPath})
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramExtractSubtitle, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute)), nil
+	return asynq.NewTask(TypeProgramExtractSubtitle, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
 }
 
 type ProgramExtractor struct {

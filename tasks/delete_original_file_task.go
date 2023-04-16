@@ -15,17 +15,17 @@ import (
 const TypeProgramDeleteoriginal = "program:delete_original"
 
 type ProgramDeleteOriginalPayload struct {
-	ProgramId      int64    `json:"programId"`
-	ContentPath    string   `json:"contentPath"`
-	MonitorTaskIds []string `json:"monitorTaskIds"`
+	ProgramId        int64             `json:"programId"`
+	ContentPath      string            `json:"contentPath"`
+	MonitorTaskInfos []*asynq.TaskInfo `json:"monitorTaskInfos"`
 }
 
-func NewProgramDeleteOriginalTask(programId int64, contentPath string, monitorTaskIds []string) (*asynq.Task, error) {
-	payload, err := json.Marshal(ProgramDeleteOriginalPayload{ProgramId: programId, ContentPath: contentPath, MonitorTaskIds: monitorTaskIds})
+func NewProgramDeleteOriginalTask(programId int64, contentPath string, monitorTaskInfos []*asynq.TaskInfo, queueName string) (*asynq.Task, error) {
+	payload, err := json.Marshal(ProgramDeleteOriginalPayload{ProgramId: programId, ContentPath: contentPath, MonitorTaskInfos: monitorTaskInfos})
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramDeleteoriginal, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute)), nil
+	return asynq.NewTask(TypeProgramDeleteoriginal, payload, asynq.MaxRetry(0), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
 }
 
 type ProgramDeleter struct {
@@ -54,8 +54,8 @@ func (e *ProgramDeleter) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("empty ContentPath delete original command failed: %w", asynq.SkipRetry)
 	}
 
-	for _, monitorTaskId := range p.MonitorTaskIds {
-		taskInfo, err := e.inspector.GetTaskInfo("default", monitorTaskId)
+	for _, taskInfo := range p.MonitorTaskInfos {
+		taskInfo, err := e.inspector.GetTaskInfo(taskInfo.Queue, taskInfo.ID)
 		if err != nil {
 			e.logger.Error("get task failed", zap.Error(err))
 			return fmt.Errorf("get task failed: %w", asynq.SkipRetry)
