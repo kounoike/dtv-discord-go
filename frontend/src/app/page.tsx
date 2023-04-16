@@ -80,7 +80,7 @@ export default function Home() {
       setResults(undefined)
       return
     }
-    setResults(asyncState.value.search(debouncedQuery))
+    setResults(asyncState.value.search(debouncedQuery.normalize("NFKC")))
   }, [debouncedQuery, asyncState.value])
 
   const renderRow = ({ index, style }: ListChildComponentProps) => {
@@ -120,7 +120,7 @@ export default function Home() {
           <AppBar position="sticky" className={styles.appbar}>
             <Toolbar>
               <Typography variant="h6" className={styles.title}>
-                視聴ちゃん {resultHeight}
+                視聴ちゃん 番組検索
               </Typography>
               <div className={styles.grow} />
               <IconButton>
@@ -145,7 +145,7 @@ export default function Home() {
                 label="番組検索"
                 value={query}
                 style={{ width: "100%" }}
-                onChange={(e) => setQuery(e.target.value.normalize("NFKC"))}
+                onChange={(e) => setQuery(e.target.value)}
               />
             </form>
             <div ref={resultRef} className={styles.result}>
