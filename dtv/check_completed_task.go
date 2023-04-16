@@ -50,6 +50,13 @@ func (dtv *DTVUsecase) onProgramEncoded(ctx context.Context, taskInfo *asynq.Tas
 		dtv.logger.Warn("failed to MessageReactionAdd", zap.Error(err))
 		return err
 	}
+
+	err = dtv.queries.UpdateRecordedFilesMp4(ctx, db.UpdateRecordedFilesMp4Params{ProgramID: payload.ProgramId, Mp4Path: sql.NullString{String: payload.OutputPath, Valid: true}})
+	if err != nil {
+		dtv.logger.Warn("failed to InsertIndexJobEncoded", zap.Error(err))
+		return err
+	}
+
 	return nil
 }
 
@@ -89,6 +96,22 @@ func (dtv *DTVUsecase) onProgramTranscribedApi(ctx context.Context, taskInfo *as
 		dtv.logger.Warn("failed to MessageReactionAdd", zap.Error(err))
 		return err
 	}
+
+	err = dtv.queries.UpdateRecordedFilesTranscribedTxt(
+		ctx,
+		db.UpdateRecordedFilesTranscribedTxtParams{
+			ProgramID: payload.ProgramId,
+			TranscribedTxtPath: sql.NullString{
+				String: payload.OutputPath,
+				Valid:  true,
+			},
+		},
+	)
+	if err != nil {
+		dtv.logger.Warn("failed to InsertIndexJobTranscribed", zap.Error(err))
+		return err
+	}
+
 	return nil
 }
 
@@ -128,6 +151,47 @@ func (dtv *DTVUsecase) onProgramTranscribedLocal(ctx context.Context, taskInfo *
 		dtv.logger.Warn("failed to MessageReactionAdd", zap.Error(err))
 		return err
 	}
+
+	err = dtv.queries.UpdateRecordedFilesTranscribedTxt(
+		ctx,
+		db.UpdateRecordedFilesTranscribedTxtParams{
+			ProgramID: payload.ProgramId,
+			TranscribedTxtPath: sql.NullString{
+				String: payload.OutputPath,
+				Valid:  true,
+			},
+		},
+	)
+	if err != nil {
+		dtv.logger.Warn("failed to InsertIndexJobTranscribed", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (dtv *DTVUsecase) onProgramExtractedSubtitle(ctx context.Context, taskInfo *asynq.TaskInfo) error {
+	var payload tasks.ProgramExtractSubtilePayload
+	err := json.Unmarshal(taskInfo.Payload, &payload)
+	if err != nil {
+		dtv.logger.Warn("task payload json.Unmarshal error", zap.Error(err))
+		return err
+	}
+
+	err = dtv.queries.UpdateRecordedFilesAribb24Txt(
+		ctx,
+		db.UpdateRecordedFilesAribb24TxtParams{
+			ProgramID: payload.ProgramId,
+			Aribb24TxtPath: sql.NullString{
+				String: payload.OutputPath,
+				Valid:  true,
+			},
+		},
+	)
+	if err != nil {
+		dtv.logger.Warn("UpdateRecordedFilesAribb24Txt failed", zap.Error(err))
+		return err
+	}
 	return nil
 }
 
@@ -149,6 +213,10 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			_ = dtv.onProgramTranscribedApi(ctx, taskInfo)
 		case tasks.TypeProgramTranscriptionLocal:
 			_ = dtv.onProgramTranscribedLocal(ctx, taskInfo)
+		case tasks.TypeProgramExtractSubtitle:
+			_ = dtv.onProgramExtractedSubtitle(ctx, taskInfo)
+		case tasks.TypeProgramDeleteoriginal:
+			// 特に何もしない
 		}
 	}
 	return nil

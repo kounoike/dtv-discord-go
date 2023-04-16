@@ -3,6 +3,12 @@ console.log(`hello, world`)
 import mysql, { RowDataPacket } from "mysql2/promise"
 import Fuse from "fuse.js"
 import fs from "fs"
+import { Logger, ILogObj } from "tslog"
+
+const logger: Logger<ILogObj> = new Logger<ILogObj>({
+  type: "pretty",
+  minLevel: 0,
+})
 
 interface Program {
   id: number
@@ -11,6 +17,19 @@ interface Program {
   startAt: Date
   channel: string
   extended: string
+}
+
+interface Recording {
+  programId: number
+  name: string
+  description: string
+  startAt: Date
+  channel: string
+  extended: string
+  m2tsPath: string
+  mp4Path: string
+  aribb24SubtitlePath: string
+  transcribedPath: string
 }
 
 interface IProgram extends RowDataPacket {
@@ -23,14 +42,28 @@ interface IProgram extends RowDataPacket {
   json: string
 }
 
-async function main() {
-  const connection = await mysql.createConnection({
-    host: "db",
-    user: "dtv-discord",
-    password: "dtv-discord",
-    database: "dtv",
-  })
+interface IRecordedFiles extends RowDataPacket {
+  id: number
+  program_id: number
+  content_path: string
+}
 
+interface IJobEncoded extends RowDataPacket {
+  id: number
+  program_id: number
+  output_path: string
+}
+
+interface IJobTranscribed extends RowDataPacket {
+  id: number
+  programId: number
+  m2tsPath: string
+  mp4Path: string
+  aribB24SubtitlePath: string
+  transcribedTextPath: string
+}
+
+async function initializeProgramDocument(connection: mysql.Connection) {
   const [rows, fields] = await connection.query<IProgram[]>({
     sql: `
     SELECT
@@ -72,16 +105,33 @@ async function main() {
   }
 
   const index = Fuse.createIndex(options.keys ?? [], document)
-  fs.writeFileSync("document.json", JSON.stringify(document))
-  fs.writeFileSync("index.json", JSON.stringify(index.toJSON()))
+  fs.writeFileSync(
+    "/document_index/program_document.json",
+    JSON.stringify(document)
+  )
+  fs.writeFileSync(
+    "/document_index/program_index.json",
+    JSON.stringify(index.toJSON())
+  )
 
   const fuse = new Fuse<Program>(document, options, index)
 
   console.log(fuse.search("NEWS").map((e) => [e.item.name, e.score]))
+}
+
+async function initializeRecordedFiles() {}
+
+async function main() {
+  const connection = await mysql.createConnection({
+    host: "db",
+    user: "dtv-discord",
+    password: "dtv-discord",
+    database: "dtv",
+  })
+
+  await initializeProgramDocument(connection)
 
   connection.destroy()
 }
 
 await main()
-
-console.log("ＮＥＷＳ".normalize("NFKC"))

@@ -5,6 +5,7 @@
 package db
 
 import (
+	"database/sql"
 	"encoding/json"
 	"time"
 )
@@ -64,6 +65,17 @@ type ProgramService struct {
 	ServiceID int64     `json:"serviceID"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+type RecordedFile struct {
+	ID                 int32          `json:"id"`
+	ProgramID          int64          `json:"programID"`
+	M2tsPath           sql.NullString `json:"m2tsPath"`
+	Mp4Path            sql.NullString `json:"mp4Path"`
+	Aribb24TxtPath     sql.NullString `json:"aribb24TxtPath"`
+	TranscribedTxtPath sql.NullString `json:"transcribedTxtPath"`
+	CreatedAt          time.Time      `json:"createdAt"`
+	UpdatedAt          time.Time      `json:"updatedAt"`
 }
 
 type Service struct {

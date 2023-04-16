@@ -2,7 +2,9 @@ package dtv
 
 import (
 	"context"
+	"database/sql"
 
+	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/tasks"
 	"github.com/kounoike/dtv-discord-go/template"
@@ -40,7 +42,14 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		return err
 	}
 
+	err = dtv.queries.InsertRecordedFiles(ctx, db.InsertRecordedFilesParams{ProgramID: programId, M2tsPath: sql.NullString{String: contentPath, Valid: true}})
+	if err != nil {
+		return err
+	}
+
 	if dtv.asynq != nil {
+		monitorTaskIds := []string{}
+
 		// NOTE: encoding.enabled = true or transcription.enabled = trueのとき
 		if dtv.encodingEnabled {
 			outputPath := dtv.getEncodingOutputPath(contentPath)
@@ -57,6 +66,7 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 				dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
 				return nil
 			}
+			monitorTaskIds = append(monitorTaskIds, info.ID)
 			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 		}
 		if dtv.transcriptionEnabled {
@@ -77,6 +87,7 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 					dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
 					return nil
 				}
+				monitorTaskIds = append(monitorTaskIds, info.ID)
 				dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 			case "local":
 				encodedPath := dtv.getEncodingOutputPath(contentPath)
@@ -94,8 +105,38 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 					dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
 					return nil
 				}
+				monitorTaskIds = append(monitorTaskIds, info.ID)
 				dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 			}
+		}
+		aribB24TextOutputPath := dtv.getAribB24TextOutputPath(contentPath)
+		task, err := tasks.NewProgramExtractSubtileTask(programId, contentPath, aribB24TextOutputPath)
+		if err != nil {
+			// NOTE: 多分JSONMarshalの失敗なので無視する
+			dtv.logger.Warn("NewProgramExtractSubtileTask failed", zap.Error(err))
+			return nil
+		}
+		info, err := dtv.asynq.Enqueue(task)
+		if err != nil {
+			// NOTE: エンキュー失敗は無視する
+			dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+		}
+		monitorTaskIds = append(monitorTaskIds, info.ID)
+		dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
+
+		if dtv.encodingEnabled && dtv.deleteOriginalFile {
+			task, err := tasks.NewProgramDeleteOriginalTask(programId, contentPath, monitorTaskIds)
+			if err != nil {
+				// NOTE: 多分JSONMarshalの失敗なので無視する
+				dtv.logger.Warn("NewProgramDeleteOriginalFileTask failed", zap.Error(err))
+				return nil
+			}
+			info, err := dtv.asynq.Enqueue(task)
+			if err != nil {
+				// NOTE: エンキュー失敗は無視する
+				dtv.logger.Warn("task enqueue failed", zap.Error(err), zap.Int64("programId", programId), zap.String("contentPath", contentPath))
+			}
+			dtv.logger.Debug("task enqueue success", zap.String("Type", info.Type))
 		}
 	}
 

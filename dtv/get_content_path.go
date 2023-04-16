@@ -42,3 +42,8 @@ func (dtv *DTVUsecase) getTranscriptionOutputPath(contentPath string) string {
 	ext := path.Ext(contentPath)
 	return contentPath[:len(contentPath)-len(ext)] + dtv.transcribedExt
 }
+
+func (dtv *DTVUsecase) getAribB24TextOutputPath(contentPath string) string {
+	ext := path.Ext(contentPath)
+	return contentPath[:len(contentPath)-len(ext)] + `.arib.txt`
+}
