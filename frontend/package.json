@@ -12,10 +12,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/material": "^5.12.0",
-    "@types/node": "18.15.11",
-    "@types/react": "18.0.35",
-    "@types/react-dom": "18.0.11",
-    "@types/react-window": "^1.8.5",
+    "@videojs-player/react": "^1.0.0",
     "eslint": "8.38.0",
     "eslint-config-next": "13.3.0",
     "fuse.js": "^6.6.2",
@@ -25,6 +22,14 @@
     "react-use": "^17.4.0",
     "react-virtuoso": "^4.2.1",
     "react-window": "^1.8.8",
-    "typescript": "5.0.4"
+    "typescript": "5.0.4",
+    "video.js": "^8.0.4"
+  },
+  "devDependencies": {
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.35",
+    "@types/react-dom": "18.0.11",
+    "@types/react-window": "^1.8.5",
+    "@types/video.js": "^7.3.51"
   }
 }

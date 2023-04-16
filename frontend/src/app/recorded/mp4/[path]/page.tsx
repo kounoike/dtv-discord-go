@@ -2,6 +2,8 @@
 import Image from "next/image"
 import styles from "./page.module.css"
 import { AppBar, IconButton, Toolbar, Typography } from "@mui/material"
+import { VideoPlayer } from "@videojs-player/react"
+import "video.js/dist/video-js.css"
 
 export default function SearchPage({ params }: { params: { path: string } }) {
   return (
@@ -36,7 +38,15 @@ export default function SearchPage({ params }: { params: { path: string } }) {
             </Toolbar>
           </AppBar>
           <main className={styles.main}>
-            <div>{decodeURIComponent(params.path)}</div>
+            <VideoPlayer
+              src={"/encoded/" + decodeURIComponent(params.path)}
+              controls={true}
+              loop={false}
+              volume={0.6}
+              autoplay={true}
+              muted={false}
+              playsinline={true}
+            />
           </main>
         </>
       )}
