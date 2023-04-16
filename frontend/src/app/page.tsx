@@ -1,5 +1,4 @@
 "use client"
-import Image from "next/image"
 import { Inter } from "next/font/google"
 import styles from "./page.module.css"
 import {
@@ -17,11 +16,12 @@ import { useAsync, useDebounce } from "react-use"
 import Fuse from "fuse.js"
 import { useEffect, useRef, useState } from "react"
 import { FixedSizeList, ListChildComponentProps } from "react-window"
+import Image from "next/image"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const documentUrl = "/index/program_document.json"
-const indexUrl = "/index/program_index.json"
+const documentUrl = "/document_index/program_document.json"
+const indexUrl = "/document_index/program_index.json"
 
 interface Program {
   id: number
@@ -112,7 +112,7 @@ export default function Home() {
             className={styles.logo}
             width={1280}
             height={313}
-            priority
+            
           />
         </main>
       ) : (
