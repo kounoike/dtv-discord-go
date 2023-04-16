@@ -1,6 +1,7 @@
 config.yml
 
 dist/
+venv/
 
 # Logs
 logs
