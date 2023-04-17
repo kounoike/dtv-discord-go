@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/go-co-op/gocron v1.19.0
+	github.com/go-co-op/gocron v1.22.1
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/subcommands v1.2.0
