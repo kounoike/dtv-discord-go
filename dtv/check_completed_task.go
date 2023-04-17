@@ -216,24 +216,27 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 	if dtv.inspector == nil {
 		return nil
 	}
-	taskInfoList, err := dtv.inspector.ListCompletedTasks("default")
-	if err != nil {
-		return err
-	}
-	for _, taskInfo := range taskInfoList {
-		switch taskInfo.Type {
-		case tasks.TypeHello:
-			continue
-		case tasks.TypeProgramEncode:
-			_ = dtv.onProgramEncoded(ctx, taskInfo)
-		case tasks.TypeProgramTranscriptionApi:
-			_ = dtv.onProgramTranscribedApi(ctx, taskInfo)
-		case tasks.TypeProgramTranscriptionLocal:
-			_ = dtv.onProgramTranscribedLocal(ctx, taskInfo)
-		case tasks.TypeProgramExtractSubtitle:
-			_ = dtv.onProgramExtractedSubtitle(ctx, taskInfo)
-		case tasks.TypeProgramDeleteoriginal:
-			// 特に何もしない
+	queues := []string{dtv.defaultQueueName, dtv.encodeQueueName, dtv.transcribeQueueName}
+	for _, queue := range queues {
+		taskInfoList, err := dtv.inspector.ListCompletedTasks(queue)
+		if err != nil {
+			return err
+		}
+		for _, taskInfo := range taskInfoList {
+			switch taskInfo.Type {
+			case tasks.TypeHello:
+				continue
+			case tasks.TypeProgramEncode:
+				_ = dtv.onProgramEncoded(ctx, taskInfo)
+			case tasks.TypeProgramTranscriptionApi:
+				_ = dtv.onProgramTranscribedApi(ctx, taskInfo)
+			case tasks.TypeProgramTranscriptionLocal:
+				_ = dtv.onProgramTranscribedLocal(ctx, taskInfo)
+			case tasks.TypeProgramExtractSubtitle:
+				_ = dtv.onProgramExtractedSubtitle(ctx, taskInfo)
+			case tasks.TypeProgramDeleteoriginal:
+				// 特に何もしない
+			}
 		}
 	}
 	return nil
