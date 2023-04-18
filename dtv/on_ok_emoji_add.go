@@ -3,6 +3,7 @@ package dtv
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/kounoike/dtv-discord-go/discord"
@@ -51,6 +52,8 @@ func (dtv *DTVUsecase) OnOkEmojiAdd(ctx context.Context, reaction *discordgo.Mes
 		return err
 	}
 
+	nowTime := time.Now().Unix()
+
 	for _, service := range services {
 		if autoSearch.IsMatchService(service.Name, dtv.kanaMatch, dtv.fuzzyMatch) {
 			programs, err := dtv.mirakc.ListPrograms(uint(service.ID))
@@ -59,6 +62,10 @@ func (dtv *DTVUsecase) OnOkEmojiAdd(ctx context.Context, reaction *discordgo.Mes
 				continue
 			}
 			for _, program := range programs {
+				if program.StartAt+int64(program.Duration) < nowTime {
+					// NOTE: 終了済みの番組は無視
+					continue
+				}
 				asp := NewAutoSearchProgram(program, dtv.kanaMatch)
 				if autoSearch.IsMatchProgram(asp, dtv.fuzzyMatch) {
 					// NOTE: DBに入ってるか確認する
