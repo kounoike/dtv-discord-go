@@ -125,7 +125,9 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		asynqInspector = asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr})
 		defer asynqInspector.Close()
 		helloTask, _ := tasks.NewHelloTask()
-		asynqClient.Enqueue(helloTask)
+		asynqClient.Enqueue(helloTask, asynq.Queue(config.TaskQueue.DefaultQueueName))
+		asynqClient.Enqueue(helloTask, asynq.Queue(config.TaskQueue.EncodeQueueName))
+		asynqClient.Enqueue(helloTask, asynq.Queue(config.TaskQueue.TranscribeQueueName))
 	} else {
 		asynqClient = nil
 		asynqInspector = nil
