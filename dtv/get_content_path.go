@@ -15,6 +15,7 @@ func (dtv *DTVUsecase) getContentPath(ctx context.Context, program db.Program, s
 	data := template.PathTemplateData{}
 
 	_ = dtv.gpt.ParseTitle(ctx, program.Name, &data)
+	data.Title = toSafePath(data.Title)
 
 	data.Program = template.PathProgram{
 		Name:      toSafePath(program.Name),
