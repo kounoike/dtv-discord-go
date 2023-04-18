@@ -46,6 +46,8 @@ export default function SearchPage({ params }: { params: { path: string } }) {
               autoplay={true}
               muted={false}
               playsinline={true}
+              width={1920}
+              height={1080}
             />
           </main>
         </>
