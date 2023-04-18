@@ -76,7 +76,33 @@ func (e *ProgramTranscriberLocal) ProcessTask(ctx context.Context, t *asynq.Task
 		inputFile = path.Join(e.encodedBasePath, p.EncodedPath)
 	}
 
-	whisperCommandLine := fmt.Sprintf(`python "%s" "%s" "%s" "%s"`, e.runWhisperScript, e.whisperModel, inputFile, path.Join(e.transcribedBasePath, p.OutputPath))
+	tmpFile := fmt.Sprintf("/tmp/%d.wav", p.ProgramId)
+	commandLine := fmt.Sprintf(`ffmpeg -hide_banner -i "%s" -vn "%s" -y`, inputFile, tmpFile)
+
+	e.logger.Info("Running split audio command", zap.String("command", commandLine))
+
+	args, err := shellwords.Parse(commandLine)
+	if err != nil {
+		return fmt.Errorf("split audio command shell parse error: %v: %w", err, asynq.SkipRetry)
+	}
+
+	var cmd *exec.Cmd
+	switch len(args) {
+	case 0:
+		return fmt.Errorf("split audio command is empty %w", asynq.SkipRetry)
+	case 1:
+		cmd = exec.Command(args[0])
+	default:
+		cmd = exec.Command(args[0], args[1:]...)
+	}
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		e.logger.Error("split audio command execution error", zap.Error(err), zap.ByteString("output", out))
+		return err
+	}
+	e.logger.Debug("split audio command succeeded")
+
+	whisperCommandLine := fmt.Sprintf(`python "%s" "%s" "%s" "%s"`, e.runWhisperScript, e.whisperModel, tmpFile, path.Join(e.transcribedBasePath, p.OutputPath))
 
 	e.logger.Info("Running whisper script", zap.String("command", whisperCommandLine))
 
