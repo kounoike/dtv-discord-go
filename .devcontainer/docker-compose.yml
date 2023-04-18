@@ -61,11 +61,12 @@ services:
       - /qnap/video/encoded_develop:/encoded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
-      - /dev/px4video0
-      - /dev/px4video1
-      - /dev/px4video2
-      - /dev/px4video3
+      # - /dev/px4video0
+      # - /dev/px4video1
+      # - /dev/px4video2
+      # - /dev/px4video3
       - /dev/bus
+      - /dev/dvb
     environment:
       TZ: Asia/Tokyo
       MIRAKC_DEBUG_CHILD_PROCESS: ''
