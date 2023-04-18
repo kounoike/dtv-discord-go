@@ -77,7 +77,7 @@ func (e *ProgramTranscriberLocal) ProcessTask(ctx context.Context, t *asynq.Task
 	}
 
 	tmpFile := fmt.Sprintf("/tmp/%d.wav", p.ProgramId)
-	commandLine := fmt.Sprintf(`ffmpeg -hide_banner -i "%s" -vn "%s" -y`, inputFile, tmpFile)
+	commandLine := fmt.Sprintf(`ffmpeg -hide_banner -i "%s" -ac 1 -ar 16000 -vn -sn "%s" -y`, inputFile, tmpFile)
 
 	e.logger.Info("Running split audio command", zap.String("command", commandLine))
 
