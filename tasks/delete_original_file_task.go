@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"time"
@@ -25,7 +26,14 @@ func NewProgramDeleteOriginalTask(programId int64, contentPath string, monitorTa
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramDeleteoriginal, payload, asynq.MaxRetry(0), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
+	return asynq.NewTask(
+		TypeProgramDeleteoriginal,
+		payload,
+		asynq.MaxRetry(math.MaxInt),
+		asynq.Timeout(2*24*time.Hour),
+		asynq.Retention(30*time.Minute),
+		asynq.Queue(queueName),
+	), nil
 }
 
 type ProgramDeleter struct {
