@@ -3,6 +3,9 @@ package dtv
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/hibiken/asynq"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -24,6 +27,13 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 	contentPath, err := dtv.mirakc.GetRecordingScheduleContentPath(programId)
 	if err != nil {
 		return err
+	}
+	fstat, err := os.Stat(filepath.Join(dtv.recordingBasePath, contentPath))
+	if err != nil {
+		return err
+	}
+	if fstat.Size() == 0 {
+		return fmt.Errorf("m2ts file size is 0")
 	}
 	content, err := template.GetRecordingStoppedMessage(program, service, contentPath)
 	if err != nil {

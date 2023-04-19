@@ -23,6 +23,7 @@ type DTVUsecase struct {
 	scheduler            *gocron.Scheduler
 	queries              *db.Queries
 	logger               *zap.Logger
+	recordingBasePath    string
 	contentPathTmpl      *template.Template
 	encodedExt           string
 	transcribedExt       string
@@ -84,5 +85,6 @@ func NewDTVUsecase(
 		defaultQueueName:     cfg.TaskQueue.DefaultQueueName,
 		encodeQueueName:      cfg.TaskQueue.EncodeQueueName,
 		transcribeQueueName:  cfg.TaskQueue.TranscribeQueueName,
+		recordingBasePath:    cfg.Recording.BasePath,
 	}, nil
 }
