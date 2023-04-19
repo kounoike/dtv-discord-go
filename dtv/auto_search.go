@@ -2,6 +2,7 @@ package dtv
 
 import (
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/ikawaha/kagome/tokenizer"
@@ -25,12 +26,14 @@ type AutoSearch struct {
 type AutoSearchProgram struct {
 	Title string
 	Genre string
+	EndAt int64
 }
 
 func NewAutoSearchProgram(p db.Program, kanaMatch bool) *AutoSearchProgram {
 	return &AutoSearchProgram{
 		Title: normalizeString(p.Name, kanaMatch),
 		Genre: normalizeString(p.Genre, kanaMatch),
+		EndAt: p.StartAt + int64(p.Duration),
 	}
 }
 
@@ -55,6 +58,9 @@ func normalizeString(str string, kanaMatch bool) string {
 }
 
 func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram, fuzzyMatch bool) bool {
+	if program.EndAt < time.Now().Unix() {
+		return false
+	}
 	if fuzzyMatch {
 		if a.Title != "" && !fuzzy.Match(a.Title, program.Title) {
 			return false
