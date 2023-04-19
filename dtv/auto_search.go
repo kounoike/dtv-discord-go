@@ -75,20 +75,11 @@ func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram, fuzzyMatch bool)
 }
 
 func (a *AutoSearch) IsMatchService(serviceName string, kanaMatch bool, fuzzyMatch bool) bool {
-	if fuzzyMatch {
-		asNormalized := normalizeString(a.Channel, kanaMatch)
-		serviceNormalized := normalizeString(serviceName, kanaMatch)
-		if a.Channel == "" || fuzzy.Match(asNormalized, serviceNormalized) {
-			return true
-		} else {
-			return false
-		}
+	// NOTE: サービスでfuzzyMatchすると「BS11」が「BSフジ・181」にマッチしてしまうので、fuzzyMatchは使わない
+	if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
+		return true
 	} else {
-		if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
-			return true
-		} else {
-			return false
-		}
+		return false
 	}
 }
 
