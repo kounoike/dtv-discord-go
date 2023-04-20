@@ -95,7 +95,7 @@ func (c *WorkerCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...in
 		logger.Fatal(fmt.Sprintf("unsupported Transcription.Type:%s", config.Transcription.Type))
 	}
 	if config.Encoding.DeleteOriginalFile {
-		mux.Handle(tasks.TypeProgramDeleteoriginal, tasks.NewProgramDeleter(logger, asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr}), config.Recording.BasePath))
+		mux.Handle(tasks.TypeProgramDeleteOriginal, tasks.NewProgramDeleter(logger, asynq.NewInspector(asynq.RedisClientOpt{Addr: redisAddr}), config.Recording.BasePath))
 	}
 
 	logger.Debug("Starting worker server")

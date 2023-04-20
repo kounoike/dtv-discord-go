@@ -3,6 +3,8 @@ FROM node:18-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # RUN apt-get update && apt-get install -y \
     build-essential \
+    ca-certificates \
+    curl \
     dvb-tools \
     libpcsclite-dev \
     pcscd \
@@ -10,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN npm install arib-b25-stream-test -g --unsafe 
 
+RUN mkdir -p /etc/mirakc
 RUN curl -sSL -o /etc/mirakc/dvbv5_channels_isdbs.conf https://raw.githubusercontent.com/Chinachu/dvbconf-for-isdb/master/conf/dvbv5_channels_isdbs.conf
 RUN curl -sSL -o /etc/mirakc/dvbv5_channels_isdbt.conf https://raw.githubusercontent.com/Chinachu/dvbconf-for-isdb/master/conf/dvbv5_channels_isdbt.conf
 

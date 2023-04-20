@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const TypeProgramDeleteoriginal = "program:delete_original"
+const TypeProgramDeleteOriginal = "program:delete_original"
 
 type ProgramDeleteOriginalPayload struct {
 	ProgramId        int64             `json:"programId"`
@@ -27,10 +27,10 @@ func NewProgramDeleteOriginalTask(programId int64, contentPath string, monitorTa
 		return nil, err
 	}
 	return asynq.NewTask(
-		TypeProgramDeleteoriginal,
+		TypeProgramDeleteOriginal,
 		payload,
-		asynq.MaxRetry(math.MaxInt),
-		asynq.Timeout(2*24*time.Hour),
+		asynq.MaxRetry(math.MaxInt32), // MaxIntだとなぜか-1になるのでMaxInt32にしている
+		asynq.Timeout(7*24*time.Hour),
 		asynq.Retention(30*time.Minute),
 		asynq.Queue(queueName),
 	), nil
