@@ -20,8 +20,8 @@ import Image from "next/image"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const documentUrl = "/document_index/program_document.json"
-const indexUrl = "/document_index/program_index.json"
+const documentUrl = "/index/program_document.json"
+const indexUrl = "/index/program_index.json"
 
 interface Program {
   id: number
