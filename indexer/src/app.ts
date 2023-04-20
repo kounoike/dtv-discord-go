@@ -135,14 +135,8 @@ async function initializeProgramDocument(connection: mysql.Connection) {
   }
 
   const index = Fuse.createIndex(options.keys ?? [], document)
-  fs.writeFileSync(
-    "/document_index/program_document.json",
-    JSON.stringify(document)
-  )
-  fs.writeFileSync(
-    "/document_index/program_index.json",
-    JSON.stringify(index.toJSON())
-  )
+  fs.writeFileSync("/index/program_document.json", JSON.stringify(document))
+  fs.writeFileSync("/index/program_index.json", JSON.stringify(index.toJSON()))
 
   const [ret, _] = await connection.execute<OkPacket>(
     `
@@ -267,14 +261,8 @@ async function initializeRecordedFiles(connection: mysql.Connection) {
   }
 
   const index = Fuse.createIndex(options.keys ?? [], document)
-  fs.writeFileSync(
-    "/document_index/recorded_document.json",
-    JSON.stringify(document)
-  )
-  fs.writeFileSync(
-    "/document_index/recorded_index.json",
-    JSON.stringify(index.toJSON())
-  )
+  fs.writeFileSync("/index/recorded_document.json", JSON.stringify(document))
+  fs.writeFileSync("/index/recorded_index.json", JSON.stringify(index.toJSON()))
 
   const [ret, _] = await connection.execute<OkPacket>(
     `
