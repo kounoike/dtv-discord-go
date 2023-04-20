@@ -234,7 +234,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 				_ = dtv.onProgramTranscribedLocal(ctx, taskInfo)
 			case tasks.TypeProgramExtractSubtitle:
 				_ = dtv.onProgramExtractedSubtitle(ctx, taskInfo)
-			case tasks.TypeProgramDeleteoriginal:
+			case tasks.TypeProgramDeleteOriginal:
 				// 特に何もしない
 			}
 		}
