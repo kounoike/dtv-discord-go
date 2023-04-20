@@ -7,5 +7,4 @@ COPY . ./
 RUN rm public/index && rm public/encoded && rm public/recorded
 RUN yarn build
 
-FROM nginx:latest
-COPY --from=builder /app/dist /www
+CMD [ "yarn", "start" ]
