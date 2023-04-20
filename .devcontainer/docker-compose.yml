@@ -13,11 +13,10 @@ services:
       - ../..:/workspaces:cached
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-      - /qnap/video/recorded_develop:/recorded:rw
-      - /qnap/video/encoded_develop:/encoded:rw
-      - /qnap/video/transcribed_develop:/transcribed:rw
-      - index-volume:/document_index:rw
-      - model-volume:/models:rw
+      - /qnap/video/develop/recorded:/recorded:rw
+      - /qnap/video/develop/encoded:/encoded:rw
+      - /qnap/video/develop/transcribed:/transcribed:rw
+      - /qnap/video/develop/index:/index:rw
     # network_mode: service:tuner
     command: sleep infinity
     environment:
@@ -57,8 +56,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./mirakc/epg:/var/lib/mirakc/epg:rw
       - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
-      - /qnap/video/recorded_develop:/recorded:rw
-      - /qnap/video/encoded_develop:/encoded:rw
+      - /qnap/video/develop/recorded:/recorded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
       # - /dev/px4video0
@@ -87,5 +85,3 @@ services:
 volumes:
   mysql-db:
   redis-db:
-  index-volume:
-  model-volume:

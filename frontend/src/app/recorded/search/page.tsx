@@ -10,6 +10,7 @@ import {
   Typography,
   Link,
   ListItemIcon,
+  MenuItem,
 } from "@mui/material"
 import { useAsync } from "react-use"
 import Fuse from "fuse.js"
@@ -194,10 +195,18 @@ export default function SearchPage() {
         <>
           <AppBar position="sticky" className={styles.appbar}>
             <Toolbar>
-              <Typography variant="h6" className={styles.title}>
-                視聴ちゃん 録画検索
+              <Typography
+                variant="h6"
+                className={styles.title}
+                sx={{ flexGrow: 1 }}
+              >
+                視聴ちゃん 録画検索 {asyncState.value?.document.length}件
               </Typography>
-              <div className={styles.grow} />
+              <MenuItem
+                onClick={() => (window.location.href = "/program/search")}
+              >
+                <Typography>→番組検索</Typography>
+              </MenuItem>
               <IconButton>
                 <Image
                   alt="視聴ちゃんアイコン"

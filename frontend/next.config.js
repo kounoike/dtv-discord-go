@@ -6,9 +6,16 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: "export",
-  distDir: "dist",
   trailingSlash: true,
+  redirects: async () => {
+    return [
+      {
+        source: "/",
+        destination: "/program/search",
+        permanent: false,
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

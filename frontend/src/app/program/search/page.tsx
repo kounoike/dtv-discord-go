@@ -10,7 +10,7 @@ import {
   Toolbar,
   Typography,
   Link,
-  Box,
+  MenuItem,
 } from "@mui/material"
 import { useAsync, useDebounce } from "react-use"
 import Fuse from "fuse.js"
@@ -51,7 +51,7 @@ export default function Home() {
     const [document, index] = await Promise.all([documentPromise, indexPromise])
 
     const fuse = new Fuse(document, fuseOptions, index)
-    return fuse
+    return { document, index, fuse }
   })
 
   const [query, setQuery] = useState<string>("")
@@ -80,7 +80,7 @@ export default function Home() {
       setResults(undefined)
       return
     }
-    setResults(asyncState.value.search(debouncedQuery.normalize("NFKC")))
+    setResults(asyncState.value.fuse.search(debouncedQuery.normalize("NFKC")))
   }, [debouncedQuery, asyncState.value])
 
   const renderRow = ({ index, style }: ListChildComponentProps) => {
@@ -112,17 +112,24 @@ export default function Home() {
             className={styles.logo}
             width={1280}
             height={313}
-            
           />
         </main>
       ) : (
         <>
           <AppBar position="sticky" className={styles.appbar}>
             <Toolbar>
-              <Typography variant="h6" className={styles.title}>
-                視聴ちゃん 番組検索
+              <Typography
+                variant="h6"
+                className={styles.title}
+                sx={{ flexGrow: 1 }}
+              >
+                視聴ちゃん 番組検索 {asyncState.value?.document.length}件
               </Typography>
-              <div className={styles.grow} />
+              <MenuItem
+                onClick={() => (window.location.href = "/recorded/search")}
+              >
+                <Typography>→録画検索</Typography>
+              </MenuItem>
               <IconButton>
                 <Image
                   alt="視聴ちゃんアイコン"
