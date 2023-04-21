@@ -3,6 +3,7 @@ package discord
 const (
 	InformationCategory    = "録画-情報"
 	LogChannel             = "動作ログ"
+	ErrorLogChannel        = "エラーログ"
 	UpdateChannel          = "更新情報"
 	RecordingChannel       = "録画開始・完了"
 	RecordingFailedChannel = "録画失敗"

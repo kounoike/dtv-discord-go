@@ -18,6 +18,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/discord/discord_handler"
+	"github.com/kounoike/dtv-discord-go/discord_logger"
 	"github.com/kounoike/dtv-discord-go/dtv"
 	"github.com/kounoike/dtv-discord-go/gpt"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
@@ -59,21 +60,21 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logCfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	logCfg.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 
-	level := zap.NewAtomicLevel()
+	logLevel := zap.NewAtomicLevel()
 	switch config.Log.Level {
 	case "DEBUG":
-		level.SetLevel(zapcore.DebugLevel)
+		logLevel.SetLevel(zapcore.DebugLevel)
 	case "INFO":
-		level.SetLevel(zapcore.InfoLevel)
+		logLevel.SetLevel(zapcore.InfoLevel)
 	case "WARN":
-		level.SetLevel(zapcore.WarnLevel)
+		logLevel.SetLevel(zapcore.WarnLevel)
 	case "ERROR":
-		level.SetLevel(zapcore.ErrorLevel)
+		logLevel.SetLevel(zapcore.ErrorLevel)
 	default:
 		fmt.Println("unknown log level:", config.Log.Level)
-		level.SetLevel(zapcore.WarnLevel)
+		logLevel.SetLevel(zapcore.WarnLevel)
 	}
-	logCfg.Level = level
+	logCfg.Level = logLevel
 	logger, err := logCfg.Build()
 	if err != nil {
 		fmt.Println("can't build logger")
@@ -88,6 +89,16 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 	queries := sqlcdb.New(db)
+
+	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
+	if err != nil {
+		logger.Error("can't connect to discord", zap.Error(err))
+		return subcommands.ExitFailure
+	}
+
+	discordEncoder := discord_logger.NewWithDiscordEncoder(logLevel, discordClient)
+	discordLogger := zap.New(zapcore.NewCore(discordEncoder, os.Stdout, logLevel))
+
 	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
 
 	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -133,7 +144,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		asynqInspector = nil
 	}
 
-	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port, logger)
+	mirakcClient := mirakc_client.NewMirakcClient(config.Mirakc.Host, config.Mirakc.Port, discordLogger)
 
 	p2 := backoff.Constant(
 		backoff.WithInterval(5*time.Second),
@@ -181,19 +192,13 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 
-	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
-	if err != nil {
-		logger.Error("can't connect to discord", zap.Error(err))
-		return subcommands.ExitFailure
-	}
-
 	// NOTE: 日本国内のみをターゲットにする
 	scheduler := gocron.NewScheduler(time.FixedZone("JST", 9*60*60))
 	// scheduler.SetMaxConcurrentJobs(10, gocron.RescheduleMode)
 
-	gptClient := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, logger)
+	gptClient := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, discordLogger)
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, logger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient)
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
@@ -209,9 +214,6 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logger.Info("Running!", zap.String("dtv-discord-go version", c.version), zap.String("mirakc version", mirakcVersion.Current))
 	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", "v"+c.version, mirakcVersion.Current)
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, logMessage)
-	if mirakcVersion.Current != mirakcVersion.Latest {
-		discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, fmt.Sprintf("mirakcの新しいバージョン(%s)があります", mirakcVersion.Latest))
-	}
 
 	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session(), logger)
 
@@ -258,7 +260,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 
 	logger.Info("AddDiscordHandle done. start subscribe to SSE events.")
 
-	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port, logger)
+	sseHandler := mirakc_handler.NewSSEHandler(*usecase, config.Mirakc.Host, config.Mirakc.Port, discordLogger)
 	sseHandler.Subscribe()
 	logger.Info("Subscribed!")
 
