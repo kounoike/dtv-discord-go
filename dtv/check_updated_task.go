@@ -82,15 +82,15 @@ func (dtv *DTVUsecase) checkDtvDiscordGoVersion(ctx context.Context, version str
 		} else if tVersion.Version == ghVersion {
 			return nil
 		}
-	}
-	content := fmt.Sprintf("**dtv-discord-goの新しいバージョン(%s)が出ています。**現在(%s)\n%s", ghVersion, currentVersion, release.Body)
-	_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.UpdateChannel, content)
-	if err != nil {
-		return err
-	}
-	err = dtv.queries.UpdateComponentVersion(ctx, db.UpdateComponentVersionParams{Component: "dtv-discord-go", Version: ghVersion})
-	if err != nil {
-		return err
+		content := fmt.Sprintf("**dtv-discord-goの新しいバージョン(%s)が出ています。**現在(%s)\n%s", ghVersion, currentVersion, release.Body)
+		_, err = dtv.discord.SendMessage(discord.InformationCategory, discord.UpdateChannel, content)
+		if err != nil {
+			return err
+		}
+		err = dtv.queries.UpdateComponentVersion(ctx, db.UpdateComponentVersionParams{Component: "dtv-discord-go", Version: ghVersion})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
