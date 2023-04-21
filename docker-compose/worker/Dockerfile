@@ -10,7 +10,9 @@ RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n
 
 RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz"
 
-COPY --from=ghcr.io/kounoike/dtv-discord-go:0.12.0-pre9 /dtv-discord-go /
+COPY --from=ghcr.io/kounoike/dtv-discord-go:0.12.0-pre10 /dtv-discord-go /
 COPY run_whisper.py /
 
-CMD ["/dtv-discord-go", "worker"]
+RUN useradd -u 1000 -m -s /bin/bash dtv
+RUN usermod -aG video dtv
+USER dtv
