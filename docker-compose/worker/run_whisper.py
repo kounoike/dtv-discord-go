@@ -10,7 +10,7 @@ initial_prompt = """そうだ。今日はピクニックしない？天気もい
 model_size = sys.argv[1]
 
 # Run on GPU with FP16
-model = WhisperModel(model_size, device="cpu", compute_type="int8")
+model = WhisperModel(model_size, device="cuda", compute_type="float16")
 
 # or run on GPU with INT8
 # model = WhisperModel(model_size, device="cuda", compute_type="int8_float16")
