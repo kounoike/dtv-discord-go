@@ -207,6 +207,11 @@ export default function SearchPage() {
               >
                 <Typography>→番組検索</Typography>
               </MenuItem>
+              <MenuItem
+                onClick={() => (window.location.href = "/recorded/search")}
+              >
+                <Typography>→録画検索</Typography>
+              </MenuItem>
               <IconButton>
                 <Image
                   alt="視聴ちゃんアイコン"

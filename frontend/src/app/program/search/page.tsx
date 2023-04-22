@@ -126,6 +126,11 @@ export default function Home() {
                 視聴ちゃん 番組検索 {asyncState.value?.document.length}件
               </Typography>
               <MenuItem
+                onClick={() => (window.location.href = "/program/search")}
+              >
+                <Typography>→番組検索</Typography>
+              </MenuItem>
+              <MenuItem
                 onClick={() => (window.location.href = "/recorded/search")}
               >
                 <Typography>→録画検索</Typography>
