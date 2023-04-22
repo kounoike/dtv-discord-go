@@ -11,6 +11,10 @@ import {
   Typography,
   Link,
   MenuItem,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
 } from "@mui/material"
 import { useAsync, useDebounce } from "react-use"
 import Fuse from "fuse.js"
@@ -22,16 +26,24 @@ const inter = Inter({ subsets: ["latin"] })
 
 const documentUrl = "/index/program_document.json"
 const indexUrl = "/index/program_index.json"
+const serverUrl = "/index/server.json"
 
 interface Program {
   id: number
   name: string
   description: string
+  discordChannelId: string
+  discordMessageId: string
+  extended: string
   json: string
 }
 
+interface Server {
+  server_id: string
+}
+
 const fuseOptions: Fuse.IFuseOptions<Program> = {
-  keys: ["name", "description", "json"],
+  keys: ["name", "description", "extended"],
   includeScore: true,
   includeMatches: true,
   shouldSort: true,
@@ -48,10 +60,18 @@ export default function Home() {
       const response = await fetch(indexUrl)
       return Fuse.parseIndex<Program>(JSON.parse(await response.text()))
     })()
-    const [document, index] = await Promise.all([documentPromise, indexPromise])
+    const serverPromise = (async () => {
+      const response = await fetch(serverUrl)
+      return JSON.parse(await response.text()) as Server
+    })()
+    const [document, index, server] = await Promise.all([
+      documentPromise,
+      indexPromise,
+      serverPromise,
+    ])
 
     const fuse = new Fuse(document, fuseOptions, index)
-    return { document, index, fuse }
+    return { document, index, server, fuse }
   })
 
   const [query, setQuery] = useState<string>("")
@@ -86,19 +106,34 @@ export default function Home() {
   const renderRow = ({ index, style }: ListChildComponentProps) => {
     if (results === undefined) return <></>
     return (
-      <ListItem
-        style={style}
-        key={index}
-        component="div"
-        disablePadding
-        className={styles.listItem}
-      >
-        <ListItemText
-          primary={results[index].item.name}
-          secondary={results[index].item.description}
-        />
-        <Link href="/">Discord Link</Link>
-      </ListItem>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <CardContent>
+          <Typography variant="h6" component="div">
+            {results[index].item.name}
+          </Typography>
+          <Typography sx={{ fontSize: 16 }}>
+            {results[index].item.description}
+          </Typography>
+          <Typography variant="body2">
+            {results[index].item.extended}
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Button
+            size="small"
+            href={`discord://discord.com/channels/${asyncState.value?.server.server_id}/${results[index].item.discordChannelId}/${results[index].item.discordMessageId}`}
+          >
+            Discord App
+          </Button>
+          <Button
+            size="small"
+            target="_blank"
+            href={`https://discord.com/channels/${asyncState.value?.server.server_id}/${results[index].item.discordChannelId}/${results[index].item.discordMessageId}`}
+          >
+            Web
+          </Button>
+        </CardActions>
+      </Card>
     )
   }
 

@@ -22,6 +22,8 @@ interface Program {
   description: string
   startAt: Date
   channel: string
+  discordChannelId: string
+  discordMessageId: string
   extended: string
 }
 
@@ -49,7 +51,8 @@ interface IProgram extends RowDataPacket {
   description: string
   start_at: number
   channel: string
-  message_id: string
+  discord_channel_id: string
+  discord_message_id: string
   json: string
 }
 
@@ -67,6 +70,15 @@ interface IRecordedFiles extends RowDataPacket {
   name: string
   description: string
   channel: string
+}
+
+const parseExtended = (extended?: Object) => {
+  if (extended === undefined) return ""
+  let ret = ""
+  for (const [k, v] of Object.entries(extended)) {
+    ret += `${k.normalize("NFKC")}: ${v.normalize("NFKC")}\n`
+  }
+  return ret
 }
 
 async function initializeProgramDocument(connection: mysql.Connection) {
@@ -99,7 +111,8 @@ async function initializeProgramDocument(connection: mysql.Connection) {
     SELECT
       program.*,
       service.name AS channel,
-      program_message.message_id
+      program_message.message_id AS discord_message_id,
+      program_message.channel_id AS discord_channel_id
     FROM program
       JOIN service ON program.service_id = service.service_id
         AND program.network_id = service.network_id
@@ -107,28 +120,21 @@ async function initializeProgramDocument(connection: mysql.Connection) {
       `,
   })
 
-  const parseExtended = (extended?: Object) => {
-    if (extended === undefined) return ""
-    let ret = ""
-    for (const [k, v] of Object.entries(extended)) {
-      ret += `${k.normalize("NFKC")}: ${v.normalize("NFKC")}\n`
-    }
-    return ret
-  }
-
   const document = rows.map((row): Program => {
     return {
       id: row.id,
       name: row.name.normalize("NFKC"),
       description: row.description.normalize("NFKC"),
       channel: row.channel.normalize("NFKC"),
+      discordChannelId: row.discord_channel_id,
+      discordMessageId: row.discord_message_id,
       startAt: new Date(row.start_at),
       extended: parseExtended(JSON.parse(row.json).extended),
     }
   })
 
   const options: Fuse.IFuseOptions<Program> = {
-    keys: ["name", "description", "json"],
+    keys: ["name", "description", "extended"],
     includeScore: true,
     includeMatches: true,
     shouldSort: true,
@@ -201,15 +207,6 @@ async function initializeRecordedFiles(connection: mysql.Connection) {
       `,
   })
 
-  const parseExtended = (extended?: Object) => {
-    if (extended === undefined) return ""
-    let ret = ""
-    for (const [k, v] of Object.entries(extended)) {
-      ret += `${k.normalize("NFKC")}: ${v.normalize("NFKC")}\n`
-    }
-    return ret
-  }
-
   const document = rows.map((row): RecordedFiles => {
     const obj: RecordedFiles = {
       id: row.id,
@@ -278,6 +275,10 @@ async function initializeRecordedFiles(connection: mysql.Connection) {
   logger.info("update recorded document and index done.")
 }
 
+interface IServer extends RowDataPacket {
+  server_id: string
+}
+
 async function main() {
   const connection = await mysql.createConnection({
     host: "db",
@@ -285,6 +286,16 @@ async function main() {
     password: "dtv-discord",
     database: "dtv",
   })
+
+  const [ret, _] = await connection.query<IServer[]>(
+    `SELECT server_id FROM discord_server`
+  )
+  if (ret.length === 0) {
+    logger.error("length:0", ret)
+    return
+  }
+  const obj = { server_id: ret[0].server_id }
+  await fs.writeFileSync("/index/server.json", JSON.stringify(obj))
 
   await initializeProgramDocument(connection)
   await initializeRecordedFiles(connection)

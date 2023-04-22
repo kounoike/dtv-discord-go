@@ -11,6 +11,10 @@ import {
   Link,
   ListItemIcon,
   MenuItem,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
 } from "@mui/material"
 import { useAsync } from "react-use"
 import Fuse from "fuse.js"
@@ -104,40 +108,52 @@ export default function SearchPage() {
     const idx = asyncState.value.document.length - documentIndex - 1
 
     return (
-      <div>
-        <div style={{ background: "#f0f0f0" }}>
-          {asyncState.value.document[idx].name +
-            ": " +
-            asyncState.value.document[idx].description}
-        </div>
-        <div>{asyncState.value.document[idx].extended}</div>
-        <div style={{ marginBottom: "1rem" }}>
-          {asyncState.value.document[idx].mp4Path && (
-            <Link
-              href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
-            >
-              MP4 Link
-            </Link>
-          )}
-        </div>
-      </div>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <CardContent>
+          <Typography variant="h6" component="div">
+            {asyncState.value.document[idx].name}
+          </Typography>
+          <Typography sx={{ fontSize: 16 }}>
+            {asyncState.value.document[idx].description}
+          </Typography>
+          <Typography variant="body2">
+            {asyncState.value.document[idx].extended}
+          </Typography>
+        </CardContent>
+        <CardActions>
+          <Button
+            size="small"
+            href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
+          >
+            MP4
+          </Button>
+        </CardActions>
+      </Card>
     )
   }
 
   const renderSearchRow = (index: number) => {
     if (results === undefined) return <></>
     return (
-      <div>
-        <div style={{ background: "#f0f0f0" }}>
-          {results[index].item.name + ": " + results[index].item.description}
-        </div>
-        <div>{results[index].matches?.map((m) => buildMatchValue(m))}</div>
-        <div style={{ marginBottom: "1rem" }}>
-          <Link href={"/recorded/mp4/" + results[index].item.mp4Path}>
-            MP4 Link
-          </Link>
-        </div>
-      </div>
+      <Card sx={{ marginBottom: "1rem" }}>
+        <CardContent>
+          <Typography variant="h6" component="div">
+            {results[index].item.name}
+          </Typography>
+          <Typography sx={{ fontSize: 16, marginBottom: "1rem" }}>
+            {results[index].item.description}
+          </Typography>
+          {results[index].matches?.map((m) => buildMatchValue(m))}
+        </CardContent>
+        <CardActions>
+          <Button
+            size="small"
+            href={"/recorded/mp4/" + results[index].item.mp4Path}
+          >
+            MP4
+          </Button>
+        </CardActions>
+      </Card>
     )
   }
 
@@ -169,12 +185,12 @@ export default function SearchPage() {
     }
 
     return (
-      <>
+      <Typography variant="body2" color="text.primary2">
         <p>
           {match.key && <b key="title">{keyDescriptions[match.key]}: </b>}
           {ret}
         </p>
-      </>
+      </Typography>
     )
   }
 

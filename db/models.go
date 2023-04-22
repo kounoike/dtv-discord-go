@@ -18,6 +18,13 @@ type ComponentVersion struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
+type DiscordServer struct {
+	ID        int32     `json:"id"`
+	ServerID  string    `json:"serverID"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type EncodeTask struct {
 	ID        int32     `json:"id"`
 	TaskID    string    `json:"taskID"`

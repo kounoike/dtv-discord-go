@@ -95,6 +95,12 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		logger.Error("can't connect to discord", zap.Error(err))
 		return subcommands.ExitFailure
 	}
+	err = discordClient.Open()
+	if err != nil {
+		logger.Error("can't open discord session", zap.Error(err))
+		return subcommands.ExitFailure
+	}
+	logger.Info("Connected!")
 
 	discordEncoder := discord_logger.NewWithDiscordEncoder(logLevel, discordClient)
 	discordLogger := zap.New(zapcore.NewCore(discordEncoder, os.Stdout, logLevel))
@@ -125,6 +131,11 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 	logger.Info("Applied migrations", zap.Int("count", n))
+
+	discordServerID := discordClient.Session().State.Guilds[0].ID
+	if err := queries.InsertServerId(ctx, discordServerID); err != nil {
+		logger.Error("can't insert server id", zap.Error(err))
+	}
 
 	var asynqClient *asynq.Client
 	var asynqInspector *asynq.Inspector
@@ -202,13 +213,6 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
-
-	err = discordClient.Open()
-	if err != nil {
-		logger.Error("can't open discord session", zap.Error(err))
-		return subcommands.ExitFailure
-	}
-	logger.Info("Connected!")
 
 	discordClient.UpdateChannelsCache()
 	logger.Info("Running!", zap.String("dtv-discord-go version", c.version), zap.String("mirakc version", mirakcVersion.Current))
