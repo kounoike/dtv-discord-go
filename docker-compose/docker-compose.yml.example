@@ -4,12 +4,22 @@ services:
     image: ghcr.io/kounoike/dtv-discord-go:latest
     volumes:
       - ./config.yml:/config.yml:ro
+      - /nas/video/recorded:/recorded:rw
     environment:
       TZ: Asia/Tokyo
     links:
       - tuner:tuner
       - db:db
     restart: always
+  indexer:
+    build: ../indexer
+    volumes:
+      - /nas/video/index:/index:rw
+      - /nas/video/transcribed:/transcribed:rw
+    links:
+      - db:db
+    restart: always
+    init: true
   db:
     image: mariadb:latest
     volumes:
@@ -29,16 +39,23 @@ services:
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
-      - epg-db:/var/lib/mirakc/epg:rw
+      - ./mirakc/epg:/var/lib/mirakc/epg:rw
       - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
-      - ./mirakc/recorded:/recorded:rw
+      - /nas/video/recorded:/recorded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
-      - /dev/px4video0 # for PX-W3U4
+      - /dev/px4video0
       - /dev/px4video1
       - /dev/px4video2
       - /dev/px4video3
-      # - /dev/dvb # for PX-S1UD
+      - /dev/px4video4
+      - /dev/px4video5
+      - /dev/px4video6
+      - /dev/px4video7
+      - /dev/px4video8
+      - /dev/px4video9
+      - /dev/px4video10
+      - /dev/px4video11
       - /dev/bus
     environment:
       TZ: Asia/Tokyo
@@ -47,26 +64,88 @@ services:
       MIRAKC_ARIB_NO_TIMESTAMP: ''
       MIRAKC_ARIB_LOG: 'info'
     restart: always
-  # 自動エンコード機能用なので自動エンコードを使わない場合はコメントアウトして外してOK
   worker:
     build: ./worker
     volumes:
       - ./config.yml:/config.yml:ro
-      - ./mirakc/recorded:/recorded:rw
-      - ./mirakc/encoded:/encoded:rw
-      - ./mirakc/transcribed:/transcribed:rw
+      - /nas/video/recorded:/recorded:rw
+      - /nas/video/encoded:/encoded:rw
+      - /nas/video/transcribed:/transcribed:rw
     environment:
       TZ: Asia/Tokyo
     links:
       - redis:redis
     restart: always
-  # 自動エンコード機能用なので自動エンコードを使わない場合はコメントアウトして外してOK
+    command: [ /dtv-discord-go, default ]
+  encoder:
+    build: ./worker
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ "gpu", "video" ]
+    volumes:
+      - ./config.yml:/config.yml:ro
+      - /nas/video/recorded:/recorded:rw
+      - /nas/video/encoded:/encoded:rw
+    environment:
+      TZ: Asia/Tokyo
+    links:
+      - redis:redis
+    restart: always
+    devices:
+      - /dev/dri
+    command: [ /dtv-discord-go, encode ]
+  transcriber:
+    build: ./worker
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ "gpu", "video" ]
+    volumes:
+      - ./config.yml:/config.yml:ro
+      - /nas/video/recorded:/recorded:rw
+      - /nas/video/encoded:/encoded:rw
+      - /nas/video/transcribed:/transcribed:rw
+    environment:
+      TZ: Asia/Tokyo
+    links:
+      - redis:redis
+    restart: always
+    command: [ /dtv-discord-go, transcribe ]
   redis:
     image: redis:latest
     volumes:
       - redis-db:/data
     command: redis-server --appendonly yes
+    restart: always
+  frontend:
+    build: ../frontend
+    restart: always
+  web:
+    build: ../docker-compose/web
+    links:
+      - frontend:frontend
+      - tuner:tuner
+    volumes:
+      - /nas/video/recorded:/recorded:ro
+      - /nas/video/encoded:/encoded:ro
+      - /nas/video/transcribed:/transcribed:ro
+      - /nas/video/index:/index:ro
+      - ts-state:/var/lib/tailscale:rw
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    environment:
+      TZ: Asia/Tokyo
+      TS_HOSTNAME: tv-stg
+    restart: always
 
 volumes:
   mysql-db:
-  epg-db:
+  redis-db:
+  ts-state:

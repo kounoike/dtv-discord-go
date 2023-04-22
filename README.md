@@ -4,12 +4,14 @@
 
 Discord の Bot として動作する [mirakc](https://github.com/mirakc/mirakc) による録画管理ツールです。以下の機能を持っています。
 
-- 番組情報の自動投稿機能
+- 番組情報のDiscordへの自動投稿機能
 - 投稿へのリアクションで予約する機能
 - 自動的な番組検索の機能
 - 自動検索での番組追加時にメンションを付ける通知機能
 - 自動検索時での番組追加時に録画を行う自動録画機能
 - 録画ファイル名を決める際にOpenAIのGPT3.5を用いてタイトル・サブタイトル・話数を切り出す機能
+- 放送予定の番組情報の検索Web UI
+- 録画済み番組の検索・視聴Web UI
 
 機能要望や使ってみてのご意見は[Discussions](https://github.com/kounoike/dtv-discord-go/discussions)まで、明確なバグの場合は[Issues](https://github.com/kounoike/dtv-discord-go/issues)までお願いします。もちろんプルリクエストも歓迎です。
 
@@ -33,6 +35,10 @@ Docker / Docker Composeでの動作を想定しています。ホストでの実
 amd64とarm64のイメージを作っているので、x86_64なマシンだけでなくRaspberry Pi(64bit OS)などで動作すると思われます（未検証）。
 
 ## セットアップ
+
+### Tailscale サインアップ＆セットアップ
+
+WebへのアクセスのためにはTailscaleにサインアップして、クライアントマシンにインストールしておく必要があります。Tailscaleについて詳しくは他ページを参照してください。
 
 ### Discord Application の登録と Bot tokenの取得
 
@@ -84,8 +90,7 @@ $ usermod -aG docker my-user-name
 #### docker-compose の設定
 
 ./docker-compose/docker-compose.yml.example を docker-compose.yml にコピーしてください。
-./docker-compose/docker-compose.yml.example の中では録画ファイルの保存先ディレクトリを ./docker-compose/mirakc/recorded にしています。必要に応じて書き換えるか、このディレクトリをシンボリックリンクにして別の場所を指すかすると良いです。
-
+./docker-compose/docker-compose.yml.example の中では録画ファイルの保存先ディレクトリを /nas/video/recorded にしています。環境に合わせて書き換えてください。
 
 #### dtv-discord-go の設定
 
@@ -96,6 +101,18 @@ TBW: OpenAIのトークンの設定方法と録画ファイル名のテンプレ
 ### 実行
 
 ./docker-compose ディレクトリで `docker compose up -d` コマンドを実行すると起動します。マシンを再起動しても自動的に再度起動するようになっています。
+
+続いて、`docker compose logs -f web` コマンドを実行し、webのログを確認します。
+
+```
+docker-compose-web-1  |
+docker-compose-web-1  | To authenticate, visit:
+docker-compose-web-1  |
+docker-compose-web-1  |         https://login.tailscale.com/a/1234abcd5678
+```
+
+のようなログが出るので、ダブルクリックするなどしてこのURLをブラウザで開くと Tailscale の認証ページになります。メールアドレス・パスワードでの認証またはGoogle/Microsoft/GitHubで認証し、"Connect" ボタンを押してください。"Login Succsessful" と出たら成功です。ブラウザを閉じ、コマンドを実行したターミナルはCTRL+Cで抜けてください。
+
 
 ## バージョンアップ
 
@@ -165,9 +182,5 @@ EPGが更新される度にこれらのルールがチェックされ、ルー�
 
 https://github.com/users/kounoike/projects/2/views/1 にもありますが、大きなものは以下
 
-- EPG更新時にも自動検索を走らせる
 - チューナー不足時の処理を考える
 - 過去の番組情報をどうするか考える
-
-
-
