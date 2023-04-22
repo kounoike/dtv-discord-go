@@ -81,7 +81,26 @@ services:
       - "8000:8080"
     links:
       - redis:redis
+  web:
+    build: ../docker-compose/web
+    links:
+      - devcontainer:frontend
+      - tuner:tuner
+    volumes:
+      - /qnap/video/develop/recorded:/recorded:ro
+      - /qnap/video/develop/encoded:/encoded:ro
+      - /qnap/video/develop/transcribed:/transcribed:ro
+      - /qnap/video/develop/index:/index:ro
+      - ts-state:/var/lib/tailscale:rw
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    environment:
+      TZ: Asia/Tokyo
+      TS_HOSTNAME: tv-dev
 
 volumes:
   mysql-db:
   redis-db:
+  ts-state:
