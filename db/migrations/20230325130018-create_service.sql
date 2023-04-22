@@ -1,5 +1,3 @@
-
--- +migrate Up
 CREATE TABLE IF NOT EXISTS `service` (
     `id` BIGINT UNSIGNED NOT NULL,
     `service_id` INT UNSIGNED NOT NULL,
@@ -14,7 +12,4 @@ CREATE TABLE IF NOT EXISTS `service` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
-);
-
--- +migrate Down
-DROP TABLE `service`;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

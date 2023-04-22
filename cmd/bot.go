@@ -7,12 +7,19 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-co-op/gocron"
 	"github.com/google/subcommands"
 	"github.com/hibiken/asynq"
 	"github.com/jinzhu/configor"
+	"github.com/k0kubun/sqldef"
+	"github.com/k0kubun/sqldef/database"
+	"github.com/k0kubun/sqldef/database/mysql"
+	"github.com/k0kubun/sqldef/parser"
+	"github.com/k0kubun/sqldef/schema"
 	"github.com/kounoike/dtv-discord-go/config"
 	sqlcdb "github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord"
@@ -26,7 +33,6 @@ import (
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
 	"github.com/kounoike/dtv-discord-go/tasks"
 	"github.com/lestrrat-go/backoff/v2"
-	migrate "github.com/rubenv/sql-migrate"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -105,32 +111,45 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	discordEncoder := discord_logger.NewWithDiscordEncoder(logLevel, discordClient)
 	discordLogger := zap.New(zapcore.NewCore(discordEncoder, os.Stdout, logLevel))
 
-	migrations := migrate.FileMigrationSource{Dir: "db/migrations"}
-
-	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	// defer cancel()
-	p1 := backoff.Exponential(
-		backoff.WithMinInterval(time.Second),
-		backoff.WithMaxInterval(time.Minute),
-		backoff.WithJitterFactor(0.05),
-	)
-	retryMigrationFunc := func(db *sql.DB, migrations migrate.FileMigrationSource) (int, error) {
-		b := p1.Start(ctx)
-		for backoff.Continue(b) {
-			n, err := migrate.Exec(db, "mysql", migrations, migrate.Up)
-			if err == nil {
-				return n, nil
-			}
-		}
-		return 0, errors.New("failed to migration")
-	}
-
-	n, err := retryMigrationFunc(db, migrations)
+	ddlFiles := []string{}
+	files, err := os.ReadDir("db/migrations")
 	if err != nil {
-		logger.Error("db migration error", zap.Error(err))
+		logger.Error("can't read migration files", zap.Error(err))
 		return subcommands.ExitFailure
 	}
-	logger.Info("Applied migrations", zap.Int("count", n))
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".sql") {
+			ddlFiles = append(ddlFiles, filepath.Join("db/migrations", file.Name()))
+		}
+	}
+
+	desiredDDLs, err := sqldef.ReadFiles(ddlFiles)
+	if err != nil {
+		logger.Error("can't read migration files", zap.Error(err))
+		return subcommands.ExitFailure
+	}
+	dbOptions := &sqldef.Options{
+		DesiredDDLs: desiredDDLs,
+	}
+	dbConfig := database.Config{
+		DbName:   config.DB.Name,
+		User:     config.DB.User,
+		Password: config.DB.Password,
+		Host:     config.DB.Host,
+		Port:     config.DB.Port,
+	}
+
+	// TODO: Retry
+	sqldefDb, err := mysql.NewDatabase(dbConfig)
+	if err != nil {
+		logger.Error("can't connect to db server", zap.Error(err))
+		return subcommands.ExitFailure
+	}
+
+	sqlParser := database.NewParser(parser.ParserModeMysql)
+	sqldef.Run(schema.GeneratorModeMysql, sqldefDb, sqlParser, dbOptions)
+
+	logger.Info("Applied migrations")
 
 	discordServerID := discordClient.Session().State.Guilds[0].ID
 	if err := queries.InsertServerId(ctx, discordServerID); err != nil {
