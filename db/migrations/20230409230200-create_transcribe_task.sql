@@ -1,5 +1,3 @@
-
--- +migrate Up
 CREATE TABLE IF NOT EXISTS `transcribe_task` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `task_id` TEXT NOT NULL,
@@ -8,7 +6,4 @@ CREATE TABLE IF NOT EXISTS `transcribe_task` (
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `transcribe_task_task_id_idx` (`task_id`)
-);
-
--- +migrate Down
-DROP TABLE `transcribe_task`;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

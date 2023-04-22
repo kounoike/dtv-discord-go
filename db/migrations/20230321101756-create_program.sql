@@ -1,8 +1,6 @@
-
--- +migrate Up
 CREATE TABLE IF NOT EXISTS `program` (
     `id` BIGINT UNSIGNED NOT NULL,
-    `json` JSON NOT NULL,
+    `json` TEXT NOT NULL,
     `event_id` INT UNSIGNED NOT NULL,
     `service_id` INT UNSIGNED NOT NULL,
     `network_id` INT UNSIGNED NOT NULL,
@@ -11,10 +9,8 @@ CREATE TABLE IF NOT EXISTS `program` (
     `is_free` BOOLEAN NOT NULL,
     `name` TEXT NOT NULL,
     `description` TEXT NOT NULL,
+    `genre` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`)
-);
-
--- +migrate Down
-DROP TABLE `program`;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -3,6 +3,7 @@ package config
 type Config struct {
 	DB struct {
 		Host     string `default:"db" env:"DB_HOST"`
+		Port     int    `default:"3306" env:"DB_PORT"`
 		Name     string `default:"dtv" env:"DB_NAME"`
 		User     string `default:"dtv-discord" env:"DB_USER"`
 		Password string `default:"dtv-discord" env:"DB_PASSWORD"`

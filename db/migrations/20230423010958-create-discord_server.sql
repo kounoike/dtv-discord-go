@@ -1,5 +1,3 @@
-
--- +migrate Up
 CREATE TABLE `discord_server` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `server_id` VARCHAR(255) NOT NULL,
@@ -8,6 +6,3 @@ CREATE TABLE `discord_server` (
     PRIMARY KEY (`id`),
     INDEX `discord_server_server_id_idx` (`server_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- +migrate Down
-DROP TABLE `discord_server`;
