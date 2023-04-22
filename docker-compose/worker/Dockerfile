@@ -1,4 +1,8 @@
-FROM nvidia/cuda:11.7.1-cudnn8-runtime-ubuntu22.04
+ARG BASE_IMAGE=debian
+ARG TAG_NAME=bullseye-slim
+FROM ${BASE_IMAGE}:${TAG_NAME}
+
+RUN sed -ie 's/bullseye main/bullseye main non-free/g' /etc/apt/sources.list
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget ca-certificates libva-dev libmfx-dev intel-media-va-driver-non-free vainfo xz-utils \
@@ -11,7 +15,8 @@ RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n
 RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz"
 
 COPY --from=ghcr.io/kounoike/dtv-discord-go:latest /dtv-discord-go /
-COPY run_whisper.py /
+COPY run_whisper_cuda.py run_whisper_cpu.py /
+RUN [ "${BASE_IMAGE}" = "nvidia/cuda" ] && mv run_whisper_cuda.py run_whisper.py || mv run_whisper_cpu.py run_whisper.py
 
 RUN useradd -u 1000 -m -s /bin/bash dtv
 RUN usermod -aG video dtv
