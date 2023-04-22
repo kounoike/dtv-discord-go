@@ -65,7 +65,13 @@ services:
       MIRAKC_ARIB_LOG: 'info'
     restart: always
   worker:
-    build: ./worker
+    build:
+      context: ./worker
+      args:
+        BASE_IMAGE: debian # for CPU/QSV
+        TAG_NAME: bullseye-slim # for CPU / QSV
+#        BASE_IMAGE: nvidia/cuda # for CUDA
+#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
     volumes:
       - ./config.yml:/config.yml:ro
       - /nas/video/recorded:/recorded:rw
@@ -78,13 +84,19 @@ services:
     restart: always
     command: [ /dtv-discord-go, default ]
   encoder:
-    build: ./worker
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [ "gpu", "video" ]
+    build:
+      context: ./worker
+      args:
+        BASE_IMAGE: debian # for CPU/QSV
+        TAG_NAME: bullseye-slim # for CPU / QSV
+#        BASE_IMAGE: nvidia/cuda # for CUDA
+#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
+#    deploy: # for CUDA
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              capabilities: [ "gpu", "video" ]
     volumes:
       - ./config.yml:/config.yml:ro
       - /nas/video/recorded:/recorded:rw
@@ -98,13 +110,19 @@ services:
       - /dev/dri
     command: [ /dtv-discord-go, encode ]
   transcriber:
-    build: ./worker
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              capabilities: [ "gpu", "video" ]
+    build:
+      context: ./worker
+      args:
+        BASE_IMAGE: debian # for CPU/QSV
+        TAG_NAME: bullseye-slim # for CPU / QSV
+#        BASE_IMAGE: nvidia/cuda # for CUDA
+#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
+#    deploy: for CUDA
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              capabilities: [ "gpu", "video" ]
     volumes:
       - ./config.yml:/config.yml:ro
       - /nas/video/recorded:/recorded:rw
