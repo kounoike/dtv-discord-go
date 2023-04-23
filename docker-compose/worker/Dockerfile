@@ -16,6 +16,7 @@ RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaum
 
 COPY --from=ghcr.io/kounoike/dtv-discord-go:latest /dtv-discord-go /
 COPY run_whisper_cuda.py run_whisper_cpu.py /
+ARG BASE_IMAGE=debian
 RUN [ "${BASE_IMAGE}" = "nvidia/cuda" ] && mv run_whisper_cuda.py run_whisper.py || mv run_whisper_cpu.py run_whisper.py
 
 RUN useradd -u 1000 -m -s /bin/bash dtv
