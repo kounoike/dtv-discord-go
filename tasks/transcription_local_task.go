@@ -30,7 +30,7 @@ func NewProgramTranscriptionLocalTask(programId int64, contentPath string, encod
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramTranscriptionLocal, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
+	return asynq.NewTask(TypeProgramTranscriptionLocal, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(3*24*time.Hour), asynq.Queue(queueName)), nil
 }
 
 type ProgramTranscriberLocal struct {
