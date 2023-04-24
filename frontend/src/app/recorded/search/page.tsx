@@ -121,12 +121,15 @@ export default function SearchPage() {
           </Typography>
         </CardContent>
         <CardActions>
-          <Button
+          { asyncState.value.document[idx].mp4Path &&
+          (
+            <Button
             size="small"
             href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
-          >
+            >
             MP4
           </Button>
+            )}
         </CardActions>
       </Card>
     )
@@ -146,12 +149,16 @@ export default function SearchPage() {
           {results[index].matches?.map((m) => buildMatchValue(m))}
         </CardContent>
         <CardActions>
+          { results[index].item.mp4Path &&
+          (
           <Button
             size="small"
             href={"/recorded/mp4/" + results[index].item.mp4Path}
           >
             MP4
           </Button>
+
+          )}
         </CardActions>
       </Card>
     )
