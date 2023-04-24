@@ -58,7 +58,7 @@ export default function SearchPage({ params }: { params: { path: string } }) {
           </AppBar>
           <main className={styles.main}>
             <VideoPlayer
-              src={"/encoded/" + decodeURIComponent(params.path)}
+              src={"/encoded/" + params.path}
               controls={true}
               loop={false}
               volume={0.6}
