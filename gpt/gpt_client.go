@@ -10,8 +10,8 @@ import (
 )
 
 const systemPrompt = `Parse user message and output with this format:
-{"title": title name of the program, "subtitle": subtitle name of the program including the part used to extract the number of episodes, empty if it does not exist, "episode": number of episodes extracted from Arabic or Chinese numerals in numeric type, 0 if not present}
-Please return in strict JSON format. Never include non-JSON content in the output, such as commentary. Line breaks are not required.`
+{"title": title name of the program, "subtitle": subtitle name of the program including the part used to extract the number of episodes, excluding flags such as "[新]", "[再]", etc., empty if it does not exist, "episode": number of episodes extracted from Arabic or Chinese numerals in numeric type, 0 if not present}
+Please return in strict JSON format. Never include non-JSON content in the output, such as commentary.`
 
 const transcribeInitialPrompt = `そうだ。今日はピクニックしない？天気もいいし、絶好のピクニック日和だと思う。いいですね。
 では、準備をはじめましょうか。そうしよう！どこに行く？そうですね。三ツ池公園なんか良いんじゃないかな。
