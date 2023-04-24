@@ -16,7 +16,7 @@ import {
   CardActions,
   Button,
 } from "@mui/material"
-import { useAsync } from "react-use"
+import { useAsync, useDebounce } from "react-use"
 import Fuse from "fuse.js"
 import { useEffect, useRef, useState } from "react"
 import { Virtuoso } from "react-virtuoso"
@@ -75,17 +75,25 @@ export default function SearchPage() {
   })
 
   const [query, setQuery] = useState<string>("")
+  const [debouncedQuery, setDebouncedQuery] = useState<string>("")
   const [results, setResults] = useState<Fuse.FuseResult<RecordedFiles>[]>()
   const resultRef = useRef<HTMLDivElement>(null)
   const [resultHeight, setResultHeight] = useState<number>(0)
   const defaultRef = useRef<HTMLDivElement>(null)
   const [defaultHeight, setDefaultHeight] = useState<number>(0)
+  const [_, cancel] = useDebounce(
+    () => {
+      setDebouncedQuery(query)
+    },
+    300,
+    [query]
+  )
 
   useEffect(() => {
     if (resultRef.current) {
       setResultHeight(resultRef.current.getBoundingClientRect().height)
     }
-  }, [resultRef, query])
+  }, [resultRef, debouncedQuery])
 
   useEffect(() => {
     if (defaultRef.current) {
@@ -95,12 +103,12 @@ export default function SearchPage() {
 
   useEffect(() => {
     if (asyncState.value === undefined) return
-    if (query === "") {
+    if (debouncedQuery === "") {
       setResults(undefined)
       return
     }
-    setResults(asyncState.value.fuse.search(query.normalize("NFKC")))
-  }, [query, asyncState.value])
+    setResults(asyncState.value.fuse.search(debouncedQuery.normalize("NFKC")))
+  }, [debouncedQuery, asyncState.value])
 
   const renderRow = (documentIndex: number) => {
     if (!asyncState.value) return
@@ -121,15 +129,14 @@ export default function SearchPage() {
           </Typography>
         </CardContent>
         <CardActions>
-          { asyncState.value.document[idx].mp4Path &&
-          (
+          {asyncState.value.document[idx].mp4Path && (
             <Button
-            size="small"
-            href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
+              size="small"
+              href={"/recorded/mp4/" + asyncState.value.document[idx].mp4Path}
             >
-            MP4
-          </Button>
-            )}
+              MP4
+            </Button>
+          )}
         </CardActions>
       </Card>
     )
@@ -149,15 +156,13 @@ export default function SearchPage() {
           {results[index].matches?.map((m) => buildMatchValue(m))}
         </CardContent>
         <CardActions>
-          { results[index].item.mp4Path &&
-          (
-          <Button
-            size="small"
-            href={"/recorded/mp4/" + results[index].item.mp4Path}
-          >
-            MP4
-          </Button>
-
+          {results[index].item.mp4Path && (
+            <Button
+              size="small"
+              href={"/recorded/mp4/" + results[index].item.mp4Path}
+            >
+              MP4
+            </Button>
           )}
         </CardActions>
       </Card>
