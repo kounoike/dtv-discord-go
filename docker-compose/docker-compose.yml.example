@@ -1,10 +1,11 @@
-version: '3.8'
+version: "3.8"
+
 services:
   bot:
     image: ghcr.io/kounoike/dtv-discord-go:latest
     volumes:
       - ./config.yml:/config.yml:ro
-      - /nas/video/recorded:/recorded:rw
+      - /nas/video/staging/recorded:/recorded:rw
     environment:
       TZ: Asia/Tokyo
     links:
@@ -14,8 +15,8 @@ services:
   indexer:
     build: ../indexer
     volumes:
-      - /nas/video/index:/index:rw
-      - /nas/video/transcribed:/transcribed:rw
+      - /nas/video/staging/index:/index:rw
+      - /nas/video/staging/transcribed:/transcribed:rw
     links:
       - db:db
     restart: always
@@ -41,7 +42,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./mirakc/epg:/var/lib/mirakc/epg:rw
       - ./mirakc/config/config.yml:/etc/mirakc/config.yml:ro
-      - /nas/video/recorded:/recorded:rw
+      - /nas/video/staging/recorded:/recorded:rw
       - /var/run/pcscd:/var/run/pcscd:rw
     devices:
       - /dev/px4video0
@@ -68,15 +69,13 @@ services:
     build:
       context: ./worker
       args:
-        BASE_IMAGE: debian # for CPU/QSV
-        TAG_NAME: bullseye-slim # for CPU / QSV
-#        BASE_IMAGE: nvidia/cuda # for CUDA
-#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
+        BASE_IMAGE: nvidia/cuda
+        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04
     volumes:
       - ./config.yml:/config.yml:ro
-      - /nas/video/recorded:/recorded:rw
-      - /nas/video/encoded:/encoded:rw
-      - /nas/video/transcribed:/transcribed:rw
+      - /nas/video/staging/recorded:/recorded:rw
+      - /nas/video/staging/encoded:/encoded:rw
+      - /nas/video/staging/transcribed:/transcribed:rw
     environment:
       TZ: Asia/Tokyo
     links:
@@ -87,20 +86,18 @@ services:
     build:
       context: ./worker
       args:
-        BASE_IMAGE: debian # for CPU/QSV
-        TAG_NAME: bullseye-slim # for CPU / QSV
-#        BASE_IMAGE: nvidia/cuda # for CUDA
-#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
-#    deploy: # for CUDA
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              capabilities: [ "gpu", "video" ]
+        BASE_IMAGE: nvidia/cuda
+        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ "gpu", "video" ]
     volumes:
       - ./config.yml:/config.yml:ro
-      - /nas/video/recorded:/recorded:rw
-      - /nas/video/encoded:/encoded:rw
+      - /nas/video/staging/recorded:/recorded:rw
+      - /nas/video/staging/encoded:/encoded:rw
     environment:
       TZ: Asia/Tokyo
     links:
@@ -113,23 +110,39 @@ services:
     build:
       context: ./worker
       args:
-        BASE_IMAGE: debian # for CPU/QSV
-        TAG_NAME: bullseye-slim # for CPU / QSV
-#        BASE_IMAGE: nvidia/cuda # for CUDA
-#        TAG_NAME: 11.7.1-cudnn8-runtime-ubuntu22.04 # for CUDA
-#    deploy: for CUDA
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              capabilities: [ "gpu", "video" ]
+        BASE_IMAGE: "nvidia/cuda"
+        TAG_NAME: "11.7.1-cudnn8-runtime-ubuntu22.04"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [ "gpu", "video" ]
     volumes:
       - ./config.yml:/config.yml:ro
-      - /nas/video/recorded:/recorded:rw
-      - /nas/video/encoded:/encoded:rw
-      - /nas/video/transcribed:/transcribed:rw
+      - /nas/video/staging/recorded:/recorded:rw
+      - /nas/video/staging/encoded:/encoded:rw
+      - /nas/video/staging/transcribed:/transcribed:rw
     environment:
       TZ: Asia/Tokyo
+    links:
+      - redis:redis
+    restart: always
+    command: [ /dtv-discord-go, transcribe ]
+  transcriber-cpu:
+    build:
+      context: ./worker
+      args:
+        BASE_IMAGE: "debian"
+        TAG_NAME: "bullseye-slim"
+    volumes:
+      - ./config.yml:/config.yml:ro
+      - /nas/video/staging/recorded:/recorded:rw
+      - /nas/video/staging/encoded:/encoded:rw
+      - /nas/video/staging/transcribed:/transcribed:rw
+    environment:
+      TZ: Asia/Tokyo
+      OMP_NUM_THREADS: "2"
     links:
       - redis:redis
     restart: always
@@ -140,6 +153,8 @@ services:
       - redis-db:/data
     command: redis-server --appendonly yes
     restart: always
+    ports:
+      - "6379:6379"
   frontend:
     build: ../frontend
     restart: always
@@ -148,11 +163,12 @@ services:
     links:
       - frontend:frontend
       - tuner:tuner
+      - asynqmon:asnyqmon
     volumes:
-      - /nas/video/recorded:/recorded:ro
-      - /nas/video/encoded:/encoded:ro
-      - /nas/video/transcribed:/transcribed:ro
-      - /nas/video/index:/index:ro
+      - /nas/video/staging/recorded:/recorded:ro
+      - /nas/video/staging/encoded:/encoded:ro
+      - /nas/video/staging/transcribed:/transcribed:ro
+      - /nas/video/staging/index:/index:ro
       - ts-state:/var/lib/tailscale:rw
       - /dev/net/tun:/dev/net/tun
     cap_add:
@@ -162,6 +178,15 @@ services:
       TZ: Asia/Tokyo
       TS_HOSTNAME: tv-stg
     restart: always
+  asynqmon:
+    image: hibiken/asynqmon
+    command:
+      - "--redis-addr"
+      - "redis:6379"
+    ports:
+      - "8080:8080"
+    links:
+      - redis:redis
 
 volumes:
   mysql-db:
