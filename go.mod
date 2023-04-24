@@ -19,7 +19,7 @@ require (
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/pkg/errors v0.9.1
 	github.com/r3labs/sse/v2 v2.10.0
-	github.com/sashabaranov/go-openai v1.8.0
+	github.com/sashabaranov/go-openai v1.9.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.9.0
 	gopkg.in/guregu/null.v4 v4.0.0
