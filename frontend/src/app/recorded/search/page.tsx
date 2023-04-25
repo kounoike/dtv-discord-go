@@ -110,9 +110,15 @@ const Hit = ({ hit }: { hit: any }) => (
       <Snippet attribute="番組詳細" hit={hit} />
     </Typography>
     <div>
-      <Button variant="text" href={"/recorded/mp4/" + hit.mp4} target="_blank">
-        MP4
-      </Button>
+      {hit.mp4 && (
+        <Button
+          variant="text"
+          href={"/recorded/mp4/" + encodeURIComponent(hit.mp4)}
+          target="_blank"
+        >
+          MP4
+        </Button>
+      )}
     </div>
   </div>
 )
