@@ -10,7 +10,7 @@ import (
 )
 
 const getProgramMessageByMessageID = `-- name: GetProgramMessageByMessageID :one
-SELECT id, message_id, program_id, created_at, updated_at, channel_id FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `message_id` + "`" + ` = ?
+SELECT id, channel_id, message_id, program_id, created_at, updated_at FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `message_id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgramMessageByMessageID(ctx context.Context, messageID string) (ProgramMessage, error) {
@@ -18,17 +18,17 @@ func (q *Queries) GetProgramMessageByMessageID(ctx context.Context, messageID st
 	var i ProgramMessage
 	err := row.Scan(
 		&i.ID,
+		&i.ChannelID,
 		&i.MessageID,
 		&i.ProgramID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ChannelID,
 	)
 	return i, err
 }
 
 const getProgramMessageByProgramID = `-- name: GetProgramMessageByProgramID :one
-SELECT id, message_id, program_id, created_at, updated_at, channel_id FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `program_id` + "`" + ` = ?
+SELECT id, channel_id, message_id, program_id, created_at, updated_at FROM ` + "`" + `program_message` + "`" + ` WHERE ` + "`" + `program_id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgramMessageByProgramID(ctx context.Context, programID int64) (ProgramMessage, error) {
@@ -36,11 +36,11 @@ func (q *Queries) GetProgramMessageByProgramID(ctx context.Context, programID in
 	var i ProgramMessage
 	err := row.Scan(
 		&i.ID,
+		&i.ChannelID,
 		&i.MessageID,
 		&i.ProgramID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.ChannelID,
 	)
 	return i, err
 }

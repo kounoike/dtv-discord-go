@@ -25,13 +25,6 @@
   height: calc(100vh - 66px - 12rem);
 }
 
-.listItem {
-}
-
-.listItem:nth-child(odd) {
-  background-color: #ededed;
-}
-
 .main {
   display: flex;
   flex-direction: column;

@@ -329,7 +329,7 @@ func (p *Program) UnmarshalJSON(b []byte) error {
 	}
 
 	*p = (Program)(pp)
-	p.Json = b
+	p.Json = string(b)
 	genres := jsoniter.Get(b, "genres")
 	if genres.Size() > 0 {
 		genreAny := genres.Get(0)

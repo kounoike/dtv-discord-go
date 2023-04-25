@@ -7,11 +7,10 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 )
 
 const getProgram = `-- name: GetProgram :one
-SELECT id, json, event_id, service_id, network_id, start_at, duration, is_free, name, description, created_at, updated_at, genre FROM ` + "`" + `program` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
+SELECT id, json, event_id, service_id, network_id, start_at, duration, is_free, name, description, genre, created_at, updated_at FROM ` + "`" + `program` + "`" + ` WHERE ` + "`" + `id` + "`" + ` = ?
 `
 
 func (q *Queries) GetProgram(ctx context.Context, id int64) (Program, error) {
@@ -28,11 +27,87 @@ func (q *Queries) GetProgram(ctx context.Context, id int64) (Program, error) {
 		&i.IsFree,
 		&i.Name,
 		&i.Description,
+		&i.Genre,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Genre,
 	)
 	return i, err
+}
+
+const listProgramWithMessageAndServiceName = `-- name: ListProgramWithMessageAndServiceName :many
+SELECT
+    ` + "`" + `program` + "`" + `.` + "`" + `id` + "`" + ` AS ` + "`" + `program_id` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `json` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `event_id` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `service_id` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `network_id` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `start_at` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `duration` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `is_free` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `name` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `description` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `genre` + "`" + `,
+    ` + "`" + `program_message` + "`" + `.` + "`" + `channel_id` + "`" + `,
+    ` + "`" + `program_message` + "`" + `.` + "`" + `message_id` + "`" + `,
+    ` + "`" + `service` + "`" + `.` + "`" + `name` + "`" + ` AS ` + "`" + `service_name` + "`" + `
+FROM ` + "`" + `program` + "`" + `
+JOIN ` + "`" + `program_message` + "`" + ` ON ` + "`" + `program_message` + "`" + `.` + "`" + `program_id` + "`" + ` = ` + "`" + `program` + "`" + `.` + "`" + `id` + "`" + `
+JOIN ` + "`" + `service` + "`" + ` ON ` + "`" + `program` + "`" + `.` + "`" + `service_id` + "`" + ` = ` + "`" + `service` + "`" + `.` + "`" + `service_id` + "`" + ` AND ` + "`" + `program` + "`" + `.` + "`" + `network_id` + "`" + ` = ` + "`" + `service` + "`" + `.` + "`" + `network_id` + "`" + `
+`
+
+type ListProgramWithMessageAndServiceNameRow struct {
+	ProgramID   int64  `json:"programID"`
+	Json        string `json:"json"`
+	EventID     int32  `json:"eventID"`
+	ServiceID   int32  `json:"serviceID"`
+	NetworkID   int32  `json:"networkID"`
+	StartAt     int64  `json:"startAt"`
+	Duration    int32  `json:"duration"`
+	IsFree      bool   `json:"isFree"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Genre       string `json:"genre"`
+	ChannelID   string `json:"channelID"`
+	MessageID   string `json:"messageID"`
+	ServiceName string `json:"serviceName"`
+}
+
+func (q *Queries) ListProgramWithMessageAndServiceName(ctx context.Context) ([]ListProgramWithMessageAndServiceNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, listProgramWithMessageAndServiceName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListProgramWithMessageAndServiceNameRow
+	for rows.Next() {
+		var i ListProgramWithMessageAndServiceNameRow
+		if err := rows.Scan(
+			&i.ProgramID,
+			&i.Json,
+			&i.EventID,
+			&i.ServiceID,
+			&i.NetworkID,
+			&i.StartAt,
+			&i.Duration,
+			&i.IsFree,
+			&i.Name,
+			&i.Description,
+			&i.Genre,
+			&i.ChannelID,
+			&i.MessageID,
+			&i.ServiceName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const createProgram = `-- name: createProgram :exec
@@ -52,17 +127,17 @@ INSERT INTO ` + "`" + `program` + "`" + ` (
 `
 
 type createProgramParams struct {
-	ID          int64           `json:"id"`
-	Json        json.RawMessage `json:"json"`
-	EventID     int32           `json:"eventID"`
-	ServiceID   int32           `json:"serviceID"`
-	NetworkID   int32           `json:"networkID"`
-	StartAt     int64           `json:"startAt"`
-	Duration    int32           `json:"duration"`
-	IsFree      bool            `json:"isFree"`
-	Name        string          `json:"name"`
-	Description string          `json:"description"`
-	Genre       string          `json:"genre"`
+	ID          int64  `json:"id"`
+	Json        string `json:"json"`
+	EventID     int32  `json:"eventID"`
+	ServiceID   int32  `json:"serviceID"`
+	NetworkID   int32  `json:"networkID"`
+	StartAt     int64  `json:"startAt"`
+	Duration    int32  `json:"duration"`
+	IsFree      bool   `json:"isFree"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Genre       string `json:"genre"`
 }
 
 func (q *Queries) createProgram(ctx context.Context, arg createProgramParams) error {
@@ -97,16 +172,16 @@ WHERE id = ?
 `
 
 type updateProgramParams struct {
-	Json        json.RawMessage `json:"json"`
-	EventID     int32           `json:"eventID"`
-	ServiceID   int32           `json:"serviceID"`
-	NetworkID   int32           `json:"networkID"`
-	StartAt     int64           `json:"startAt"`
-	Duration    int32           `json:"duration"`
-	IsFree      bool            `json:"isFree"`
-	Name        string          `json:"name"`
-	Description string          `json:"description"`
-	ID          int64           `json:"id"`
+	Json        string `json:"json"`
+	EventID     int32  `json:"eventID"`
+	ServiceID   int32  `json:"serviceID"`
+	NetworkID   int32  `json:"networkID"`
+	StartAt     int64  `json:"startAt"`
+	Duration    int32  `json:"duration"`
+	IsFree      bool   `json:"isFree"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ID          int64  `json:"id"`
 }
 
 func (q *Queries) updateProgram(ctx context.Context, arg updateProgramParams) error {

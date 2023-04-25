@@ -11,6 +11,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@meilisearch/instant-meilisearch": "^0.12.0",
     "@mui/material": "^5.12.0",
     "@videojs-player/react": "^1.0.0",
     "eslint": "8.38.0",
@@ -19,6 +20,7 @@
     "next": "13.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-instantsearch-dom": "^6.39.1",
     "react-use": "^17.4.0",
     "react-virtuoso": "^4.2.1",
     "react-window": "^1.8.8",
@@ -29,6 +31,7 @@
     "@types/node": "18.15.11",
     "@types/react": "18.0.35",
     "@types/react-dom": "18.0.11",
+    "@types/react-instantsearch-dom": "^6.12.3",
     "@types/react-window": "^1.8.5",
     "@types/video.js": "^7.3.51"
   }

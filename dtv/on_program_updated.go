@@ -1,7 +1,6 @@
 package dtv
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
@@ -86,15 +85,7 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 		} else if err != nil {
 			return err
 		} else {
-			pJson, err := p.Json.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			programJson, err := program.Json.MarshalJSON()
-			if err != nil {
-				continue
-			}
-			if !bytes.Equal(pJson, programJson) {
+			if p.Json != program.Json {
 				// JSONに違いがあった場合
 				dtv.logger.Debug("EPG info updated")
 

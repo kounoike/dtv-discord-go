@@ -86,6 +86,7 @@ services:
     links:
       - devcontainer:frontend
       - tuner:tuner
+      - meilisearch:meilisearch
     volumes:
       - /qnap/video/develop/recorded:/recorded:ro
       - /qnap/video/develop/encoded:/encoded:ro
@@ -99,6 +100,13 @@ services:
     environment:
       TZ: Asia/Tokyo
       TS_HOSTNAME: tv-dev
+  meilisearch:
+    image: getmeili/meilisearch:prototype-japanese-1
+    volumes:
+      - /qnap/video/develop/meili:/melili_data:rw
+    ports:
+      - "7700:7700"
+    restart: always
 
 volumes:
   mysql-db:

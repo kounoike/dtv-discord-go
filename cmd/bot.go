@@ -25,9 +25,10 @@ import (
 	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/discord/discord_handler"
-	"github.com/kounoike/dtv-discord-go/discord_logger"
+	"github.com/kounoike/dtv-discord-go/discord/discord_logger"
 	"github.com/kounoike/dtv-discord-go/dtv"
 	"github.com/kounoike/dtv-discord-go/gpt"
+	"github.com/kounoike/dtv-discord-go/meili"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_handler"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_model"
@@ -228,7 +229,9 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 
 	gptClient := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, discordLogger)
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient)
+	meiliClient := meili.NewMeiliSearchClient(discordLogger, config.Meili.Host, config.Meili.Port, config.Transcription.BasePath)
+
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient, meiliClient)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 	}
@@ -280,6 +283,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
+	discordHandler.RegisterCommand()
 
 	logger.Info("AddDiscordHandle done. start subscribe to SSE events.")
 

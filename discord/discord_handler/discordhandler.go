@@ -68,3 +68,29 @@ func (h *DiscordHandler) AddReactionAddHandler() {
 func (h *DiscordHandler) AddReactionRemoveHandler() {
 	h.session.AddHandler(h.reactionRemove)
 }
+
+func (h *DiscordHandler) ReIndexHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: "再インデックス処理を開始します",
+		},
+	})
+	if err := h.dtv.Reindex(context.Background()); err != nil {
+		h.logger.Error("Reindex error", zap.Error(err))
+		return
+	}
+	s.ChannelMessageSend(i.ChannelID, "再インデックス処理が完了しました")
+}
+
+func (h *DiscordHandler) RegisterCommand() {
+	h.session.AddHandler(h.ReIndexHandler)
+
+	_, err := h.session.ApplicationCommandCreate(h.session.State.User.ID, h.session.State.Guilds[0].ID, &discordgo.ApplicationCommand{
+		Name:        "index",
+		Description: "Clear and create all index for meilisearch",
+	})
+	if err != nil {
+		h.logger.Error("ApplicationCommandCreate error", zap.Error(err))
+	}
+}
