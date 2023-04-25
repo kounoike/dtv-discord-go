@@ -48,7 +48,7 @@ export default function SearchPage() {
             className={styles.title}
             sx={{ flexGrow: 1 }}
           >
-            視聴ちゃん 番組検索
+            視聴ちゃん 録画検索
           </Typography>
           <MenuItem onClick={() => (window.location.href = "/program/search")}>
             <Typography>→番組検索</Typography>
