@@ -1,7 +1,6 @@
 package template
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -36,8 +35,8 @@ func toDurationStr(d int32) string {
 	return hourStr + minStr
 }
 
-func toExtendStr(j json.RawMessage) string {
-	b, _ := j.MarshalJSON()
+func toExtendStr(j string) string {
+	b := []byte(j)
 	any := jsoniter.Get(b, "extended")
 	str := ""
 	for _, key := range any.Keys() {
