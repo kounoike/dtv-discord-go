@@ -46,12 +46,12 @@ func (dtv *DTVUsecase) scheduleRecordForMessage(ctx context.Context, channelID s
 		return err
 	}
 
-	err = dtv.mirakc.AddRecordingSchedule(programMessage.ProgramID, contentPath)
+	err = dtv.queries.InsertProgramRecording(ctx, db.InsertProgramRecordingParams{ProgramID: programMessage.ProgramID, ContentPath: contentPath})
 	if err != nil {
 		return err
 	}
 
-	err = dtv.queries.InsertProgramRecording(ctx, db.InsertProgramRecordingParams{ProgramID: programMessage.ProgramID, ContentPath: contentPath})
+	err = dtv.mirakc.AddRecordingSchedule(programMessage.ProgramID, contentPath)
 	if err != nil {
 		return err
 	}

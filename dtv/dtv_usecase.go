@@ -10,6 +10,7 @@ import (
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/discord/discord_client"
 	"github.com/kounoike/dtv-discord-go/gpt"
+	"github.com/kounoike/dtv-discord-go/meili"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"go.uber.org/zap"
 	"golang.org/x/text/width"
@@ -29,6 +30,7 @@ type DTVUsecase struct {
 	transcribedExt       string
 	autoSearchChannel    *discordgo.Channel
 	gpt                  *gpt.GPTClient
+	meili                *meili.MeiliSearchClient
 	kanaMatch            bool
 	fuzzyMatch           bool
 	encodingEnabled      bool
@@ -56,6 +58,7 @@ func NewDTVUsecase(
 	kanaMatch bool,
 	fuzzyMatch bool,
 	gpt *gpt.GPTClient,
+	meili *meili.MeiliSearchClient,
 ) (*DTVUsecase, error) {
 	funcMap := map[string]interface{}{
 		"fold": fold,
@@ -73,6 +76,7 @@ func NewDTVUsecase(
 		queries:              queries,
 		logger:               logger,
 		gpt:                  gpt,
+		meili:                meili,
 		contentPathTmpl:      contentTmpl,
 		encodedExt:           cfg.Encoding.Ext,
 		transcribedExt:       cfg.Transcription.Ext,

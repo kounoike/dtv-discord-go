@@ -6,7 +6,6 @@ package db
 
 import (
 	"database/sql"
-	"encoding/json"
 	"time"
 )
 
@@ -42,28 +41,28 @@ type IndexInvalid struct {
 }
 
 type Program struct {
-	ID          int64           `json:"id"`
-	Json        json.RawMessage `json:"-"`
-	EventID     int32           `json:"eventId"`
-	ServiceID   int32           `json:"serviceId"`
-	NetworkID   int32           `json:"networkId"`
-	StartAt     int64           `json:"startAt"`
-	Duration    int32           `json:"duration"`
-	IsFree      bool            `json:"isFree"`
-	Name        string          `json:"name"`
-	Description string          `json:"description"`
-	CreatedAt   time.Time       `json:"-"`
-	UpdatedAt   time.Time       `json:"-"`
-	Genre       string          `json:"-"`
+	ID          int64     `json:"id"`
+	Json        string    `json:"-"`
+	EventID     int32     `json:"eventId"`
+	ServiceID   int32     `json:"serviceId"`
+	NetworkID   int32     `json:"networkId"`
+	StartAt     int64     `json:"startAt"`
+	Duration    int32     `json:"duration"`
+	IsFree      bool      `json:"isFree"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Genre       string    `json:"-"`
+	CreatedAt   time.Time `json:"-"`
+	UpdatedAt   time.Time `json:"-"`
 }
 
 type ProgramMessage struct {
 	ID        int32     `json:"id"`
+	ChannelID string    `json:"channelID"`
 	MessageID string    `json:"messageID"`
 	ProgramID int64     `json:"programID"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	ChannelID string    `json:"channelID"`
 }
 
 type ProgramRecording struct {

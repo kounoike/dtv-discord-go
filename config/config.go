@@ -12,6 +12,10 @@ type Config struct {
 		Host string `default:"redis" env:"REDIS_HOST"`
 		Port uint   `default:"6379" env:"REDIS_PORT"`
 	}
+	Meili struct {
+		Host string `default:"meilisearch" env:"MEILI_HOST"`
+		Port int    `default:"7700" env:"MEILI_PORT"`
+	}
 	Discord struct {
 		Token string `required:"true" env:"DISCORD_TOKEN"`
 	}
