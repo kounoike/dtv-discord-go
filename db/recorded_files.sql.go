@@ -10,6 +10,61 @@ import (
 	"database/sql"
 )
 
+const getRecordedFiles = `-- name: GetRecordedFiles :one
+SELECT
+    ` + "`" + `recorded_files` + "`" + `.` + "`" + `program_id` + "`" + `,
+    ` + "`" + `recorded_files` + "`" + `.` + "`" + `m2ts_path` + "`" + `,
+    ` + "`" + `recorded_files` + "`" + `.` + "`" + `mp4_path` + "`" + `,
+    ` + "`" + `recorded_files` + "`" + `.` + "`" + `aribb24_txt_path` + "`" + `,
+    ` + "`" + `recorded_files` + "`" + `.` + "`" + `transcribed_txt_path` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `json` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `start_at` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `duration` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `name` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `description` + "`" + `,
+    ` + "`" + `program` + "`" + `.` + "`" + `genre` + "`" + `,
+    ` + "`" + `service` + "`" + `.name AS service_name
+FROM ` + "`" + `recorded_files` + "`" + `
+JOIN ` + "`" + `program` + "`" + ` ON ` + "`" + `program` + "`" + `.` + "`" + `id` + "`" + ` = ` + "`" + `recorded_files` + "`" + `.` + "`" + `program_id` + "`" + `
+JOIN ` + "`" + `service` + "`" + ` ON ` + "`" + `program` + "`" + `.` + "`" + `service_id` + "`" + ` = ` + "`" + `service` + "`" + `.` + "`" + `service_id` + "`" + ` AND ` + "`" + `program` + "`" + `.` + "`" + `network_id` + "`" + ` = ` + "`" + `service` + "`" + `.` + "`" + `network_id` + "`" + `
+WHERE ` + "`" + `recorded_files` + "`" + `.` + "`" + `program_id` + "`" + ` = ?
+`
+
+type GetRecordedFilesRow struct {
+	ProgramID          int64          `json:"programID"`
+	M2tsPath           sql.NullString `json:"m2tsPath"`
+	Mp4Path            sql.NullString `json:"mp4Path"`
+	Aribb24TxtPath     sql.NullString `json:"aribb24TxtPath"`
+	TranscribedTxtPath sql.NullString `json:"transcribedTxtPath"`
+	Json               string         `json:"json"`
+	StartAt            int64          `json:"startAt"`
+	Duration           int32          `json:"duration"`
+	Name               string         `json:"name"`
+	Description        string         `json:"description"`
+	Genre              string         `json:"genre"`
+	ServiceName        string         `json:"serviceName"`
+}
+
+func (q *Queries) GetRecordedFiles(ctx context.Context, programID int64) (GetRecordedFilesRow, error) {
+	row := q.db.QueryRowContext(ctx, getRecordedFiles, programID)
+	var i GetRecordedFilesRow
+	err := row.Scan(
+		&i.ProgramID,
+		&i.M2tsPath,
+		&i.Mp4Path,
+		&i.Aribb24TxtPath,
+		&i.TranscribedTxtPath,
+		&i.Json,
+		&i.StartAt,
+		&i.Duration,
+		&i.Name,
+		&i.Description,
+		&i.Genre,
+		&i.ServiceName,
+	)
+	return i, err
+}
+
 const insertRecordedFiles = `-- name: InsertRecordedFiles :exec
 INSERT INTO ` + "`" + `recorded_files` + "`" + ` (
     ` + "`" + `program_id` + "`" + `,

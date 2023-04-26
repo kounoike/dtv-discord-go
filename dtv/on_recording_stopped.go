@@ -156,5 +156,15 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		}
 	}
 
+	row, err := dtv.queries.GetRecordedFiles(ctx, programId)
+	if err != nil {
+		dtv.logger.Warn("GetRecordedFiles failed", zap.Error(err))
+		return err
+	}
+	if err := dtv.meili.UpdateRecordedFile(row); err != nil {
+		dtv.logger.Warn("UpdateRecordedFile failed", zap.Error(err))
+		return err
+	}
+
 	return nil
 }
