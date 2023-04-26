@@ -32,14 +32,6 @@ type EncodeTask struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type IndexInvalid struct {
-	ID        int32     `json:"id"`
-	Type      string    `json:"type"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 type Program struct {
 	ID          int64     `json:"id"`
 	Json        string    `json:"-"`
