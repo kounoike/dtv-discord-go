@@ -57,11 +57,6 @@ func (dtv *DTVUsecase) onProgramEncoded(ctx context.Context, taskInfo *asynq.Tas
 		return err
 	}
 
-	if err := dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "recorded", Status: "invalid"}); err != nil {
-		dtv.logger.Warn("SetIndexInvalid failed", zap.Error(err))
-		return err
-	}
-
 	row, err := dtv.queries.GetRecordedFiles(ctx, payload.ProgramId)
 	if err != nil {
 		dtv.logger.Warn("GetRecordedFiles failed", zap.Error(err))
@@ -124,11 +119,6 @@ func (dtv *DTVUsecase) onProgramTranscribedApi(ctx context.Context, taskInfo *as
 	)
 	if err != nil {
 		dtv.logger.Warn("failed to UpdateRecordedFilesTranscribedTxt", zap.Error(err))
-		return err
-	}
-
-	if err := dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "recorded", Status: "invalid"}); err != nil {
-		dtv.logger.Warn("SetIndexInvalid failed", zap.Error(err))
 		return err
 	}
 
@@ -196,10 +186,6 @@ func (dtv *DTVUsecase) onProgramTranscribedLocal(ctx context.Context, taskInfo *
 		dtv.logger.Warn("failed to UpdateRecordedFilesTranscribedTxt", zap.Error(err))
 		return err
 	}
-	if err := dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "recorded", Status: "invalid"}); err != nil {
-		dtv.logger.Warn("SetIndexInvalid failed", zap.Error(err))
-		return err
-	}
 
 	row, err := dtv.queries.GetRecordedFiles(ctx, payload.ProgramId)
 	if err != nil {
@@ -234,10 +220,6 @@ func (dtv *DTVUsecase) onProgramExtractedSubtitle(ctx context.Context, taskInfo 
 	)
 	if err != nil {
 		dtv.logger.Warn("UpdateRecordedFilesAribb24Txt failed", zap.Error(err))
-		return err
-	}
-	if err := dtv.queries.SetIndexInvalid(ctx, db.SetIndexInvalidParams{Type: "recorded", Status: "invalid"}); err != nil {
-		dtv.logger.Warn("SetIndexInvalid failed", zap.Error(err))
 		return err
 	}
 
