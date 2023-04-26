@@ -17,10 +17,12 @@ import Image from "next/image"
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch"
 import {
   ClearRefinements,
+  Configure,
   Highlight,
-  Hits,
+  InfiniteHits,
   InstantSearch,
   Pagination,
+  Panel,
   RefinementList,
   SearchBox,
   Snippet,
@@ -70,26 +72,27 @@ export default function Home() {
       <main className={styles.main}>
         {searchClient !== undefined && (
           <InstantSearch indexName="program" searchClient={searchClient}>
+            <Configure
+              queryLanguages={["ja"]}
+              naturalLanguages={["ja"]}
+              advancedSyntax={true}
+            />
             <Grid container spacing={2}>
               <Grid item xs={3}>
                 <div>
-                  <Typography variant="h5">ジャンル</Typography>
-                  <RefinementList
-                    attribute="ジャンル"
-                    style={{ listStyleType: "none" }}
-                  />
+                  <Typography variant="h5">チャンネル</Typography>
+                  <RefinementList attribute="チャンネル名" limit={100} />
                 </div>
                 <div>
-                  <Typography variant="h5">チャンネル</Typography>
-                  <RefinementList attribute="チャンネル名" />
+                  <Typography variant="h5">ジャンル</Typography>
+                  <RefinementList attribute="ジャンル" limit={100} />
                 </div>
                 <ClearRefinements />
               </Grid>
               <Grid item xs={9}>
-                <Stats />
                 <SearchBox />
-                <Hits hitComponent={Hit} />
-                <Pagination showLast={true} />
+                <Stats />
+                <InfiniteHits hitComponent={Hit} />
               </Grid>
             </Grid>
           </InstantSearch>
@@ -99,8 +102,20 @@ export default function Home() {
   )
 }
 
+const toHourMinute = (time: number) => {
+  const hour = Math.floor(time / 60 / 60 / 1000)
+  const minute = Math.floor((time - hour * 60 * 60 * 1000) / 60 / 1000)
+  if (hour > 0 && minute > 0) {
+    return `${hour}時間${minute}分`
+  } else if (hour > 0) {
+    return `${hour}時間`
+  } else {
+    return `${minute}分`
+  }
+}
+
 const Hit = ({ hit }: { hit: any }) => (
-  <div>
+  <Panel>
     <Typography variant="h6">
       <Highlight attribute="タイトル" hit={hit} />
     </Typography>
@@ -110,7 +125,18 @@ const Hit = ({ hit }: { hit: any }) => (
     <Typography variant="body1">
       <Snippet attribute="番組詳細" hit={hit} />
     </Typography>
-    <div>
+    <div style={{ display: "flex" }}>
+      <Typography>
+        <b>放送局:</b> {hit.チャンネル名}{" "}
+      </Typography>
+      <Typography sx={{ marginLeft: "2rem" }}>
+        <b>開始日時:</b>
+        {new Date(hit.StartAt).toLocaleString()}
+      </Typography>
+      <Typography sx={{ marginLeft: "2rem", flexGrow: 1 }}>
+        <b>放送時間:</b>
+        {toHourMinute(hit.Duration)}
+      </Typography>
       <Button variant="text" href={hit.DiscordMessageUrl}>
         Discord
       </Button>
@@ -118,5 +144,5 @@ const Hit = ({ hit }: { hit: any }) => (
         Web
       </Button>
     </div>
-  </div>
+  </Panel>
 )

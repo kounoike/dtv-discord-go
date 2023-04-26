@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -46,16 +47,22 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 			"チャンネル名":            width.Fold.String(program.ServiceName),
 			"WebMessageUrl":     webMessageUrl,
 			"DiscordMessageUrl": discordMessageUrl,
+			"StartAt":           program.StartAt,
+			"Duration":          program.Duration,
 		})
 	}
 	index := m.Index("program")
-	_, err := index.UpdateDocuments(documents)
+	taskInfo, err := index.UpdateDocuments(documents)
 	if err != nil {
 		return err
 	}
 	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
 	if err != nil {
 		return err
+	}
+
+	for taskInfo.Status == meilisearch.TaskStatusEnqueued || taskInfo.Status == meilisearch.TaskStatusProcessing {
+		time.Sleep(1 * time.Second)
 	}
 
 	return nil
@@ -75,12 +82,14 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 	documents := []map[string]interface{}{}
 	for _, row := range rows {
 		document := map[string]interface{}{
-			"id":     row.ProgramID,
-			"タイトル":   width.Fold.String(row.Name),
-			"番組説明":   width.Fold.String(row.Description),
-			"ジャンル":   width.Fold.String(row.Genre),
-			"番組詳細":   width.Fold.String(getProgramExtendedFromJson(row.Json)),
-			"チャンネル名": width.Fold.String(row.ServiceName),
+			"id":       row.ProgramID,
+			"タイトル":     width.Fold.String(row.Name),
+			"番組説明":     width.Fold.String(row.Description),
+			"ジャンル":     width.Fold.String(row.Genre),
+			"番組詳細":     width.Fold.String(getProgramExtendedFromJson(row.Json)),
+			"チャンネル名":   width.Fold.String(row.ServiceName),
+			"StartAt":  row.StartAt,
+			"Duration": row.Duration,
 		}
 		if row.Mp4Path.Valid {
 			document["mp4"] = row.Mp4Path.String
@@ -107,22 +116,29 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 		documents = append(documents, document)
 	}
 	index := m.Index("recorded_file")
-	_, err := index.UpdateDocuments(documents)
+	taskInfo, err := index.UpdateDocuments(documents)
 	if err != nil {
 		return err
 	}
 	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
+
+	for taskInfo.Status == meilisearch.TaskStatusEnqueued || taskInfo.Status == meilisearch.TaskStatusProcessing {
+		time.Sleep(1 * time.Second)
+	}
+
 	return nil
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFile(row db.GetRecordedFilesRow) error {
 	document := map[string]interface{}{
-		"id":     row.ProgramID,
-		"タイトル":   width.Fold.String(row.Name),
-		"番組説明":   width.Fold.String(row.Description),
-		"ジャンル":   width.Fold.String(row.Genre),
-		"番組詳細":   width.Fold.String(getProgramExtendedFromJson(row.Json)),
-		"チャンネル名": width.Fold.String(row.ServiceName),
+		"id":       row.ProgramID,
+		"タイトル":     width.Fold.String(row.Name),
+		"番組説明":     width.Fold.String(row.Description),
+		"ジャンル":     width.Fold.String(row.Genre),
+		"番組詳細":     width.Fold.String(getProgramExtendedFromJson(row.Json)),
+		"チャンネル名":   width.Fold.String(row.ServiceName),
+		"StartAt":  row.StartAt,
+		"Duration": row.Duration,
 	}
 	if row.Mp4Path.Valid {
 		document["mp4"] = row.Mp4Path.String
@@ -152,6 +168,10 @@ func (m *MeiliSearchClient) UpdateRecordedFile(row db.GetRecordedFilesRow) error
 		return err
 	}
 	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
