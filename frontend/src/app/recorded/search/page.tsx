@@ -30,6 +30,7 @@ import {
   Stats,
 } from "react-instantsearch-dom"
 import { ExpandMore } from "@mui/icons-material"
+import Link from "next/link"
 
 export default function SearchPage() {
   const [searchClient, setSearchClient] = useState<Object | undefined>(
@@ -143,13 +144,12 @@ const Hit = ({ hit }: { hit: any }) => (
         {toHourMinute(hit.Duration)}
       </Typography>
       {hit.mp4 && (
-        <Button
-          variant="text"
-          href={"/recorded/mp4/" + encodeURIComponent(hit.mp4)}
+        <Link
+          href={{ pathname: "/recorded/mp4", query: { f: hit.mp4 } }}
           target="_blank"
         >
-          MP4
-        </Button>
+          <Button variant="text">MP4</Button>
+        </Link>
       )}
     </div>
     <Typography variant="body1">

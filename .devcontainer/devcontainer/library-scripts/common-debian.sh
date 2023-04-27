@@ -110,6 +110,7 @@ if [ "${PACKAGES_ALREADY_INSTALLED}" != "true" ]; then
         ncdu \
         man-db \
         strace \
+        tzdata \
         manpages \
         manpages-dev \
         init-system-helpers"

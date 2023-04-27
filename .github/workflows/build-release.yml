@@ -49,6 +49,20 @@ jobs:
         with:
           go-version: "1.20"
           cache: true
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "yarn"
+          cache-dependency-path: "frontend/yarn.lock"
+      - name: Install dependencies
+        run: |
+          yarn --frozen-lockfile
+        working-directory: frontend
+      - name: Build frontend
+        run: |
+          yarn build
+        working-directory: frontend
       - name: Run goreleaser build
         if: github.event_name == 'pull_request'
         uses: goreleaser/goreleaser-action@v4
