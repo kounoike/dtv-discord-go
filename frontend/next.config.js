@@ -7,15 +7,7 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
-  redirects: async () => {
-    return [
-      {
-        source: "/",
-        destination: "/program/search",
-        permanent: false,
-      },
-    ]
-  },
+  output: "export",
 }
 
 module.exports = nextConfig

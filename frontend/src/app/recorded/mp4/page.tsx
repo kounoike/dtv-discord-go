@@ -10,10 +10,21 @@ import {
 } from "@mui/material"
 import { VideoPlayer } from "@videojs-player/react"
 import "video.js/dist/video-js.css"
-import Head from "next/head"
+import { useEffect, useState } from "react"
 
-export default function SearchPage({ params }: { params: { path: string } }) {
-  return (
+export default function SearchPage() {
+  const [mp4Path, setMp4Path] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const f = searchParams.get("f")
+    if (f !== null) {
+      setMp4Path(f)
+    }
+  }, [])
+
+  return mp4Path === undefined ? (
+    <></>
+  ) : (
     <>
       <AppBar position="sticky" className={styles.appbar}>
         <Toolbar>
@@ -22,7 +33,7 @@ export default function SearchPage({ params }: { params: { path: string } }) {
             className={styles.title}
             sx={{ flexGrow: 1 }}
           >
-            視聴ちゃん 録画視聴 {decodeURIComponent(params.path)}
+            視聴ちゃん 録画視聴 {decodeURIComponent(mp4Path)}
           </Typography>
           <MenuItem onClick={() => (window.location.href = "/program/search")}>
             <Typography>→番組検索</Typography>
@@ -42,7 +53,7 @@ export default function SearchPage({ params }: { params: { path: string } }) {
       </AppBar>
       <main className={styles.main}>
         <VideoPlayer
-          src={"/encoded/" + params.path}
+          src={"/encoded/" + mp4Path}
           controls={true}
           loop={false}
           volume={0.6}

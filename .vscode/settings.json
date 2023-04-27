@@ -2,5 +2,8 @@
     "cSpell.words": [
         "asynq",
         "Usecase"
+    ],
+    "eslint.workingDirectories": [
+        "./frontend"
     ]
 }
