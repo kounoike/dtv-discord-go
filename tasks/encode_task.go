@@ -68,7 +68,7 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 
 	if p.ContentPath == "" || p.OutputPath == "" {
 		e.logger.Error("empty ContentPath or OutputPath")
-		return nil
+		return asynq.SkipRetry
 	}
 
 	err = os.MkdirAll(filepath.Dir(filepath.Join(e.encodedBasePath, p.OutputPath)), 0777)
@@ -81,6 +81,7 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		OutputPath: shellescape.Quote(filepath.Join(e.encodedBasePath, p.OutputPath)),
 	})
 	if err != nil {
+		t.ResultWriter().Write([]byte(fmt.Sprintf("encode command template error: %v", err)))
 		return fmt.Errorf("encode command template error: %v: %w", err, asynq.SkipRetry)
 	}
 	commandLine := buf.String()
@@ -89,6 +90,7 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 
 	args, err := shellwords.Parse(commandLine)
 	if err != nil {
+		t.ResultWriter().Write([]byte(fmt.Sprintf("encode command shell parse error: %v", err)))
 		return fmt.Errorf("encode command shell parse error: %v: %w", err, asynq.SkipRetry)
 	}
 
@@ -104,7 +106,7 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		e.logger.Error("encode command execution error", zap.Error(err), zap.ByteString("output", out))
-		t.ResultWriter().Write([]byte(out))
+		t.ResultWriter().Write([]byte(fmt.Sprintf("encode command execution error: %v\n%s", err, string(out))))
 		return err
 	}
 	e.logger.Debug("encode command succeeded")

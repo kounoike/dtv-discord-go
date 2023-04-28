@@ -37,7 +37,11 @@ func (dtv *DTVUsecase) CheckFailedTask(ctx context.Context) error {
 					dtv.logger.Warn("failed to InsertEncodeTask", zap.Error(err))
 					continue
 				}
-				dtv.discord.SendMessage(discord.InformationCategory, discord.RecordingFailedChannel, fmt.Sprintf("**エンコード失敗**`%s`のエンコードが失敗しました\n```\n%s\n```\n", payload.ContentPath, string(taskInfo.Result)))
+				dtv.discord.SendMessage(
+					discord.InformationCategory,
+					discord.RecordingFailedChannel,
+					fmt.Sprintf("**エンコード失敗**`%s`のエンコードが失敗しました\n```\n%s\n```\n", payload.ContentPath, string(taskInfo.Result)),
+				)
 			}
 		}
 	}
