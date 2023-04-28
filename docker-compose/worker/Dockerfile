@@ -14,7 +14,7 @@ RUN wget https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n
 
 RUN pip3 install --force-reinstall "faster-whisper @ https://github.com/guillaumekln/faster-whisper/archive/refs/heads/master.tar.gz"
 
-COPY --from=ghcr.io/kounoike/dtv-discord-go:latest /dtv-discord-go /
+COPY --from=ghcr.io/kounoike/dtv-discord-go:0.13.0-pre3 /dtv-discord-go /
 COPY run_whisper_cuda.py run_whisper_cpu.py /
 ARG BASE_IMAGE=debian
 RUN [ "${BASE_IMAGE}" = "nvidia/cuda" ] && mv run_whisper_cuda.py run_whisper.py || mv run_whisper_cpu.py run_whisper.py

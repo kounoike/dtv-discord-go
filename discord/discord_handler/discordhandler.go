@@ -80,7 +80,7 @@ func (h *DiscordHandler) ReIndexHandler(s *discordgo.Session, i *discordgo.Inter
 		h.logger.Error("Reindex error", zap.Error(err))
 		return
 	}
-	s.ChannelMessageSend(i.ChannelID, "再インデックス処理が完了しました")
+	s.ChannelMessageSend(i.ChannelID, "再インデックス処理の登録が完了しました(完了には時間がかかります)")
 }
 
 func (h *DiscordHandler) RegisterCommand() {

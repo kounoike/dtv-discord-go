@@ -30,14 +30,18 @@ func (m *MeiliSearchClient) Index(name string) *meilisearch.Index {
 }
 
 func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageAndServiceNameRow, guildID string) error {
-	documents := []map[string]interface{}{}
+	index := m.Index("program")
+	_, err := index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
+	if err != nil {
+		return err
+	}
 	for _, program := range programs {
 		if program.Name == "" {
 			continue
 		}
 		discordMessageUrl := fmt.Sprintf("discord://discord.com/channels/%s/%s/%s", guildID, program.ChannelID, program.MessageID)
 		webMessageUrl := fmt.Sprintf("https://discord.com/channels/%s/%s/%s", guildID, program.ChannelID, program.MessageID)
-		documents = append(documents, map[string]interface{}{
+		document := map[string]interface{}{
 			"id":                program.ProgramID,
 			"タイトル":              width.Fold.String(program.Name),
 			"番組説明":              width.Fold.String(program.Description),
@@ -48,19 +52,12 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 			"DiscordMessageUrl": discordMessageUrl,
 			"StartAt":           program.StartAt,
 			"Duration":          program.Duration,
-		})
+		}
+		_, err := index.UpdateDocuments([]map[string]interface{}{document})
+		if err != nil {
+			m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("document", document))
+		}
 	}
-	index := m.Index("program")
-	taskInfo, err := index.UpdateDocuments(documents)
-	if err != nil {
-		return err
-	}
-	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
-	if err != nil {
-		return err
-	}
-
-	m.client.WaitForTask(taskInfo.TaskUID)
 
 	return nil
 }
@@ -76,7 +73,12 @@ func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
-	documents := []map[string]interface{}{}
+	index := m.Index("recorded_file")
+	_, err := index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
+	if err != nil {
+		return err
+	}
+
 	for _, row := range rows {
 		document := map[string]interface{}{
 			"id":       row.ProgramID,
@@ -110,16 +112,11 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 				document["文字起こし"] = string(bytes)
 			}
 		}
-		documents = append(documents, document)
+		_, err := index.UpdateDocuments([]map[string]interface{}{document})
+		if err != nil {
+			m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("document", document))
+		}
 	}
-	index := m.Index("recorded_file")
-	taskInfo, err := index.UpdateDocuments(documents)
-	if err != nil {
-		return err
-	}
-	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
-
-	m.client.WaitForTask(taskInfo.TaskUID)
 
 	return nil
 }
