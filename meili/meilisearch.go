@@ -84,13 +84,17 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 }
 
 func (m *MeiliSearchClient) DeleteProgramIndex() error {
-	_, err := m.client.DeleteIndex(programIndexName)
-	return err
+	if _, err := m.client.DeleteIndex(programIndexName); err != nil {
+		return err
+	}
+	return m.Init()
 }
 
 func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
-	_, err := m.client.DeleteIndex(recordedFileIndexName)
-	return err
+	if _, err := m.client.DeleteIndex(recordedFileIndexName); err != nil {
+		return err
+	}
+	return m.Init()
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
