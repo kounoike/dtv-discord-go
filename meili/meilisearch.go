@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -61,9 +60,7 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 		return err
 	}
 
-	for taskInfo.Status == meilisearch.TaskStatusEnqueued || taskInfo.Status == meilisearch.TaskStatusProcessing {
-		time.Sleep(1 * time.Second)
-	}
+	m.client.WaitForTask(taskInfo.TaskUID)
 
 	return nil
 }
@@ -122,9 +119,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 	}
 	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
 
-	for taskInfo.Status == meilisearch.TaskStatusEnqueued || taskInfo.Status == meilisearch.TaskStatusProcessing {
-		time.Sleep(1 * time.Second)
-	}
+	m.client.WaitForTask(taskInfo.TaskUID)
 
 	return nil
 }
