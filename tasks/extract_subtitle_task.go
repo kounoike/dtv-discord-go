@@ -27,7 +27,7 @@ func NewProgramExtractSubtileTask(programId int64, contentPath string, outputPat
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(TypeProgramExtractSubtitle, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(30*time.Minute), asynq.Queue(queueName)), nil
+	return asynq.NewTask(TypeProgramExtractSubtitle, payload, asynq.MaxRetry(10), asynq.Timeout(20*time.Hour), asynq.Retention(3*24*time.Hour), asynq.Queue(queueName)), nil
 }
 
 type ProgramExtractor struct {
