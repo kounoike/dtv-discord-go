@@ -234,6 +234,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient, meiliClient)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
+		return subcommands.ExitFailure
 	}
 
 	discordClient.UpdateChannelsCache()
