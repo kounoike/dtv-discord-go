@@ -30,7 +30,7 @@ COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
 
 COPY --from=go-build /usr/local/bin/ofelia /usr/local/bin/
-COPY --from=ghcr.io/kounoike/dtv-discord-go:0.13.0-pre6 /frontend/out /www
+COPY --from=ghcr.io/kounoike/dtv-discord-go:latest /frontend/out /www
 COPY supervisord.conf ofelia.ini /etc/
 COPY nginx.conf.tmpl /etc/nginx/
 
