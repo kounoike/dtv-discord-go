@@ -33,16 +33,16 @@ func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribed
 func (m *MeiliSearchClient) Init() error {
 	programIndex := m.Index(programIndexName)
 	recordedFileIndex := m.Index(recordedFileIndexName)
-	if _, err := programIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
-		return err
-	}
-	if _, err := recordedFileIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
-		return err
-	}
 	if _, err := programIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名"}); err != nil {
 		return err
 	}
 	if _, err := recordedFileIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名", "ARIB字幕", "文字起こし"}); err != nil {
+		return err
+	}
+	if _, err := programIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
+		return err
+	}
+	if _, err := recordedFileIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
 		return err
 	}
 	return nil
