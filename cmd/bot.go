@@ -230,6 +230,10 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	gptClient := gpt.NewGPTClient(config.OpenAI.Enabled, config.OpenAI.Token, discordLogger)
 
 	meiliClient := meili.NewMeiliSearchClient(discordLogger, config.Meili.Host, config.Meili.Port, config.Transcription.BasePath)
+	if err := meiliClient.Init(); err != nil {
+		logger.Error("can't init meilisearch options", zap.Error(err))
+		return subcommands.ExitFailure
+	}
 
 	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient, meiliClient)
 	if err != nil {

@@ -18,6 +18,11 @@ type MeiliSearchClient struct {
 	transcribedBasePath string
 }
 
+const (
+	programIndexName      = "program"
+	recordedFileIndexName = "recorded_file"
+)
+
 func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribedBasePath string) *MeiliSearchClient {
 	client := meilisearch.NewClient(meilisearch.ClientConfig{
 		Host: fmt.Sprintf("http://%s:%d", host, port),
@@ -25,16 +30,31 @@ func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribed
 	return &MeiliSearchClient{logger, client, transcribedBasePath}
 }
 
+func (m *MeiliSearchClient) Init() error {
+	programIndex := m.Index(programIndexName)
+	recordedFileIndex := m.Index(recordedFileIndexName)
+	if _, err := programIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
+		return err
+	}
+	if _, err := recordedFileIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
+		return err
+	}
+	if _, err := programIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名"}); err != nil {
+		return err
+	}
+	if _, err := recordedFileIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名", "ARIB字幕", "文字起こし"}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *MeiliSearchClient) Index(name string) *meilisearch.Index {
 	return m.client.Index(name)
 }
 
 func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageAndServiceNameRow, guildID string) error {
-	index := m.Index("program")
-	_, err := index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
-	if err != nil {
-		return err
-	}
+	index := m.Index(programIndexName)
+	documents := make([]map[string]interface{}, 0, len(programs))
 	for _, program := range programs {
 		if program.Name == "" {
 			continue
@@ -53,31 +73,28 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 			"StartAt":           program.StartAt,
 			"Duration":          program.Duration,
 		}
-		_, err := index.UpdateDocuments([]map[string]interface{}{document})
-		if err != nil {
-			m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("document", document))
-		}
+		documents = append(documents, document)
+	}
+
+	if _, err := index.UpdateDocuments(documents); err != nil {
+		m.logger.Warn("failed to update documents", zap.Error(err))
 	}
 
 	return nil
 }
 
 func (m *MeiliSearchClient) DeleteProgramIndex() error {
-	_, err := m.client.DeleteIndex("program")
+	_, err := m.client.DeleteIndex(programIndexName)
 	return err
 }
 
 func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
-	_, err := m.client.DeleteIndex("recorded_file")
+	_, err := m.client.DeleteIndex(recordedFileIndexName)
 	return err
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
-	index := m.Index("recorded_file")
-	_, err := index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
-	if err != nil {
-		return err
-	}
+	index := m.Index(recordedFileIndexName)
 
 	for _, row := range rows {
 		document := map[string]interface{}{
@@ -154,12 +171,8 @@ func (m *MeiliSearchClient) UpdateRecordedFile(row db.GetRecordedFilesRow) error
 			document["文字起こし"] = string(bytes)
 		}
 	}
-	index := m.Index("recorded_file")
+	index := m.Index(recordedFileIndexName)
 	_, err := index.UpdateDocuments(document)
-	if err != nil {
-		return err
-	}
-	_, err = index.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"})
 	if err != nil {
 		return err
 	}
