@@ -7,6 +7,7 @@ import (
 
 	"github.com/kounoike/dtv-discord-go/db"
 	"github.com/kounoike/dtv-discord-go/template"
+	"golang.org/x/text/width"
 )
 
 const mkDirPerm = 0777
@@ -15,16 +16,16 @@ func (dtv *DTVUsecase) getContentPath(ctx context.Context, program db.Program, s
 	data := template.PathTemplateData{}
 
 	_ = dtv.gpt.ParseTitle(ctx, program.Name, &data)
-	data.Title = toSafePath(data.Title)
-	data.Subtitle = toSafePath(data.Subtitle)
+	data.Title = toSafePath(width.Fold.String(data.Title))
+	data.Subtitle = toSafePath(width.Fold.String(data.Subtitle))
 
 	data.Program = template.PathProgram{
-		Name:      toSafePath(program.Name),
+		Name:      toSafePath(width.Fold.String(program.Name)),
 		StartTime: program.StartTime(),
 	}
 
 	data.Service = template.PathService{
-		Name: toSafePath(service.Name),
+		Name: toSafePath(width.Fold.String(service.Name)),
 	}
 
 	var buffer bytes.Buffer

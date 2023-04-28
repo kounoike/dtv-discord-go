@@ -13,7 +13,6 @@ import (
 	"github.com/kounoike/dtv-discord-go/meili"
 	"github.com/kounoike/dtv-discord-go/mirakc/mirakc_client"
 	"go.uber.org/zap"
-	"golang.org/x/text/width"
 )
 
 type DTVUsecase struct {
@@ -42,10 +41,6 @@ type DTVUsecase struct {
 	transcribeQueueName  string
 }
 
-func fold(str string) string {
-	return width.Fold.String(str)
-}
-
 func NewDTVUsecase(
 	cfg config.Config,
 	asynqClient *asynq.Client,
@@ -60,10 +55,7 @@ func NewDTVUsecase(
 	gpt *gpt.GPTClient,
 	meili *meili.MeiliSearchClient,
 ) (*DTVUsecase, error) {
-	funcMap := map[string]interface{}{
-		"fold": fold,
-	}
-	contentTmpl, err := template.New("content-path").Funcs(funcMap).Parse(cfg.Recording.ContentPathTemplate)
+	contentTmpl, err := template.New("content-path").Parse(cfg.Recording.ContentPathTemplate)
 	if err != nil {
 		return nil, err
 	}
