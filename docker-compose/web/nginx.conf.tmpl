@@ -117,7 +117,9 @@ http {
     add_header Strict-Transport-Security max-age=31536000;
 
     location / {
-      proxy_pass http://frontend:3000;
+      root /www;
+      index index.html;
+      error_page 404 /404/index.html;
 
       add_header Cross-Origin-Embedder-Policy require-corp;
       add_header Cross-Origin-Opener-Policy same-origin;
