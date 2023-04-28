@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"math"
 
 	"github.com/hibiken/asynq"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -242,7 +243,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 	}
 	queues := []string{dtv.defaultQueueName, dtv.encodeQueueName, dtv.transcribeQueueName}
 	for _, queue := range queues {
-		taskInfoList, err := dtv.inspector.ListCompletedTasks(queue)
+		taskInfoList, err := dtv.inspector.ListCompletedTasks(queue, asynq.PageSize(math.MaxInt32))
 		if err != nil {
 			return err
 		}
