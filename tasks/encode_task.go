@@ -104,6 +104,7 @@ func (e *ProgramEncoder) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		e.logger.Error("encode command execution error", zap.Error(err), zap.ByteString("output", out))
+		t.ResultWriter().Write([]byte(out))
 		return err
 	}
 	e.logger.Debug("encode command succeeded")
