@@ -100,6 +100,7 @@ func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
 	index := m.Index(recordedFileIndexName)
 
+	documents := make([]map[string]interface{}, 0, len(rows))
 	for _, row := range rows {
 		document := map[string]interface{}{
 			"id":       row.ProgramID,
@@ -133,10 +134,12 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 				document["文字起こし"] = string(bytes)
 			}
 		}
-		_, err := index.UpdateDocuments([]map[string]interface{}{document})
-		if err != nil {
-			m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("document", document))
-		}
+		documents = append(documents, document)
+	}
+
+	_, err := index.UpdateDocuments(documents)
+	if err != nil {
+		m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
 	}
 
 	return nil
