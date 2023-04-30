@@ -19,9 +19,10 @@ type MeiliSearchClient struct {
 }
 
 const (
-	programIndexName      = "program"
-	recordedFileIndexName = "recorded_file"
-	maxDocumentsNum       = 200
+	programIndexName                 = "program"
+	recordedFileIndexName            = "recorded_file"
+	temporarilyRecordedFileIndexName = "recorded_file_tmp"
+	maxDocumentsNum                  = 200
 )
 
 func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribedBasePath string) *MeiliSearchClient {
@@ -118,7 +119,7 @@ func max(a, b int) int {
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
-	index := m.Index(recordedFileIndexName)
+	tmpIndex := m.Index(temporarilyRecordedFileIndexName)
 
 	documents := make([]map[string]interface{}, 0, len(rows))
 	for idx, row := range rows {
@@ -162,9 +163,35 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 
 	m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", len(rows), len(rows)))
 
-	_, err := index.UpdateDocumentsInBatches(documents, maxDocumentsNum)
+	resp, err := tmpIndex.UpdateDocumentsInBatches(documents, maxDocumentsNum)
 	if err != nil {
 		m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
+	}
+	for _, taskInfo := range resp {
+		_, err := m.client.WaitForTask(taskInfo.TaskUID)
+		if err != nil {
+			m.logger.Warn("failed to wait for task", zap.Error(err))
+		}
+	}
+	taskInfo, err := m.client.SwapIndexes([]meilisearch.SwapIndexesParams{
+		{
+			Indexes: []string{recordedFileIndexName, temporarilyRecordedFileIndexName},
+		},
+	})
+	if err != nil {
+		m.logger.Warn("failed to swap indexes", zap.Error(err))
+	}
+	_, err = m.client.WaitForTask(taskInfo.TaskUID)
+	if err != nil {
+		m.logger.Warn("failed to wait for task", zap.Error(err))
+	}
+	delTaskInfo, err := m.client.DeleteIndex(temporarilyRecordedFileIndexName)
+	if err != nil {
+		m.logger.Warn("failed to delete index", zap.Error(err))
+	}
+	_, err = m.client.WaitForTask(delTaskInfo.TaskUID)
+	if err != nil {
+		m.logger.Warn("failed to wait for task", zap.Error(err))
 	}
 
 	return nil
