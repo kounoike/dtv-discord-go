@@ -145,7 +145,7 @@ const Hit = ({ hit }: { hit: any }) => (
       </Typography>
       {hit.mp4 && (
         <Link
-          href={{ pathname: "/recorded/mp4", query: { f: hit.mp4 } }}
+          href={"/recorded/mp4/?" + encodeURIComponent(hit.mp4)}
           target="_blank"
         >
           <Button variant="text">MP4</Button>

@@ -15,11 +15,7 @@ import { useEffect, useState } from "react"
 export default function SearchPage() {
   const [mp4Path, setMp4Path] = useState<string | undefined>(undefined)
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const f = searchParams.get("f")
-    if (f !== null) {
-      setMp4Path(f)
-    }
+    setMp4Path(window.location.search)
   }, [])
 
   return mp4Path === undefined ? (
