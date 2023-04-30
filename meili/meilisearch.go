@@ -182,7 +182,7 @@ func (m *MeiliSearchClient) UpdateRecordedFile(row db.GetRecordedFilesRow) error
 		}
 	}
 	index := m.Index(recordedFileIndexName)
-	_, err := index.UpdateDocuments(document)
+	_, err := index.UpdateDocuments([]map[string]interface{}{document})
 	if err != nil {
 		return err
 	}
