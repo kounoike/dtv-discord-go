@@ -121,7 +121,17 @@ func max(a, b int) int {
 }
 
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
+	if _, err := m.client.CreateIndex(&meilisearch.IndexConfig{Uid: temporarilyRecordedFileIndexName, PrimaryKey: "id"}); err != nil {
+		return err
+	}
 	tmpIndex := m.Index(temporarilyRecordedFileIndexName)
+
+	if _, err := tmpIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名", "ARIB字幕", "文字起こし"}); err != nil {
+		return err
+	}
+	if _, err := tmpIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
+		return err
+	}
 
 	documents := make([]map[string]interface{}, 0, len(rows))
 	for idx, row := range rows {
