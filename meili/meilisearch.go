@@ -152,7 +152,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 		}
 		documents = append(documents, document)
 		if len(documents) == maxDocumentsNum {
-			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx, len(rows)))
+			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx+1, len(rows)))
 			_, err := index.UpdateDocuments(documents)
 			if err != nil {
 				m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
