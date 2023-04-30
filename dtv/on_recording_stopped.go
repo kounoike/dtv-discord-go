@@ -33,7 +33,7 @@ func (dtv *DTVUsecase) OnRecordingStopped(ctx context.Context, programId int64) 
 		return err
 	}
 	if fstat.Size() == 0 {
-		return fmt.Errorf("m2ts file size is 0")
+		return fmt.Errorf("m2ts[%s] file size is 0", contentPath)
 	}
 	content, err := template.GetRecordingStoppedMessage(program, service, contentPath)
 	if err != nil {

@@ -137,7 +137,7 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 	if err != nil {
 		return err
 	}
-	m.logger.Info("録画予約完了", zap.Int("StatusCode", resp.StatusCode()))
+	m.logger.Info("録画予約完了", zap.Int("StatusCode", resp.StatusCode()), zap.String("contentPath", contentPath))
 	if resp.StatusCode() == 201 {
 		return nil
 	}
