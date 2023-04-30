@@ -158,15 +158,6 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			}
 		}
 		documents = append(documents, document)
-		taskInfo, err := tmpIndex.UpdateDocuments([]map[string]interface{}{document})
-		if err != nil {
-			m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("document", document))
-		}
-		_, err = m.client.WaitForTask(taskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
-		if err != nil {
-			m.logger.Warn("failed to wait for task", zap.Error(err), zap.Any("taskInfo", taskInfo))
-		}
-		m.logger.Info("UpdateDocuments done.", zap.Int64("ProgramID", row.ProgramID))
 		if idx%500 == 0 {
 			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx+1, len(rows)))
 		}
@@ -174,16 +165,16 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 
 	m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", len(rows), len(rows)))
 
-	// resp, err := tmpIndex.UpdateDocumentsInBatches(documents, maxDocumentsNum)
-	// if err != nil {
-	// 	m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
-	// }
-	// for _, taskInfo := range resp {
-	// 	_, err := m.client.WaitForTask(taskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
-	// 	if err != nil {
-	// 		m.logger.Warn("failed to wait for task", zap.Error(err))
-	// 	}
-	// }
+	resp, err := tmpIndex.UpdateDocumentsInBatches(documents, maxDocumentsNum)
+	if err != nil {
+		m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
+	}
+	for _, taskInfo := range resp {
+		_, err := m.client.WaitForTask(taskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
+		if err != nil {
+			m.logger.Warn("failed to wait for task", zap.Error(err))
+		}
+	}
 	taskInfo, err := m.client.SwapIndexes([]meilisearch.SwapIndexesParams{
 		{
 			Indexes: []string{recordedFileIndexName, temporarilyRecordedFileIndexName},
