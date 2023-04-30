@@ -1,9 +1,11 @@
 package meili
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kounoike/dtv-discord-go/db"
@@ -168,7 +170,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 		m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
 	}
 	for _, taskInfo := range resp {
-		_, err := m.client.WaitForTask(taskInfo.TaskUID)
+		_, err := m.client.WaitForTask(taskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
 		if err != nil {
 			m.logger.Warn("failed to wait for task", zap.Error(err))
 		}
@@ -181,7 +183,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 	if err != nil {
 		m.logger.Warn("failed to swap indexes", zap.Error(err))
 	}
-	_, err = m.client.WaitForTask(taskInfo.TaskUID)
+	_, err = m.client.WaitForTask(taskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
 	if err != nil {
 		m.logger.Warn("failed to wait for task", zap.Error(err))
 	}
@@ -189,7 +191,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 	if err != nil {
 		m.logger.Warn("failed to delete index", zap.Error(err))
 	}
-	_, err = m.client.WaitForTask(delTaskInfo.TaskUID)
+	_, err = m.client.WaitForTask(delTaskInfo.TaskUID, meilisearch.WaitParams{Context: context.Background(), Interval: 10 * time.Second})
 	if err != nil {
 		m.logger.Warn("failed to wait for task", zap.Error(err))
 	}
