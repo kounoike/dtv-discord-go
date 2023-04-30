@@ -143,7 +143,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			}
 		}
 		documents = append(documents, document)
-		if idx%100 == 0 {
+		if idx%500 == 0 {
 			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx, len(rows)))
 		}
 	}
