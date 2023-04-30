@@ -93,16 +93,20 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 }
 
 func (m *MeiliSearchClient) DeleteProgramIndex() error {
-	if _, err := m.client.DeleteIndex(programIndexName); err != nil {
+	taskInfo, err := m.client.DeleteIndex(programIndexName)
+	if err != nil {
 		return err
 	}
+	m.client.WaitForTask(taskInfo.TaskUID)
 	return m.Init()
 }
 
 func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
-	if _, err := m.client.DeleteIndex(recordedFileIndexName); err != nil {
+	taskInfo, err := m.client.DeleteIndex(recordedFileIndexName)
+	if err != nil {
 		return err
 	}
+	m.client.WaitForTask(taskInfo.TaskUID)
 	return m.Init()
 }
 
