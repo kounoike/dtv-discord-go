@@ -250,7 +250,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 		for _, taskInfo := range taskInfoList {
 			switch taskInfo.Type {
 			case tasks.TypeHello:
-				continue
+				// 特に何もしない
 			case tasks.TypeProgramEncode:
 				_ = dtv.onProgramEncoded(ctx, taskInfo)
 			case tasks.TypeProgramTranscriptionApi:
@@ -262,6 +262,7 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			case tasks.TypeProgramDeleteOriginal:
 				// 特に何もしない
 			}
+			dtv.inspector.DeleteTask(queue, taskInfo.ID)
 		}
 	}
 	return nil

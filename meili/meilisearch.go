@@ -45,6 +45,12 @@ func (m *MeiliSearchClient) Init() error {
 	if _, err := recordedFileIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
 		return err
 	}
+	if _, err := programIndex.UpdateIndex("id"); err != nil {
+		return err
+	}
+	if _, err := recordedFileIndex.UpdateIndex("id"); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -139,6 +145,8 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx, len(rows)))
 		}
 	}
+
+	m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", len(rows), len(rows)))
 
 	_, err := index.UpdateDocuments(documents)
 	if err != nil {
