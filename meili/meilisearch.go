@@ -120,7 +120,7 @@ func max(a, b int) int {
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
 	index := m.Index(recordedFileIndexName)
 
-	documents := make([]map[string]interface{}, 0, max(len(rows), maxDocumentsNum))
+	documents := make([]map[string]interface{}, 0, len(rows))
 	for idx, row := range rows {
 		document := map[string]interface{}{
 			"id":       row.ProgramID,
@@ -155,19 +155,14 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			}
 		}
 		documents = append(documents, document)
-		if len(documents) == maxDocumentsNum {
+		if idx%500 == 0 {
 			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx+1, len(rows)))
-			_, err := index.UpdateDocuments(documents)
-			if err != nil {
-				m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
-			}
-			documents = make([]map[string]interface{}, 0, maxDocumentsNum)
 		}
 	}
 
 	m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", len(rows), len(rows)))
 
-	_, err := index.UpdateDocuments(documents)
+	_, err := index.UpdateDocumentsInBatches(documents, maxDocumentsNum)
 	if err != nil {
 		m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
 	}
