@@ -101,7 +101,7 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 	index := m.Index(recordedFileIndexName)
 
 	documents := make([]map[string]interface{}, 0, len(rows))
-	for _, row := range rows {
+	for idx, row := range rows {
 		document := map[string]interface{}{
 			"id":       row.ProgramID,
 			"タイトル":     width.Fold.String(row.Name),
@@ -135,6 +135,9 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			}
 		}
 		documents = append(documents, document)
+		if idx%100 == 0 {
+			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx, len(rows)))
+		}
 	}
 
 	_, err := index.UpdateDocuments(documents)
