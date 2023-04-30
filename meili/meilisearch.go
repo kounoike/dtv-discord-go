@@ -21,6 +21,7 @@ type MeiliSearchClient struct {
 const (
 	programIndexName      = "program"
 	recordedFileIndexName = "recorded_file"
+	maxDocumentsNum       = 200
 )
 
 func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribedBasePath string) *MeiliSearchClient {
@@ -105,10 +106,17 @@ func (m *MeiliSearchClient) DeleteRecordedFileIndex() error {
 	return m.Init()
 }
 
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) error {
 	index := m.Index(recordedFileIndexName)
 
-	documents := make([]map[string]interface{}, 0, len(rows))
+	documents := make([]map[string]interface{}, 0, max(len(rows), maxDocumentsNum))
 	for idx, row := range rows {
 		document := map[string]interface{}{
 			"id":       row.ProgramID,
@@ -143,8 +151,13 @@ func (m *MeiliSearchClient) UpdateRecordedFiles(rows []db.ListRecordedFilesRow) 
 			}
 		}
 		documents = append(documents, document)
-		if idx%500 == 0 {
+		if len(documents) == maxDocumentsNum {
 			m.logger.Info(fmt.Sprintf("%d/%d 番組 準備完了...", idx, len(rows)))
+			_, err := index.UpdateDocuments(documents)
+			if err != nil {
+				m.logger.Warn("failed to update documents", zap.Error(err), zap.Any("documents", documents))
+			}
+			documents = make([]map[string]interface{}, 0, maxDocumentsNum)
 		}
 	}
 
