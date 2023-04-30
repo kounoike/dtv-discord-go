@@ -31,8 +31,16 @@ func NewMeiliSearchClient(logger *zap.Logger, host string, port int, transcribed
 }
 
 func (m *MeiliSearchClient) Init() error {
+	if _, err := m.client.CreateIndex(&meilisearch.IndexConfig{Uid: programIndexName, PrimaryKey: "id"}); err != nil {
+		return err
+	}
+	if _, err := m.client.CreateIndex(&meilisearch.IndexConfig{Uid: recordedFileIndexName, PrimaryKey: "id"}); err != nil {
+		return err
+	}
+
 	programIndex := m.Index(programIndexName)
 	recordedFileIndex := m.Index(recordedFileIndexName)
+
 	if _, err := programIndex.UpdateSearchableAttributes(&[]string{"タイトル", "番組説明", "ジャンル", "番組詳細", "チャンネル名"}); err != nil {
 		return err
 	}
@@ -43,12 +51,6 @@ func (m *MeiliSearchClient) Init() error {
 		return err
 	}
 	if _, err := recordedFileIndex.UpdateFilterableAttributes(&[]string{"チャンネル名", "ジャンル"}); err != nil {
-		return err
-	}
-	if _, err := programIndex.UpdateIndex("id"); err != nil {
-		return err
-	}
-	if _, err := recordedFileIndex.UpdateIndex("id"); err != nil {
 		return err
 	}
 	return nil
@@ -82,7 +84,7 @@ func (m *MeiliSearchClient) UpdatePrograms(programs []db.ListProgramWithMessageA
 		documents = append(documents, document)
 	}
 
-	if _, err := index.UpdateDocuments(documents); err != nil {
+	if _, err := index.UpdateDocumentsInBatches(documents, 500); err != nil {
 		m.logger.Warn("failed to update documents", zap.Error(err))
 	}
 
