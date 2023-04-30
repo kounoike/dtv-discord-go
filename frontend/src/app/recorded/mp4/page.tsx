@@ -49,7 +49,7 @@ export default function SearchPage() {
       </AppBar>
       <main className={styles.main}>
         <VideoPlayer
-          src={"/encoded/" + mp4Path}
+          src={"/encoded/" + encodeURIComponent(decodeURIComponent(mp4Path))}
           controls={true}
           loop={false}
           volume={0.6}
