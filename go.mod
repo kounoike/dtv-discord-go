@@ -7,7 +7,7 @@ require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/go-co-op/gocron v1.23.0
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/subcommands v1.2.0
 	github.com/hibiken/asynq v0.24.0
 	github.com/ikawaha/kagome v1.11.2
@@ -17,6 +17,7 @@ require (
 	github.com/lestrrat-go/backoff/v2 v2.0.8
 	github.com/lithammer/fuzzysearch v1.1.5
 	github.com/mattn/go-shellwords v1.0.12
+	github.com/meilisearch/meilisearch-go v0.24.0
 	github.com/pkg/errors v0.9.1
 	github.com/r3labs/sse/v2 v2.10.0
 	github.com/sashabaranov/go-openai v1.9.0
@@ -45,7 +46,6 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/meilisearch/meilisearch-go v0.24.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
