@@ -172,7 +172,7 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 				return nil
 			}
 		}
-		err = dtv.scheduleRecordForMessage(ctx, msg.ChannelID, msg.ID)
+		err = dtv.checkRecordScheduleForMessage(ctx, msg.ChannelID, msg.ID)
 		if err != nil {
 			return err
 		}
