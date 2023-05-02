@@ -5,6 +5,7 @@ const (
 	RecordedReactionEmoji      = "📼"
 	EncodedReactionEmoji       = "🗜️"
 	OkReactionEmoji            = "🆗"
+	NgReactionEmoji            = "🆖"
 	NotifyReactionEmoji        = "👀"
 	AutoSearchReactionEmoji    = "🔍"
 	TranscriptionReactionEmoji = "📝"
