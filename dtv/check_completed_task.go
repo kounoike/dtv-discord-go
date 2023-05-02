@@ -237,6 +237,21 @@ func (dtv *DTVUsecase) onProgramExtractedSubtitle(ctx context.Context, taskInfo 
 	return nil
 }
 
+func (dtv *DTVUsecase) onProgramDeletedOriginal(ctx context.Context, taskInfo *asynq.TaskInfo) error {
+	var payload tasks.ProgramDeleteOriginalPayload
+	err := json.Unmarshal(taskInfo.Payload, &payload)
+	if err != nil {
+		dtv.logger.Warn("task payload json.Unmarshal error", zap.Error(err))
+		return err
+	}
+
+	for _, taskInfo := range payload.MonitorTaskInfos {
+		dtv.inspector.DeleteTask(taskInfo.Queue, taskInfo.ID)
+	}
+
+	return nil
+}
+
 func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 	if dtv.inspector == nil {
 		return nil
@@ -260,9 +275,8 @@ func (dtv *DTVUsecase) CheckCompletedTask(ctx context.Context) error {
 			case tasks.TypeProgramExtractSubtitle:
 				_ = dtv.onProgramExtractedSubtitle(ctx, taskInfo)
 			case tasks.TypeProgramDeleteOriginal:
-				// 特に何もしない
+				_ = dtv.onProgramDeletedOriginal(ctx, taskInfo)
 			}
-			dtv.inspector.DeleteTask(queue, taskInfo.ID)
 		}
 	}
 	return nil
