@@ -45,10 +45,6 @@ type Config struct {
 		ScriptPath string `required:"true" env:"TRANSCRIPTION_SCRIPT_PATH"`
 		ModelSize  string `required:"true" env:"TRANSCRIPTION_MODEL_SIZE"`
 	}
-	Match struct {
-		KanaMatch  bool `default:"true" env:"KANA_MATCH"`
-		FuzzyMatch bool `default:"true" env:"FUZZY_MATCH"`
-	}
 	OpenAI struct {
 		Enabled bool   `default:"false" env:"PARSE_TITLE_WITH_GPT"`
 		Token   string `default:"" env:"OPENAI_TOKEN"`

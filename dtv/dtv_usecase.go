@@ -30,8 +30,6 @@ type DTVUsecase struct {
 	autoSearchChannel    *discordgo.Channel
 	gpt                  *gpt.GPTClient
 	meili                *meili.MeiliSearchClient
-	kanaMatch            bool
-	fuzzyMatch           bool
 	encodingEnabled      bool
 	transcriptionEnabled bool
 	transcriptionType    string
@@ -50,8 +48,6 @@ func NewDTVUsecase(
 	scheduler *gocron.Scheduler,
 	queries *db.Queries,
 	logger *zap.Logger,
-	kanaMatch bool,
-	fuzzyMatch bool,
 	gpt *gpt.GPTClient,
 	meili *meili.MeiliSearchClient,
 ) (*DTVUsecase, error) {
@@ -72,8 +68,6 @@ func NewDTVUsecase(
 		contentPathTmpl:      contentTmpl,
 		encodedExt:           cfg.Encoding.Ext,
 		transcribedExt:       cfg.Transcription.Ext,
-		kanaMatch:            kanaMatch,
-		fuzzyMatch:           fuzzyMatch,
 		encodingEnabled:      cfg.Encoding.Enabled,
 		transcriptionEnabled: cfg.Transcription.Enabled,
 		transcriptionType:    cfg.Transcription.Type,

@@ -101,7 +101,7 @@ services:
       TZ: Asia/Tokyo
       TS_HOSTNAME: tv-dev
   meilisearch:
-    image: getmeili/meilisearch:prototype-japanese-1
+    image: getmeili/meilisearch:prototype-japanese-2
     volumes:
       - /qnap/video/develop/meili:/melili_data:rw
     ports:

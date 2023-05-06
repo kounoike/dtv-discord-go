@@ -235,7 +235,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 
-	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, config.Match.KanaMatch, config.Match.FuzzyMatch, gptClient, meiliClient)
+	usecase, err := dtv.NewDTVUsecase(config, asynqClient, asynqInspector, discordClient, mirakcClient, scheduler, queries, discordLogger, gptClient, meiliClient)
 	if err != nil {
 		logger.Error("can't create DTVUsecase", zap.Error(err))
 		return subcommands.ExitFailure
@@ -246,7 +246,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logMessage := fmt.Sprintf("起動しました。\ndtv-discord-go version:%s\nmirakc version:%s\n", "v"+c.version, mirakcVersion.Current)
 	discordClient.SendMessage(discord.InformationCategory, discord.LogChannel, logMessage)
 
-	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient.Session(), logger)
+	discordHandler := discord_handler.NewDiscordHandler(usecase, discordClient, discordClient.Session(), logger)
 
 	err = usecase.InitializeServiceChannels(ctx)
 	if err != nil {

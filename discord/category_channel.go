@@ -12,10 +12,10 @@ const (
 	// サービス名でチャンネルが出来る
 
 	NotifyAndScheduleCategory = "録画-通知・予約"
-	AutoActionChannelName     = "自動検索"
+	AutoSearchChannelName     = "自動検索"
 
-	AutoActionChannelTopic          = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**`
-	AutoActionChannelWelcomeMessage = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**
+	AutoSearchChannelTopic          = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**`
+	AutoSearchChannelWelcomeMessage = `**このチャンネルにスレッドを投稿するとEPG更新時ルールに従い自動的に通知または録画されます。**
 
 **投稿形式**
 タイトル: 何でも構いません。

@@ -231,7 +231,7 @@ func (d *DiscordClient) createChannelWithTopic(category string, channel string, 
 }
 
 func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, error) {
-	ch, err := d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelTopic)
+	ch, err := d.createChannelWithTopic(discord.NotifyAndScheduleCategory, discord.AutoSearchChannelName, discord.AutoSearchChannelTopic)
 	if err != nil {
 		return nil, err
 	}
@@ -244,13 +244,13 @@ func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, er
 		return nil, err
 	}
 	if len(msgs) == 0 {
-		_, err := d.SendMessage(discord.NotifyAndScheduleCategory, discord.AutoActionChannelName, discord.AutoActionChannelWelcomeMessage)
+		_, err := d.SendMessage(discord.NotifyAndScheduleCategory, discord.AutoSearchChannelName, discord.AutoSearchChannelWelcomeMessage)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		if msgs[0].Author.ID == d.session.State.User.ID {
-			_, err := d.session.ChannelMessageEdit(ch.ID, msgs[0].ID, discord.AutoActionChannelWelcomeMessage)
+			_, err := d.session.ChannelMessageEdit(ch.ID, msgs[0].ID, discord.AutoSearchChannelWelcomeMessage)
 			if err != nil {
 				return nil, err
 			}
@@ -259,53 +259,25 @@ func (d *DiscordClient) CreateNotifyAndScheduleChannel() (*discordgo.Channel, er
 	return ch, err
 }
 
-func (d *DiscordClient) ListAutoSearchChannelThredOkReactionedFirstMessageContents(channelID string) ([]*discordgo.Message, error) {
-	threadsList, err := d.session.GuildThreadsActive(d.session.State.Guilds[0].ID)
-	if err != nil {
-		return nil, err
-	}
-	threads := []*discordgo.Channel{}
-	for _, th := range threadsList.Threads {
-		if th.ParentID == channelID {
-			threads = append(threads, th)
-			d.logger.Debug("found active thread", zap.String("name", th.Name))
-		}
-	}
-	for {
-		archivedThreadList, err := d.session.ThreadsArchived(channelID, nil, 100)
-		if err != nil {
-			return nil, err
-		}
-		for _, th := range archivedThreadList.Threads {
-			d.logger.Debug("found archived thread", zap.String("name", th.Name))
-		}
-		threads = append(threads, archivedThreadList.Threads...)
-		if !archivedThreadList.HasMore {
-			break
-		}
-	}
-	messages := make([]*discordgo.Message, 0)
-	for _, th := range threads {
-		thMsgs, err := d.session.ChannelMessages(th.ID, 1, "", "0", "")
-		if err != nil {
-			d.logger.Warn("can't get messages in thred", zap.Error(err), zap.String("th.ID", th.ID), zap.String("th.Name", th.Name))
-			continue
-		}
-		if len(thMsgs) > 0 {
-			users, err := d.session.MessageReactions(th.ID, thMsgs[0].ID, discord.OkReactionEmoji, 1, "", "")
-			if err != nil {
-				d.logger.Warn("can't get message's reactions", zap.Error(err), zap.String("th.ID", th.ID), zap.String("msgID", thMsgs[0].ID))
-				continue
-			}
-			if len(users) > 0 {
-				messages = append(messages, thMsgs[0])
-			}
-		}
-	}
-	return messages, nil
-}
-
 func (d *DiscordClient) SendMessageToThread(threadID string, content string) error {
 	_, err := d.session.ChannelMessageSend(threadID, content)
+	return err
+}
+
+func (d *DiscordClient) CreateAutoSearchThread(title string, content string) (string, error) {
+	ch, err := d.GetCachedChannel(discord.NotifyAndScheduleCategory, discord.AutoSearchChannelName)
+	if err != nil {
+		return "", err
+	}
+	th, err := d.session.ThreadStart(ch.ID, title, discordgo.ChannelTypeGuildPublicThread, 7*24*60)
+	if err != nil {
+		return "", err
+	}
+	_, err = d.session.ChannelMessageSend(th.ID, content)
+	return th.ID, nil
+}
+
+func (d *DiscordClient) DeleteThread(threadID string) error {
+	_, err := d.session.ChannelDelete(threadID)
 	return err
 }

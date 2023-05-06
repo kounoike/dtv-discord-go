@@ -1,39 +1,41 @@
 package dtv
 
 import (
+	"context"
 	"strings"
 	"time"
 
-	"github.com/bwmarrin/discordgo"
 	"github.com/ikawaha/kagome/tokenizer"
 	"github.com/kounoike/dtv-discord-go/db"
-	"github.com/kounoike/dtv-discord-go/discord"
 	"github.com/lithammer/fuzzysearch/fuzzy"
-	"go.uber.org/zap"
 	"golang.org/x/text/width"
-	"gopkg.in/ini.v1"
 )
 
 type AutoSearch struct {
-	Title          string            `yaml:"タイトル"`
-	Channel        string            `yaml:"チャンネル"`
-	Genre          string            `yaml:"ジャンル"`
-	NotifyUsers    []*discordgo.User `yaml:"-"`
-	RecordingUsers []*discordgo.User `yaml:"-"`
-	ThreadID       string            `yaml:"-"`
+	Title      string
+	Channel    string
+	Genre      string
+	KanaMatch  bool
+	FuzzyMatch bool
+	RegexMatch bool
+	ThreadID   string
 }
 
 type AutoSearchProgram struct {
-	Title string
-	Genre string
-	EndAt int64
+	Title     string
+	TitleKana string
+	Genre     string
+	GenreKana string
+	EndAt     int64
 }
 
-func NewAutoSearchProgram(p db.Program, kanaMatch bool) *AutoSearchProgram {
+func NewAutoSearchProgram(p db.Program) *AutoSearchProgram {
 	return &AutoSearchProgram{
-		Title: normalizeString(p.Name, kanaMatch),
-		Genre: normalizeString(p.Genre, kanaMatch),
-		EndAt: p.StartAt + int64(p.Duration),
+		Title:     normalizeString(p.Name, false),
+		TitleKana: normalizeString(p.Name, true),
+		Genre:     normalizeString(p.Genre, false),
+		GenreKana: normalizeString(p.Genre, true),
+		EndAt:     p.StartAt + int64(p.Duration),
 	}
 }
 
@@ -57,84 +59,66 @@ func normalizeString(str string, kanaMatch bool) string {
 	}
 }
 
-func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram, fuzzyMatch bool) bool {
+func (a *AutoSearch) IsMatchProgram(program *AutoSearchProgram) bool {
 	if program.EndAt < time.Now().Unix() {
 		return false
 	}
-	if fuzzyMatch {
-		if a.Title != "" && !fuzzy.Match(a.Title, program.Title) {
+	pTitle := program.Title
+	pGenre := program.Genre
+	if a.KanaMatch {
+		pTitle = program.TitleKana
+		pGenre = program.GenreKana
+	}
+	if a.FuzzyMatch {
+		if a.Title != "" && !fuzzy.Match(a.Title, pTitle) {
 			return false
 		}
-		if a.Genre != "" && !fuzzy.Match(a.Genre, program.Genre) {
+		if a.Genre != "" && !fuzzy.Match(a.Genre, pGenre) {
 			return false
 		}
 		return true
 	} else {
-		if a.Title != "" && !strings.Contains(program.Title, a.Title) {
+		if a.Title != "" && !strings.Contains(pTitle, a.Title) {
 			return false
 		}
-		if a.Genre != "" && !strings.Contains(program.Genre, a.Genre) {
+		if a.Genre != "" && !strings.Contains(pGenre, a.Genre) {
 			return false
 		}
 		return true
 	}
 }
 
-func (a *AutoSearch) IsMatchService(serviceName string, kanaMatch bool, fuzzyMatch bool) bool {
+func (a *AutoSearch) IsMatchService(serviceName string) bool {
 	// NOTE: サービスでfuzzyMatchすると「BS11」が「BSフジ・181」にマッチしてしまうので、fuzzyMatchは使わない
-	if a.Channel == "" || strings.Contains(normalizeString(serviceName, kanaMatch), normalizeString(a.Channel, kanaMatch)) {
+	if a.Channel == "" || strings.Contains(normalizeString(serviceName, a.KanaMatch), normalizeString(a.Channel, a.KanaMatch)) {
 		return true
 	} else {
 		return false
 	}
 }
 
-func (dtv *DTVUsecase) getAutoSeachFromMessage(msg *discordgo.Message) (*AutoSearch, error) {
-	content := []byte(msg.Content)
-	iniContent, err := ini.Load(content)
-	if err != nil {
-		return nil, err
+func (dtv *DTVUsecase) getAutoSearchFromDB(as *db.AutoSearch) *AutoSearch {
+	return &AutoSearch{
+		Title:      normalizeString(as.Title, as.KanaSearch),
+		Channel:    as.Channel,
+		Genre:      normalizeString(as.Genre, as.KanaSearch),
+		KanaMatch:  as.KanaSearch,
+		FuzzyMatch: as.FuzzySearch,
+		RegexMatch: as.RegexSearch,
+		ThreadID:   as.ThreadID,
 	}
-	autoSearch := AutoSearch{}
-	autoSearch.Channel = normalizeString(iniContent.Section("").Key("チャンネル").String(), dtv.kanaMatch)
-	autoSearch.Genre = normalizeString(iniContent.Section("").Key("ジャンル").String(), dtv.kanaMatch)
-	autoSearch.Title = normalizeString(iniContent.Section("").Key("タイトル").String(), dtv.kanaMatch)
-
-	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
-	if err != nil {
-		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.NotifyReactionEmoji), zap.String("content", msg.Content))
-		notifyUsers = []*discordgo.User{}
-	}
-	autoSearch.NotifyUsers = notifyUsers
-
-	recordingUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.RecordingReactionEmoji)
-	if err != nil {
-		dtv.logger.Warn("can't get message reactions", zap.Error(err), zap.String("msg.ChannelID", msg.ChannelID), zap.String("msg.ID", msg.ID), zap.String("emoji", discord.RecordingReactionEmoji), zap.String("content", msg.Content))
-		recordingUsers = []*discordgo.User{}
-	}
-	autoSearch.RecordingUsers = recordingUsers
-	autoSearch.ThreadID = msg.ChannelID
-
-	return &autoSearch, nil
 }
 
-func (dtv *DTVUsecase) ListAutoSearchForServiceName(serviceName string) ([]*AutoSearch, error) {
-	msgs, err := dtv.discord.ListAutoSearchChannelThredOkReactionedFirstMessageContents(dtv.autoSearchChannel.ID)
+func (dtv *DTVUsecase) ListAutoSearchForServiceName(ctx context.Context, serviceName string) ([]*AutoSearch, error) {
+	asList, err := dtv.queries.ListAutoSearch(ctx)
 	if err != nil {
 		return nil, err
 	}
-	serviceNameNormalized := normalizeString(serviceName, dtv.kanaMatch)
+	autoSearchList := make([]*AutoSearch, 0, len(asList))
 
-	autoSearchList := make([]*AutoSearch, 0)
-
-	for _, msg := range msgs {
-		autoSearch, err := dtv.getAutoSeachFromMessage(msg)
-		if err != nil {
-			dtv.logger.Warn("thread message yaml unmarshal error", zap.Error(err))
-			continue
-		}
-		if autoSearch.Channel == "" || strings.Contains(serviceNameNormalized, normalizeString(autoSearch.Channel, dtv.kanaMatch)) {
-			autoSearch.Title = normalizeString(autoSearch.Title, dtv.kanaMatch)
+	for _, as := range asList {
+		autoSearch := dtv.getAutoSearchFromDB(&as)
+		if autoSearch.IsMatchService(serviceName) {
 			autoSearchList = append(autoSearchList, autoSearch)
 		}
 	}

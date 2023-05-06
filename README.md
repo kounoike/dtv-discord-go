@@ -59,6 +59,7 @@ WebへのアクセスのためにはTailscaleにサインアップして、ク�
     - Read Messages/View Channels
     - Send Messages
     - Send Messages in Threads
+    - Manage Threads
     - Read Message History
     - Add Reactions
 14. 一番下の GENERATED URL の Copy ボタンを押して URL をコピーします
