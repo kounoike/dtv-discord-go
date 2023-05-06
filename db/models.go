@@ -33,14 +33,6 @@ type AutoSearchFoundMessage struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type AutoSearchMessage struct {
-	ID        int32     `json:"id"`
-	ThreadID  string    `json:"threadID"`
-	MessageID string    `json:"messageID"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-}
-
 type ComponentVersion struct {
 	ID        int32     `json:"id"`
 	Component string    `json:"component"`

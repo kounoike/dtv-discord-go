@@ -9,17 +9,20 @@ import (
 	"context"
 )
 
-const countAutoSearchFoundMessagesByProgramID = `-- name: CountAutoSearchFoundMessagesByProgramID :one
+const countAutoSearchFoundMessagesWithRecordByProgramID = `-- name: CountAutoSearchFoundMessagesWithRecordByProgramID :one
 SELECT 
     count(*)
 FROM
     ` + "`" + `auto_search_found_message` + "`" + `
+JOIN
+    ` + "`" + `auto_search` + "`" + ` ON ` + "`" + `auto_search_found_message` + "`" + `.` + "`" + `thread_id` + "`" + ` = ` + "`" + `auto_search` + "`" + `.` + "`" + `thread_id` + "`" + `
 WHERE
-    ` + "`" + `program_id` + "`" + ` = ?
+    ` + "`" + `auto_search` + "`" + `.` + "`" + `record` + "`" + ` = 1
+    AND ` + "`" + `program_id` + "`" + ` = ?
 `
 
-func (q *Queries) CountAutoSearchFoundMessagesByProgramID(ctx context.Context, programID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countAutoSearchFoundMessagesByProgramID, programID)
+func (q *Queries) CountAutoSearchFoundMessagesWithRecordByProgramID(ctx context.Context, programID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countAutoSearchFoundMessagesWithRecordByProgramID, programID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err

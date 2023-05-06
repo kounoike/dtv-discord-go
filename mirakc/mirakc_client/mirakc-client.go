@@ -117,6 +117,19 @@ type scheduleData struct {
 
 func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string) error {
 	url := fmt.Sprintf("http://%s:%d/api/recording/schedules", m.host, m.port)
+	getUrl := fmt.Sprintf("%s/%d", url, programID)
+
+	client := resty.New()
+	resp, err := client.R().
+		Get(getUrl)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode() == 200 {
+		// 既に予約済みなので何もしない
+		return nil
+	}
+
 	data := scheduleData{
 		ProgramID: programID,
 		Options: scheduleOptions{
@@ -129,8 +142,7 @@ func (m *MirakcClient) AddRecordingSchedule(programID int64, contentPath string)
 		return err
 	}
 	// postOption := fmt.Sprintf(`{"programId": %d, "options": {"contentPath": "%d.m2ts"}, "tags": ["manual"]}`, programID, programID)
-	client := resty.New()
-	resp, err := client.R().
+	resp, err = client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(dataJson).
 		Post(url)

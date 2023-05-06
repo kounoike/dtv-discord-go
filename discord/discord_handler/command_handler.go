@@ -251,7 +251,7 @@ func (h *DiscordHandler) CommandHandler(s *discordgo.Session, i *discordgo.Inter
 			if err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
-					Content: fmt.Sprintf("> %s\nスレッド名:%s\nタイトル:%s\nチャンネル:%s\nジャンル:%s\n録画:%s\nこれでよろしいですか？",
+					Content: fmt.Sprintf("> %s\n**スレッド名:**%s\n**タイトル:**%s\n**チャンネル:**%s\n**ジャンル:**%s\n**録画:**%s\nこれでよろしいですか？",
 						jsonStr,
 						data.Name,
 						data.Title,
@@ -342,4 +342,10 @@ func (h *DiscordHandler) RegisterCommand() {
 	}); err != nil {
 		h.logger.Error("ApplicationCommandCreate error", zap.Error(err))
 	}
+}
+
+func (h *DiscordHandler) UnregisterCommand() {
+	h.session.ApplicationCommandDelete(h.session.State.User.ID, h.session.State.Guilds[0].ID, "index")
+	h.session.ApplicationCommandDelete(h.session.State.User.ID, h.session.State.Guilds[0].ID, "create")
+	h.session.ApplicationCommandDelete(h.session.State.User.ID, h.session.State.Guilds[0].ID, "delete")
 }

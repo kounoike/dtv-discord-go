@@ -13,13 +13,16 @@ FROM
 WHERE
     `thread_id` = ?;
 
--- name: CountAutoSearchFoundMessagesByProgramID :one
+-- name: CountAutoSearchFoundMessagesWithRecordByProgramID :one
 SELECT 
     count(*)
 FROM
     `auto_search_found_message`
+JOIN
+    `auto_search` ON `auto_search_found_message`.`thread_id` = `auto_search`.`thread_id`
 WHERE
-    `program_id` = ?
+    `auto_search`.`record` = 1
+    AND `program_id` = ?
 ;
 
 -- name: DeleteAutoSearchFoundMessagesByThreadID :exec
