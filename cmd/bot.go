@@ -110,7 +110,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	logger.Info("Connected!")
 
 	discordEncoder := discord_logger.NewWithDiscordEncoder(logLevel, discordClient)
-	discordLogger := zap.New(zapcore.NewCore(discordEncoder, os.Stdout, logLevel))
+	discordLogger := zap.New(zapcore.NewCore(discordEncoder, os.Stdout, logLevel), zap.AddCaller())
 
 	ddlFiles := []string{}
 	files, err := os.ReadDir("db/migrations")
