@@ -15,7 +15,8 @@ log:
   level: DEBUG
 recording:
   basepath: "/recorded"
-  contentpathtemplate: "{{.Program.Name | fold}}-{{.Program.StartTime.Format \"20060102-1504\"}}-{{.Service.Name | fold}}.m2ts"
+  contentpathtemplate: |
+    {{.Title}}{{if ne .Episode -1}} #{{.Episode}}{{end}}{{if ne .Subtitle ""}}「{{.Subtitle}}」{{end}}-{{.Program.StartTime.Format "20060102-1504"}}-{{.Service.Name}}.m2ts
 encoding:
   enabled: true
   basepath: "/encoded"
