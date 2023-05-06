@@ -24,10 +24,18 @@ services:
     links:
       - tuner:tuner
       - db:db
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      tuner:
+        condition: service_healthy
   db:
     image: mariadb:latest
     volumes:
-      - mysql-db:/var/lib/mysql
+      - mysql-db:/var/lib/mysql:rw
+      - ./db:/docker-entrypoint-initdb.d:ro
     ports:
       - "3306:3306"
     environment:
@@ -77,10 +85,11 @@ services:
     command:
       - "--redis-addr"
       - "redis:6379"
-    ports:
-      - "8000:8080"
     links:
       - redis:redis
+    depends_on:
+      redis:
+        condition: service_healthy
   web:
     build: ../docker-compose/web
     links:
@@ -104,9 +113,48 @@ services:
     image: getmeili/meilisearch:prototype-japanese-2
     volumes:
       - /qnap/video/develop/meili:/melili_data:rw
-    ports:
-      - "7700:7700"
     restart: always
+  airflow-init:
+    image: debian:bullseye-slim
+    volumes:
+      - /qnap/video/develop/airflow:/opt/airflow
+    command:
+      - /bin/sh
+      - -c
+      - mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/plugins && chown -R 1000:1000 /opt/airflow
+  airflow-web:
+    image: apache/airflow:latest
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    links:
+      - db:db
+      - redis:redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: mysql+mysqlconnector://airflow:airflow@db/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/1
+      AIRFLOW__CORE__FERNET_KEY: ''
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'false'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      # AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
+      # for other purpose (development, test and especially production usage) build/extend Airflow image.
+      # _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    volumes:
+      - /qnap/video/develop/airflow/dags:/opt/airflow/dags
+      - /qnap/video/develop/airflow/logs:/opt/airflow/logs
+      - /qnap/video/develop/airflow/plugins:/opt/airflow/plugins
+    user: "${AIRFLOW_UID:-1000}:0"
+    command:
+      - airflow
+      - web
 
 volumes:
   mysql-db:
