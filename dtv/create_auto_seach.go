@@ -135,7 +135,7 @@ func (dtv *DTVUsecase) CreateAutoSearch(userID string, name string, title string
 						}
 						if err := dtv.mirakc.AddRecordingSchedule(program.ID, contentPath); err != nil {
 							dtv.logger.Warn("AddRecordingSchedule error", zap.Error(err))
-							continue
+							// 重複登録の場合もあるので、エラーは無視して継続
 						}
 					}
 					if err := dtv.queries.InsertAutoSearchFoundMessage(ctx, db.InsertAutoSearchFoundMessageParams{MessageID: msg.ID, ThreadID: thID, ProgramID: program.ID}); err != nil {

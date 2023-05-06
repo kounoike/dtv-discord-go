@@ -289,6 +289,7 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 	discordHandler.AddReactionAddHandler()
 	discordHandler.AddReactionRemoveHandler()
 	discordHandler.RegisterCommand()
+	defer discordHandler.UnregisterCommand()
 
 	logger.Info("AddDiscordHandle done. start subscribe to SSE events.")
 

@@ -19,7 +19,7 @@ func (dtv *DTVUsecase) DeleteAutoSearch(ctx context.Context, threadID string) er
 		}
 		for _, found := range founds {
 			programID := found.ProgramID
-			cnt, err := dtv.queries.CountAutoSearchFoundMessagesByProgramID(ctx, programID)
+			cnt, err := dtv.queries.CountAutoSearchFoundMessagesWithRecordByProgramID(ctx, programID)
 			if err != nil {
 				return err
 			}
