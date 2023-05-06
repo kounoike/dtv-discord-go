@@ -29,7 +29,7 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 		return err
 	}
 
-	autoSearchList, err := dtv.ListAutoSearchForServiceName(service.Name)
+	autoSearchList, err := dtv.ListAutoSearchForServiceName(ctx, service.Name)
 	if err != nil {
 		return err
 	}
@@ -70,10 +70,9 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 			if err != nil {
 				return err
 			}
-			asp := NewAutoSearchProgram(p, dtv.kanaMatch)
+			asp := NewAutoSearchProgram(p)
 			for _, as := range autoSearchList {
-				// dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp, dtv.fuzzyMatch)))
-				if as.IsMatchProgram(asp, dtv.fuzzyMatch) {
+				if as.IsMatchProgram(asp) {
 					dtv.logger.Debug("program matched", zap.String("program.Name", p.Name), zap.String("as.Title", as.Title))
 					err := dtv.sendAutoSearchMatchMessage(ctx, msg, p, service, as)
 					if err != nil {
@@ -106,10 +105,9 @@ func (dtv *DTVUsecase) onProgramsUpdated(ctx context.Context, serviceId uint) er
 				if err != nil {
 					return err
 				}
-				asp := NewAutoSearchProgram(p, dtv.kanaMatch)
+				asp := NewAutoSearchProgram(p)
 				for _, as := range autoSearchList {
-					dtv.logger.Debug("matching", zap.String("p.Name", p.Name), zap.String("asp.Title", asp.Title), zap.String("as.Title", as.Title), zap.Bool("isMatch", as.IsMatchProgram(asp, dtv.fuzzyMatch)))
-					if as.IsMatchProgram(asp, dtv.fuzzyMatch) {
+					if as.IsMatchProgram(asp) {
 						dtv.logger.Debug("program matched", zap.String("program.Name", p.Name), zap.String("as.Title", as.Title))
 						err := dtv.sendAutoSearchMatchMessage(ctx, msg, p, service, as)
 						if err != nil {
@@ -148,38 +146,23 @@ func (dtv *DTVUsecase) sendAutoSearchMatchMessage(ctx context.Context, msg *disc
 		return err
 	}
 	content = width.Fold.String(content)
-	notifyString := ""
-	recorderString := ""
-	if len(as.NotifyUsers) > 0 {
-		for _, u := range as.NotifyUsers {
-			notifyString += "<@" + u.ID + "> "
-		}
-		notifyString += "\n"
-	}
-	content += notifyString + recorderString
-	err = dtv.discord.SendMessageToThread(as.ThreadID, content)
+	notifyUsers, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.NotifyReactionEmoji)
 	if err != nil {
 		return err
 	}
-	if len(as.RecordingUsers) > 0 {
-		users, err := dtv.discord.GetMessageReactions(msg.ChannelID, msg.ID, discord.OkReactionEmoji)
-		if err != nil {
-			return err
-		}
-		for _, u := range users {
-			if u.ID == dtv.discord.Session().State.User.ID {
-				// NOTE: 既にリアクション済みなので何もしない
-				return nil
+	notifyString := ""
+	if len(notifyUsers) > 0 {
+		for _, u := range notifyUsers {
+			if u.ID != dtv.discord.Session().State.User.ID {
+				notifyString += "<@" + u.ID + "> "
 			}
 		}
-		err = dtv.checkRecordScheduleForMessage(ctx, msg.ChannelID, msg.ID)
-		if err != nil {
-			return err
-		}
-		err = dtv.discord.MessageReactionAdd(msg.ChannelID, msg.ID, discord.OkReactionEmoji)
-		if err != nil {
-			dtv.logger.Warn("MessageReactionAdd error", zap.Error(err), zap.String("ChannelID", msg.ChannelID), zap.String("msgID", msg.ID), zap.String("emoji", discord.OkReactionEmoji), zap.String("content", msg.Content))
-		}
+		notifyString += "\n"
+	}
+	content += notifyString
+	err = dtv.discord.SendMessageToThread(as.ThreadID, content)
+	if err != nil {
+		return err
 	}
 	return nil
 }

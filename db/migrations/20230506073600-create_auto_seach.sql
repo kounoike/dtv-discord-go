@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS `auto_search` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` TEXT NOT NULL,
+    `title` TEXT NOT NULL,
+    `channel` TEXT NOT NULL,
+    `genre` TEXT NOT NULL,
+    `kana_search` BOOLEAN NOT NULL,
+    `fuzzy_search` BOOLEAN NOT NULL,
+    `regex_search` BOOLEAN NOT NULL,
+    `record` BOOLEAN NOT NULL,
+    `thread_id` TEXT NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
