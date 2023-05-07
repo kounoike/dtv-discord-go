@@ -7,7 +7,7 @@ require (
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/go-co-op/gocron v1.23.0
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/subcommands v1.2.0
 	github.com/hibiken/asynq v0.24.0
 	github.com/ikawaha/kagome v1.11.2
