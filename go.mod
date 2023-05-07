@@ -15,7 +15,7 @@ require (
 	github.com/json-iterator/go v1.1.12
 	github.com/k0kubun/sqldef v0.15.22
 	github.com/lestrrat-go/backoff/v2 v2.0.8
-	github.com/lithammer/fuzzysearch v1.1.6
+	github.com/lithammer/fuzzysearch v1.1.7
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/meilisearch/meilisearch-go v0.24.0
 	github.com/pkg/errors v0.9.1
@@ -24,7 +24,6 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.9.0
 	gopkg.in/guregu/null.v4 v4.0.0
-	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
