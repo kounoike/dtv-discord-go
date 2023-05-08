@@ -9,7 +9,7 @@ require (
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/subcommands v1.2.0
-	github.com/hibiken/asynq v0.24.0
+	github.com/hibiken/asynq v0.24.1
 	github.com/ikawaha/kagome v1.11.2
 	github.com/jinzhu/configor v1.2.1
 	github.com/json-iterator/go v1.1.12
@@ -24,7 +24,6 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.9.0
 	gopkg.in/guregu/null.v4 v4.0.0
-	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -32,7 +31,6 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
@@ -48,6 +46,7 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/redis/go-redis/v9 v9.0.3 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
