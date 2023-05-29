@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/alessio/shellescape v1.4.1
 	github.com/bwmarrin/discordgo v0.27.1
-	github.com/go-co-op/gocron v1.23.0
+	github.com/go-co-op/gocron v1.28.0
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/subcommands v1.2.0
@@ -24,7 +24,6 @@ require (
 	go.uber.org/zap v1.24.0
 	golang.org/x/text v0.9.0
 	gopkg.in/guregu/null.v4 v4.0.0
-	gopkg.in/ini.v1 v1.67.0
 )
 
 require (
@@ -60,6 +59,5 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
