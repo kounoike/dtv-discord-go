@@ -96,6 +96,9 @@ func (c *BotCommand) Execute(ctx context.Context, f *flag.FlagSet, args ...inter
 		return subcommands.ExitFailure
 	}
 	queries := sqlcdb.New(db)
+	db.SetConnMaxLifetime(10 * time.Second)
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(10)
 
 	discordClient, err := discord_client.NewDiscordClient(config, queries, logger)
 	if err != nil {
