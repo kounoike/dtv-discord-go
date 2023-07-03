@@ -4,7 +4,7 @@ RUN curl -fsSL https://github.com/mcuadros/ofelia/archive/refs/tags/v0.3.7.tar.g
     | tar xzvpf - --strip-components=1
 RUN go build -o /usr/local/bin/ofelia
 
-FROM nginx:latest AS runner
+FROM nginx:stable-bullseye AS runner
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,6 +19,7 @@ RUN set -ex && \
     openssl \
     python3 \
     python3-pip \
+    python-is-python3 \
     && \
     pip3 install supervisor && \
     curl -fsSL https://tailscale.com/install.sh | sh && \
