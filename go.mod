@@ -3,7 +3,7 @@ module github.com/kounoike/dtv-discord-go
 go 1.20
 
 require (
-	github.com/alessio/shellescape v1.4.1
+	github.com/alessio/shellescape v1.4.2
 	github.com/bwmarrin/discordgo v0.27.1
 	github.com/go-co-op/gocron v1.30.1
 	github.com/go-resty/resty/v2 v2.7.0
