@@ -17,7 +17,7 @@ require (
 	github.com/lestrrat-go/backoff/v2 v2.0.8
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/meilisearch/meilisearch-go v0.24.0
+	github.com/meilisearch/meilisearch-go v0.25.1
 	github.com/pkg/errors v0.9.1
 	github.com/r3labs/sse/v2 v2.10.0
 	github.com/sashabaranov/go-openai v1.12.0
