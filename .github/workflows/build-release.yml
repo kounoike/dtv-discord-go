@@ -65,12 +65,12 @@ jobs:
         working-directory: frontend
       - name: Run goreleaser build
         if: github.event_name == 'pull_request'
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           args: build --snapshot --single-target
       - name: Run goreleaser release
         if: github.event_name != 'pull_request'
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           args: release ${{ env.flags }}
         env:
