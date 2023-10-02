@@ -13,7 +13,7 @@ require (
 	github.com/ikawaha/kagome v1.11.2
 	github.com/jinzhu/configor v1.2.1
 	github.com/json-iterator/go v1.1.12
-	github.com/k0kubun/sqldef v0.16.2
+	github.com/k0kubun/sqldef v0.16.8
 	github.com/lestrrat-go/backoff/v2 v2.0.8
 	github.com/lithammer/fuzzysearch v1.1.8
 	github.com/mattn/go-shellwords v1.0.12
@@ -22,7 +22,7 @@ require (
 	github.com/r3labs/sse/v2 v2.10.0
 	github.com/sashabaranov/go-openai v1.12.0
 	go.uber.org/zap v1.24.0
-	golang.org/x/text v0.9.0
+	golang.org/x/text v0.12.0
 	gopkg.in/guregu/null.v4 v4.0.0
 )
 
@@ -53,9 +53,9 @@ require (
 	github.com/valyala/fasthttp v1.37.1-0.20220607072126-8a320890c08d // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
-	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
